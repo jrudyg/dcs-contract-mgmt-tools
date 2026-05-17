@@ -423,12 +423,12 @@ document.getElementById('hdr-count').textContent = DATA.length.toLocaleString() 
 
 // ── Constants ──
 const DT_CLASS={NDA:'b-nda',MNDA:'b-mnda',MSA:'b-msa',SOW:'b-sow',Subcontract:'b-sub',CDA:'b-cda',EULA:'b-eula',IPA:'b-ipa',PSA:'b-psa',Amendment:'b-amendment',Other:'b-other'};
-const FOLDER_MAP={'01 Active':'01 Active Contracts','02 Unsigned':'02 Unsigned Contracts','03 Archived':'03 Archived Contracts'};
+const FOLDER_MAP={'01 Active Contracts':'01 Active Contracts','02 Unsigned Contracts':'02 Unsigned Contracts','03 Archived Contracts':'03 Archived Contracts'};
 const SUGGEST_MAP={nda:['MNDA','CDA'],confidential:['NDA','CDA','MNDA'],master:['MSA'],work:['SOW'],service:['SOW','PSA'],sub:['Subcontract'],software:['EULA','MSA'],partner:['IPA']};
 
 // ── State ──
 let sf='CounterpartyName',sd=1,filtered=[],recentlyViewed=[];
-let af={types:new Set(),status:'All',loc:'01 Active'};
+let af={types:new Set(),status:'All',loc:'01 Active Contracts'};
 let currentTab='catalog';
 const today=new Date();today.setHours(0,0,0,0);
 
@@ -480,7 +480,7 @@ function switchTab(tab){
 // ── Stats ──
 function buildStats(){
   const signed=DATA.filter(r=>r.SigningStatus==='Signed').length;
-  const active=DATA.filter(r=>r.ContractLocation==='01 Active').length;
+  const active=DATA.filter(r=>r.ContractLocation==='01 Active Contracts').length;
   const exp90=DATA.filter(r=>{const d=daysTo(r.ExpirationDate);return d!==null&&d<=90&&d>0}).length;
   const types=new Set(DATA.map(r=>r.DocType).filter(Boolean)).size;
   const hasExp=DATA.some(r=>daysTo(r.ExpirationDate)!==null);
@@ -504,7 +504,7 @@ function buildFilters(){
   h+=allTypes.map(t=>`<button class="chip${af.types.has(t)?' active':''}" onclick="toggleType('${e(t)}')">${e(t)}</button>`).join('');
   h+='</div>';
   h+=`<div class="filter-group"><span class="filter-label">Folder</span>`;
-  h+=[['All','All'],['01 Active','01 Active Contracts'],['02 Unsigned','02 Unsigned Contracts'],['03 Archived','03 Archived Contracts']].map(([v,l])=>`<button class="chip${af.loc===v?' active':''}" onclick="setF('loc','${e(v)}')">${l}</button>`).join('');
+  h+=[['All','All'],['01 Active Contracts','01 Active Contracts'],['02 Unsigned Contracts','02 Unsigned Contracts'],['03 Archived Contracts','03 Archived Contracts']].map(([v,l])=>`<button class="chip${af.loc===v?' active':''}" onclick="setF('loc','${e(v)}')">${l}</button>`).join('');
   h+='</div>';
   document.getElementById('filter-bar').innerHTML=h;
 }
@@ -623,7 +623,7 @@ function renderTable(q){
     const ec=expiryClass(r);
     const dtc=DT_CLASS[r.DocType]||'b-other';
     const stc=r.SigningStatus==='Signed'?'b-signed':'b-unsigned';
-    const locB=r.ContractLocation==='01 Active'?badge('Active','b-active'):badge('Unsigned','b-unsigned');
+    const locB=r.ContractLocation==='01 Active Contracts'?badge('Active','b-active'):badge('Unsigned','b-unsigned');
     const fn=r.Filename||'';
     const trunc=fn.length>46?fn.slice(0,43)+'…':fn;
     const expB=expiryBadge(r);
@@ -668,7 +668,7 @@ function renderTable(q){
     const rj=encodeURIComponent(JSON.stringify(r));
     return`<div class="contract-card ${ec}">
       <div class="card-top"><span class="card-name">${e(r.CounterpartyName||'—')}</span>${expiryBadge(r)}</div>
-      <div class="card-badges">${badge(r.DocType||'—',DT_CLASS[r.DocType]||'b-other')}${badge(r.SigningStatus||'—',r.SigningStatus==='Signed'?'b-signed':'b-unsigned')}${r.ContractLocation==='01 Active'?badge('Active','b-active'):badge('Unsigned','b-unsigned')}</div>
+      <div class="card-badges">${badge(r.DocType||'—',DT_CLASS[r.DocType]||'b-other')}${badge(r.SigningStatus||'—',r.SigningStatus==='Signed'?'b-signed':'b-unsigned')}${r.ContractLocation==='01 Active Contracts'?badge('Active','b-active'):badge('Unsigned','b-unsigned')}</div>
       <div class="card-fn">${fileIcon(r.Extension)}<span>${e(trunc)}</span></div>
       <div class="card-footer">
         <span class="card-date">${(r.EffectiveDate||'').slice(0,10)||'—'}</span>
@@ -764,7 +764,7 @@ function renderPortfolio(){
     </div>
     <div class="port-grid">
       <div class="panel"><div class="panel-title">By Document Type</div><ul class="port-list">${portList(byType,maxT,k=>DT_CLASS[k]?'var(--blue)':'var(--blue)')}</ul></div>
-      <div class="panel"><div class="panel-title">By Folder</div><ul class="port-list">${portList(byLoc,maxV,k=>k==='01 Active'?'var(--green)':'var(--amber)')}</ul></div>
+      <div class="panel"><div class="panel-title">By Folder</div><ul class="port-list">${portList(byLoc,maxV,k=>k==='01 Active Contracts'?'var(--green)':'var(--amber)')}</ul></div>
     </div>`;
 }
 
@@ -895,7 +895,6 @@ go();
     </div>
   </div>
 </div>
-
 <div id="tab-admin">
   <div class="admin-section">
     <h3>📊 Catalog Status</h3>
@@ -904,7 +903,7 @@ go();
   </div>
   <div class="admin-section">
     <h3>📂 Import Updated CSV</h3>
-    <p>Drop a new <code>contract-catalog-fixed.csv</code> to reload the catalog instantly. Then export the HTML below to save it.</p>
+    <p>Drop a new <code>contract-catalog-fixed.csv</code> to reload instantly. Then export the HTML below to save.</p>
     <div class="drop-zone" id="drop-zone" onclick="document.getElementById('csv-file-input').click()"
          ondragover="event.preventDefault();this.classList.add('drag')"
          ondragleave="this.classList.remove('drag')"
@@ -926,145 +925,44 @@ go();
   </div>
   <div class="admin-section" style="border-color:rgba(239,68,68,.3)">
     <h3 style="color:#ef4444">🔓 Session</h3>
-    <p>Lock owner access for this session.</p>
     <div class="admin-export-row">
       <button class="btn btn-danger" onclick="adminLock()">Lock &amp; Exit</button>
     </div>
   </div>
 </div>
-
 <button class="lock-btn" id="lock-btn" onclick="adminLock()">🔒 Lock Owner</button>
-
 <script>
-const OWNER_HASH = '049282c64821fee3faa9f7247396798f6282acbf14d19ceb9e655c316ab81962';
-let adminUnlocked = false;
-
-async function sha256(msg){
-  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(msg));
-  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
-}
-
-function showAdminLogin(){
-  if(adminUnlocked){switchTab('admin');return;}
-  document.getElementById('admin-overlay').classList.add('show');
-  setTimeout(()=>document.getElementById('admin-pwd').focus(),100);
-}
-function closeAdminLogin(){
-  document.getElementById('admin-overlay').classList.remove('show');
-  document.getElementById('admin-pwd').value='';
-  document.getElementById('admin-err').style.display='none';
-}
+const OWNER_HASH='049282c64821fee3faa9f7247396798f6282acbf14d19ceb9e655c316ab81962';
+let adminUnlocked=false;
+async function sha256(msg){const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(msg));return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');}
+function showAdminLogin(){if(adminUnlocked){switchTab('admin');return;}document.getElementById('admin-overlay').classList.add('show');setTimeout(()=>document.getElementById('admin-pwd').focus(),100);}
+function closeAdminLogin(){document.getElementById('admin-overlay').classList.remove('show');document.getElementById('admin-pwd').value='';document.getElementById('admin-err').style.display='none';}
 async function adminLogin(){
-  const hash = await sha256(document.getElementById('admin-pwd').value);
-  if(hash === OWNER_HASH){
-    adminUnlocked=true; closeAdminLogin();
-    document.getElementById('admin-tab').classList.add('unlocked');
-    document.getElementById('admin-tab').textContent='🔓 Owner';
-    document.getElementById('lock-btn').classList.add('show');
-    switchTab('admin'); renderAdminStats();
-  } else {
-    document.getElementById('admin-err').style.display='block';
-    document.getElementById('admin-pwd').value='';
-    document.getElementById('admin-pwd').focus();
-  }
+  const hash=await sha256(document.getElementById('admin-pwd').value);
+  if(hash===OWNER_HASH){adminUnlocked=true;closeAdminLogin();document.getElementById('admin-tab').classList.add('unlocked');document.getElementById('admin-tab').textContent='🔓 Owner';document.getElementById('lock-btn').classList.add('show');switchTab('admin');renderAdminStats();}
+  else{document.getElementById('admin-err').style.display='block';document.getElementById('admin-pwd').value='';document.getElementById('admin-pwd').focus();}
 }
-function adminLock(){
-  adminUnlocked=false;
-  document.getElementById('admin-tab').classList.remove('unlocked');
-  document.getElementById('admin-tab').textContent='🔒 Owner';
-  document.getElementById('lock-btn').classList.remove('show');
-  document.getElementById('tab-admin').classList.remove('visible');
-  switchTab('catalog');
-}
-
-const _origSwitchTab = switchTab;
-switchTab = function(tab){
-  if(tab==='admin'){
-    if(!adminUnlocked){showAdminLogin();return;}
-    document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.tab==='admin'));
-    ['catalog','expiring','portfolio','coverage','activity'].forEach(t=>{
-      const el=document.getElementById('tab-'+t);if(el)el.style.display='none';
-    });
-    document.getElementById('tab-admin').classList.add('visible');
-    return;
-  }
-  document.getElementById('tab-admin').classList.remove('visible');
-  _origSwitchTab(tab);
+function adminLock(){adminUnlocked=false;document.getElementById('admin-tab').classList.remove('unlocked');document.getElementById('admin-tab').textContent='🔒 Owner';document.getElementById('lock-btn').classList.remove('show');document.getElementById('tab-admin').classList.remove('visible');switchTab('catalog');}
+const _origSwitchTab=switchTab;
+switchTab=function(tab){
+  if(tab==='admin'){if(!adminUnlocked){showAdminLogin();return;}document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.tab==='admin'));['catalog','expiring','portfolio','coverage','activity'].forEach(t=>{const el=document.getElementById('tab-'+t);if(el)el.style.display='none';});document.getElementById('tab-admin').classList.add('visible');return;}
+  document.getElementById('tab-admin').classList.remove('visible');_origSwitchTab(tab);
 };
-
-function renderAdminStats(){
-  const signed=DATA.filter(r=>r.SigningStatus==='Signed').length;
-  const active=DATA.filter(r=>r.ContractLocation==='01 Active').length;
-  const types=[...new Set(DATA.map(r=>r.DocType))].length;
-  document.getElementById('admin-stats-row').innerHTML=`
-    <div class="admin-stat"><strong>${DATA.length}</strong>Total</div>
-    <div class="admin-stat"><strong>${signed}</strong>Signed</div>
-    <div class="admin-stat"><strong>${active}</strong>Active</div>
-    <div class="admin-stat"><strong>${types}</strong>Doc Types</div>`;
-}
-
-function handleDrop(e){
-  e.preventDefault(); document.getElementById('drop-zone').classList.remove('drag');
-  const file=e.dataTransfer.files[0]; if(file) processCSV(file);
-}
-function handleFileSelect(e){ const file=e.target.files[0]; if(file) processCSV(file); e.target.value=''; }
-
+function renderAdminStats(){const signed=DATA.filter(r=>r.SigningStatus==='Signed').length;const active=DATA.filter(r=>r.ContractLocation==='01 Active Contracts').length;const types=[...new Set(DATA.map(r=>r.DocType))].length;document.getElementById('admin-stats-row').innerHTML=`<div class="admin-stat"><strong>${DATA.length}</strong>Total</div><div class="admin-stat"><strong>${signed}</strong>Signed</div><div class="admin-stat"><strong>${active}</strong>Active</div><div class="admin-stat"><strong>${types}</strong>Doc Types</div>`;}
+function handleDrop(e){e.preventDefault();document.getElementById('drop-zone').classList.remove('drag');const file=e.dataTransfer.files[0];if(file)processCSV(file);}
+function handleFileSelect(e){const file=e.target.files[0];if(file)processCSV(file);e.target.value='';}
 function processCSV(file){
-  const status=document.getElementById('upload-status');
-  const preview=document.getElementById('csv-preview');
-  if(!file.name.endsWith('.csv')){ status.className='upload-status err'; status.textContent='⚠ Must be a .csv'; return; }
+  const status=document.getElementById('upload-status');const preview=document.getElementById('csv-preview');
+  if(!file.name.endsWith('.csv')){status.className='upload-status err';status.textContent='⚠ Must be a .csv';return;}
   const reader=new FileReader();
-  reader.onload=function(e){
-    try{
-      const rows=parseCSV(e.target.result);
-      if(!rows.length) throw new Error('No data rows');
-      DATA.length=0; rows.forEach(r=>DATA.push(r));
-      status.className='upload-status ok'; status.textContent=`✅ Loaded ${rows.length} records from ${file.name}`;
-      const cols=['ContractLocation','VendorFolder','Filename','DocType','SigningStatus'];
-      preview.innerHTML=`<table class="preview-table"><thead><tr>${cols.map(c=>`<th>${c}</th>`).join('')}</tr></thead><tbody>${rows.slice(0,5).map(r=>`<tr>${cols.map(c=>`<td>${e_(r[c]||'')}</td>`).join('')}</tr>`).join('')}</tbody></table><p style="font-size:11px;color:var(--text3);margin-top:4px">Showing first 5 of ${rows.length} rows</p>`;
-      renderAdminStats(); buildStats(); buildFilters(); go();
-    }catch(err){ status.className='upload-status err'; status.textContent='⚠ '+err.message; }
-  };
+  reader.onload=function(e){try{const rows=parseCSV(e.target.result);if(!rows.length)throw new Error('No data rows');DATA.length=0;rows.forEach(r=>DATA.push(r));status.className='upload-status ok';status.textContent=`✅ Loaded ${rows.length} records`;const cols=['ContractLocation','VendorFolder','Filename','DocType','SigningStatus'];preview.innerHTML=`<table class="preview-table"><thead><tr>${cols.map(c=>`<th>${c}</th>`).join('')}</tr></thead><tbody>${rows.slice(0,5).map(r=>`<tr>${cols.map(c=>`<td>${e_(r[c]||'')}</td>`).join('')}</tr>`).join('')}</tbody></table>`;renderAdminStats();buildStats();buildFilters();go();}catch(err){status.className='upload-status err';status.textContent='⚠ '+err.message;}};
   reader.readAsText(file);
 }
-
 function e_(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
-
-function parseCSV(text){
-  const lines=text.split(/\r?\n/); if(!lines.length) return [];
-  const headers=parseCSVRow(lines[0]); const rows=[];
-  for(let i=1;i<lines.length;i++){
-    const line=lines[i].trim(); if(!line) continue;
-    const vals=parseCSVRow(line); const obj={};
-    headers.forEach((h,j)=>obj[h]=vals[j]||''); rows.push(obj);
-  }
-  return rows;
-}
-function parseCSVRow(line){
-  const result=[];let cur='';let inQ=false;
-  for(let i=0;i<line.length;i++){
-    const c=line[i];
-    if(c==='"'){if(inQ&&line[i+1]==='"'){cur+='"';i++;}else{inQ=!inQ;}}
-    else if(c===','&&!inQ){result.push(cur);cur='';}
-    else cur+=c;
-  }
-  result.push(cur); return result;
-}
-
-function exportHTML(){
-  const dataJS='const DATA = '+JSON.stringify(DATA)+';';
-  const src=document.documentElement.outerHTML;
-  const updated=src.replace(/const DATA = \[.*?\];/s,dataJS);
-  const blob=new Blob([updated],{type:'text/html'});
-  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='index.html'; a.click();
-}
-function exportCSVAdmin(){
-  if(!DATA.length) return;
-  const cols=Object.keys(DATA[0]);
-  const rows=[cols.join(','),...DATA.map(r=>cols.map(v=>{const s=String(r[v]||'');return s.includes(',')||s.includes('"')?'"'+s.replace(/"/g,'""')+'"':s;}).join(','))];
-  const blob=new Blob([rows.join('\n')],{type:'text/csv'});
-  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='contract-catalog-fixed.csv'; a.click();
-}
+function parseCSV(text){const lines=text.split(/\r?\n/);if(!lines.length)return[];const headers=parseCSVRow(lines[0]);const rows=[];for(let i=1;i<lines.length;i++){const line=lines[i].trim();if(!line)continue;const vals=parseCSVRow(line);const obj={};headers.forEach((h,j)=>obj[h]=vals[j]||'');rows.push(obj);}return rows;}
+function parseCSVRow(line){const result=[];let cur='';let inQ=false;for(let i=0;i<line.length;i++){const c=line[i];if(c==='"'){if(inQ&&line[i+1]==='"'){cur+='"';i++;}else{inQ=!inQ;}}else if(c===','&&!inQ){result.push(cur);cur='';}else cur+=c;}result.push(cur);return result;}
+function exportHTML(){const dataJS='const DATA = '+JSON.stringify(DATA)+';';const src=document.documentElement.outerHTML;const updated=src.replace(/const DATA = \[.*?\];/s,dataJS);const blob=new Blob([updated],{type:'text/html'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='index.html';a.click();}
+function exportCSVAdmin(){if(!DATA.length)return;const cols=Object.keys(DATA[0]);const rows=[cols.join(','),...DATA.map(r=>cols.map(v=>{const s=String(r[v]||'');return s.includes(',')||s.includes('"')?'"'+s.replace(/"/g,'""')+'"':s;}).join(','))];const blob=new Blob([rows.join('\n')],{type:'text/csv'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='contract-catalog-fixed.csv';a.click();}
 </script>
 
 </body>

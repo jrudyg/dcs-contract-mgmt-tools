@@ -317,7 +317,9 @@ function badge(txt,cls){return`<span class="badge ${cls}">${e(txt)}</span>`}
 
 function spUrl(r){
   const base=(document.getElementById('sp-base').value||'').replace(/\/$/,'');
-  return base+'/'+[r.ContractLocation,r.VendorFolder,r.Filename].map(s=>encodeURIComponent(s||'')).join('/')+'?web=1';
+  const folderMap={'01 Active':'01 Active Contracts','02 Unsigned':'02 Unsigned Contracts'};
+  const loc=folderMap[r.ContractLocation]||r.ContractLocation;
+  return base+'/'+[loc,r.VendorFolder,r.Filename].map(s=>encodeURIComponent(s||'')).join('/')+'?web=1';
 }
 
 function toggleSettings(){

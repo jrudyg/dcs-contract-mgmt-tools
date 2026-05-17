@@ -296,7 +296,7 @@ const SUGGEST_MAP={
   'software':['EULA','MSA'],'license':['EULA'],'partner':['IPA']
 };
 
-let sf='CounterpartyName',sd=1,filtered=[],af={type:'All',status:'All',loc:'All'};
+let sf='CounterpartyName',sd=1,filtered=[],af={type:'All',status:'All',loc:'01 Active'};
 
 const today=new Date(); today.setHours(0,0,0,0);
 function daysTo(s){if(!s)return null;const d=new Date(s);if(isNaN(d))return null;return Math.round((d-today)/86400000)}

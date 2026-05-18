@@ -291,6 +291,24 @@ body.dark .contract-card.exp-amber{background:#2d2010}
 .lock-btn{position:fixed;bottom:16px;right:16px;background:rgba(245,158,11,.1);color:#f59e0b;border:1px solid rgba(245,158,11,.3);border-radius:20px;padding:6px 14px;font-size:12px;cursor:pointer;display:none;z-index:500}
 .lock-btn.show{display:block}
 
+.own-action-cell{display:flex;gap:3px;flex-wrap:wrap}
+.own-btn{display:inline-flex;align-items:center;padding:2px 7px;border-radius:var(--radius);border:1px solid var(--border);background:var(--surface);font-size:11px;color:var(--text2);cursor:pointer;white-space:nowrap;transition:all .15s}
+.own-btn.own-green:hover{border-color:#059669;color:#059669;background:#d1fae5}
+.own-btn.own-amber:hover{border-color:#d97706;color:#d97706;background:#fef3c7}
+.own-btn.own-gray:hover{border-color:var(--text3);color:var(--text3);background:var(--surface2)}
+.own-btn.own-blue:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-light)}
+#owner-drawer{position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:2px solid var(--blue);padding:16px 24px 20px;z-index:300;box-shadow:0 -4px 24px rgba(0,0,0,.15);display:none}
+#owner-drawer.show{display:block}
+.drawer-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.drawer-title{font-size:14px;font-weight:600;color:var(--text)}
+.drawer-close{width:28px;height:28px;border:none;background:none;cursor:pointer;font-size:18px;color:var(--text3);display:flex;align-items:center;justify-content:center;border-radius:var(--radius)}
+.drawer-close:hover{background:var(--surface2);color:var(--text)}
+.drawer-contract-info{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:8px 12px;font-size:12px;line-height:1.7;margin-bottom:10px}
+.drawer-form{margin-bottom:4px}
+.drawer-form label{font-size:12px;color:var(--text3);display:block;margin-bottom:4px;font-weight:500}
+.drawer-form select,.drawer-form input[type=text]{padding:7px 10px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;background:var(--surface);color:var(--text);outline:none;min-width:200px}
+.drawer-output{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:12px;font-family:monospace;font-size:12px;white-space:pre-wrap;max-height:220px;overflow-y:auto;line-height:1.6;color:var(--text2);margin-top:10px}
+
 </style>
 </head>
 <body>
@@ -878,52 +896,161 @@ document.addEventListener('keydown',ev=>{
   if(ev.key==='Escape'&&document.activeElement===document.getElementById('q')){clearSearch();document.getElementById('q').blur()}
 });
 
-// ── Request Builder ──
-let reqRecord = null;
-function reqFilter(){
-  const q=(document.getElementById('req-search').value||'').trim().toLowerCase();
-  const box=document.getElementById('req-results');
-  if(!q){box.style.display='none';return;}
-  const hits=DATA.filter(r=>(r.CounterpartyName||'').toLowerCase().includes(q)||(r.Filename||'').toLowerCase().includes(q)).slice(0,12);
-  if(!hits.length){box.style.display='none';return;}
-    box.innerHTML=hits.map(r=>`<div class="req-result-item" onclick="reqSelect(${DATA.indexOf(r)})"><span class="req-name">${e(r.CounterpartyName)}</span><span class="req-file">${e(r.Filename)}</span><span class="req-loc">${e(r.ContractLocation)}</span></div>`).join('');
-  box.style.display='block';
-}
-function reqSelect(idx){
-  reqRecord=DATA[idx];
-  document.getElementById('req-results').style.display='none';
-  document.getElementById('req-search').value=reqRecord.CounterpartyName+' — '+reqRecord.Filename;
-  const sel=document.getElementById('req-selected');
-  sel.style.display='block';
-    sel.innerHTML=`<div class="req-selected-card"><strong>${e(reqRecord.CounterpartyName)}</strong> &nbsp;<span class="badge ${DT_CLASS[reqRecord.DocType]||'b-other'}">${e(reqRecord.DocType)}</span><div style="margin-top:4px;color:var(--text2)">${e(reqRecord.Filename)}</div><div style="margin-top:2px;color:var(--text3);font-size:11px">${e(reqRecord.ContractLocation)} &nbsp;&middot;&nbsp; ${e(reqRecord.SigningStatus)}</div></div>`;
-}
-function buildClaudeReq(){
-  if(!reqRecord){alert('Please select a contract first.');return;}
-  const instr=(document.getElementById('req-instruction').value||'').trim();
-  if(!instr){alert('Please describe what you would like to do.');return;}
-  const f=['ContractLocation','VendorFolder','Filename','FilePath','DocType','SigningStatus','EffectiveDate','ExpirationDate','Notes'];
-  const details=f.map(k=>reqRecord[k]?`  ${k}: ${reqRecord[k]}`:null).filter(Boolean).join('\n');
-  const text=`Contract:\n${details}\n\nRequested action:\n${instr}`;
-  const out=document.getElementById('req-output');
-  out.textContent=text;out.style.display='block';
-  document.getElementById('copy-req-btn').style.display='inline-flex';
-  document.getElementById('clear-req-btn').style.display='inline-flex';
-}
-function copyClaudeReq(){
-  navigator.clipboard.writeText(document.getElementById('req-output').textContent).then(()=>{
-    const btn=document.getElementById('copy-req-btn');
-    btn.textContent='Copied!';setTimeout(()=>{btn.textContent='Copy to Clipboard';},1500);
+// ── Owner Tab ──
+let ownerFiltered=[], ownerAf={types:new Set(),status:'All',loc:'All'};
+
+function goOwner(){
+  const q=(document.getElementById('own-q').value||'').trim().toLowerCase();
+  const cb=document.getElementById('own-clear-btn');
+  if(cb)cb.className='clear-btn'+(q?' show':'');
+  ownerFiltered=DATA.filter(r=>{
+    if(ownerAf.types.size>0&&!ownerAf.types.has(r.DocType))return false;
+    if(ownerAf.status!=='All'&&r.SigningStatus!==ownerAf.status)return false;
+    if(ownerAf.loc!=='All'&&r.ContractLocation!==ownerAf.loc)return false;
+    if(q){const n=(r.CounterpartyName||'').toLowerCase(),fn=(r.Filename||'').toLowerCase();if(!n.includes(q)&&!fn.includes(q))return false;}
+    return true;
   });
+  ownerFiltered.sort((a,b)=>{const av=(a.CounterpartyName||'').toLowerCase(),bv=(b.CounterpartyName||'').toLowerCase();return av<bv?-1:av>bv?1:0;});
+  renderOwnerThead();
+  renderOwnerTable();
+  buildOwnerFilters();
 }
-function clearClaudeReq(){
-  reqRecord=null;
-  document.getElementById('req-search').value='';
-  document.getElementById('req-results').style.display='none';
-  document.getElementById('req-selected').style.display='none';
-  document.getElementById('req-instruction').value='';
-  document.getElementById('req-output').style.display='none';
-  document.getElementById('copy-req-btn').style.display='none';
-  document.getElementById('clear-req-btn').style.display='none';
+
+function clearOwnerSearch(){
+  document.getElementById('own-q').value='';
+  goOwner();
+}
+
+function buildOwnerFilters(){
+  const types=[...new Set(DATA.map(r=>r.DocType).filter(Boolean))].sort();
+  const locs=['All','01 Active Contracts','02 Unsigned Contracts','03 Archived Contracts'];
+  const statuses=['All','Signed','Unsigned'];
+  const locChips=locs.map(l=>'<button class="chip'+(ownerAf.loc===l?' active':'')+'" onclick="setOwnerF(\'loc\',\''+l+'\')">'+(l==='All'?'All':l.replace(/^\d+ /,''))+'</button>').join('');
+  const stChips=statuses.map(s=>'<button class="chip'+(ownerAf.status===s?' active':'')+'" onclick="setOwnerF(\'status\',\''+s+'\')">'+s+'</button>').join('');
+  const tChips=types.map(t=>'<button class="chip'+(ownerAf.types.has(t)?' active':'')+'" onclick="toggleOwnerType(\''+t+'\')">'+t+'</button>').join('');
+  document.getElementById('own-filter-bar').innerHTML=
+    '<div class="filter-group"><span class="filter-label">Location</span>'+locChips+'</div>'+
+    '<div class="filter-group"><span class="filter-label">Status</span>'+stChips+'</div>'+
+    '<div class="filter-group"><span class="filter-label">Type</span>'+tChips+'</div>';
+}
+
+function setOwnerF(k,v){ownerAf[k]=v;goOwner();}
+function toggleOwnerType(t){ownerAf.types.has(t)?ownerAf.types.delete(t):ownerAf.types.add(t);goOwner();}
+
+function renderOwnerThead(){
+  document.getElementById('own-thead-row').innerHTML=
+    '<th style="width:18%">Counterparty</th>'+
+    '<th style="width:7%">Type</th>'+
+    '<th style="width:8%">Status</th>'+
+    '<th style="width:10%">Location</th>'+
+    '<th style="width:25%">Filename</th>'+
+    '<th style="width:8%">Date</th>'+
+    '<th style="width:24%" class="no-sort">Actions</th>';
+}
+
+function renderOwnerTable(){
+  const tbody=document.getElementById('own-tbody');
+  const empty=document.getElementById('own-empty');
+  const meta=document.getElementById('own-meta');
+  const LIMIT=500;
+  meta.textContent='Showing '+Math.min(ownerFiltered.length,LIMIT).toLocaleString()+' of '+ownerFiltered.length.toLocaleString()+' \xb7 '+DATA.length.toLocaleString()+' total';
+  if(!ownerFiltered.length){tbody.innerHTML='';empty.style.display='block';return;}
+  empty.style.display='none';
+  tbody.innerHTML=ownerFiltered.slice(0,LIMIT).map(function(r,i){
+    const idx=DATA.indexOf(r);
+    const dtc=DT_CLASS[r.DocType]||'b-other';
+    const stc=r.SigningStatus==='Signed'?'b-signed':'b-unsigned';
+    const loc=r.ContractLocation;
+    const locB=loc==='01 Active Contracts'?badge('Active','b-active'):loc==='02 Unsigned Contracts'?badge('Unsigned','b-unsigned'):badge('Archived','b-pending');
+    const fn=r.Filename||'';
+    const trunc=fn.length>40?fn.slice(0,37)+'…':fn;
+    const date=(r.EffectiveDate||'').slice(0,10)||'—';
+    const isActive=loc==='01 Active Contracts';
+    const isUnsigned=loc==='02 Unsigned Contracts';
+    const isArchived=loc==='03 Archived Contracts';
+    const actBtns=
+      (!isActive?'<button class="own-btn own-green" onclick="ownerAction('+idx+',\'active\')">→ Active</button>':'')+
+      (!isUnsigned?'<button class="own-btn own-amber" onclick="ownerAction('+idx+',\'unsigned\')">→ Unsigned</button>':'')+
+      (!isArchived?'<button class="own-btn own-gray" onclick="ownerAction('+idx+',\'archived\')">→ Archived</button>':'')+
+      '<button class="own-btn own-blue" onclick="ownerAction('+idx+',\'reclassify\')">Reclassify</button>'+
+      '<button class="own-btn" onclick="ownerAction('+idx+',\'rename\')">Rename</button>';
+    return '<tr class="'+expiryClass(r)+'">'
+      +'<td title="'+e(r.CounterpartyName)+'">'+e(r.CounterpartyName||'—')+'</td>'
+      +'<td>'+badge(r.DocType||'—',dtc)+'</td>'
+      +'<td>'+badge(r.SigningStatus||'—',stc)+'</td>'
+      +'<td>'+locB+'</td>'
+      +'<td title="'+e(fn)+'" style="font-family:monospace;font-size:11px;color:var(--text3)"><div class="fn-cell">'+fileIcon(r.Extension)+e(trunc)+'</div></td>'
+      +'<td style="font-size:12px;color:var(--text3)">'+date+'</td>'
+      +'<td><div class="own-action-cell">'+actBtns+'</div></td>'
+      +'</tr>';
+  }).join('');
+}
+
+// ── Owner Drawer ──
+let ownerActionRecord=null, ownerActionType=null;
+
+function ownerAction(idx,action){
+  ownerActionRecord=DATA[idx];
+  ownerActionType=action;
+  const r=ownerActionRecord;
+  document.getElementById('drawer-output').style.display='none';
+  document.getElementById('drawer-copy-btn').style.display='none';
+  const titles={active:'Move to Active Contracts',unsigned:'Move to Unsigned Contracts',archived:'Move to Archived Contracts',reclassify:'Reclassify Document Type',rename:'Rename File'};
+  document.getElementById('drawer-title').textContent=titles[action]||action;
+  document.getElementById('drawer-contract-info').innerHTML=
+    '<strong>'+e(r.CounterpartyName)+'</strong> <span class="badge '+(DT_CLASS[r.DocType]||'b-other')+'">'+e(r.DocType)+'</span>'+
+    '<div style="margin-top:3px;color:var(--text2);font-size:11px;font-family:monospace">'+e(r.Filename)+'</div>'+
+    '<div style="margin-top:2px;color:var(--text3);font-size:11px">'+e(r.ContractLocation)+' \xb7 '+e(r.SigningStatus)+'</div>';
+  const form=document.getElementById('drawer-form');
+  if(action==='reclassify'){
+    const types=['NDA','MNDA','MSA','SOW','EULA','IPA','PSA','Subcontract','Amendment','Other'];
+    form.innerHTML='<label>New document type</label><select id="drawer-reclassify-val">'+types.map(t=>'<option value="'+t+'"'+(t===r.DocType?' selected':'')+'>'+t+'</option>').join('')+'</select>';
+  } else if(action==='rename'){
+    form.innerHTML='<label>New filename</label><input type="text" id="drawer-rename-val" value="'+e(r.Filename)+'" style="width:100%;max-width:500px"/>';
+  } else {
+    form.innerHTML='';
+  }
+  document.getElementById('owner-drawer').classList.add('show');
+}
+
+function closeOwnerDrawer(){
+  document.getElementById('owner-drawer').classList.remove('show');
+  ownerActionRecord=null;ownerActionType=null;
+}
+
+function buildOwnerReq(){
+  const r=ownerActionRecord;
+  if(!r)return;
+  const action=ownerActionType;
+  let instruction='';
+  if(action==='active'){
+    instruction='Move this contract from "'+r.ContractLocation+'" to "01 Active Contracts".\nUpdate CSV: ContractLocation → "01 Active Contracts", SigningStatus → "Signed".\nMove the file on disk from the current location to the 01 Active Contracts\\'+r.VendorFolder+'\\ folder.';
+  } else if(action==='unsigned'){
+    instruction='Move this contract from "'+r.ContractLocation+'" to "02 Unsigned Contracts".\nUpdate CSV: ContractLocation → "02 Unsigned Contracts", SigningStatus → "Unsigned".\nMove the file on disk from the current location to the 02 Unsigned Contracts\\'+r.VendorFolder+'\\ folder.';
+  } else if(action==='archived'){
+    instruction='Move this contract from "'+r.ContractLocation+'" to "03 Archived Contracts".\nUpdate CSV: ContractLocation → "03 Archived Contracts".\nMove the file on disk from the current location to the 03 Archived Contracts\\'+r.VendorFolder+'\\ folder.';
+  } else if(action==='reclassify'){
+    const el=document.getElementById('drawer-reclassify-val');
+    const newType=el?el.value:'';
+    instruction='Reclassify this contract\'s DocType from "'+r.DocType+'" to "'+newType+'".\nUpdate CSV: DocType → "'+newType+'".';
+  } else if(action==='rename'){
+    const el=document.getElementById('drawer-rename-val');
+    const newName=el?(el.value||'').trim():'';
+    instruction='Rename this contract file from "'+r.Filename+'" to "'+newName+'".\nUpdate CSV: Filename and FilePath fields accordingly.\nRename the actual file on disk at: '+r.ContractLocation+'\\'+r.FilePath;
+  }
+  const fields=['ContractLocation','VendorFolder','Filename','FilePath','DocType','SigningStatus','EffectiveDate','ExpirationDate','Notes'];
+  const details=fields.map(function(k){return r[k]?'  '+k+': '+r[k]:null;}).filter(Boolean).join('\n');
+  const text='Contract:\n'+details+'\n\nRequested action:\n'+instruction;
+  const out=document.getElementById('drawer-output');
+  out.textContent=text;out.style.display='block';
+  document.getElementById('drawer-copy-btn').style.display='inline-flex';
+}
+
+function copyOwnerReq(){
+  navigator.clipboard.writeText(document.getElementById('drawer-output').textContent).then(function(){
+    const btn=document.getElementById('drawer-copy-btn');
+    btn.textContent='Copied!';setTimeout(function(){btn.textContent='Copy to Clipboard';},1500);
+  });
 }
 
 // ── Init ──
@@ -963,59 +1090,84 @@ fetch(csvUrl)
   </div>
 </div>
 <div id="tab-admin">
-  <div class="admin-section">
-    <h3>📊 Catalog Status</h3>
-    <p>Current snapshot loaded in this session.</p>
-    <div id="admin-stats-row"></div>
+  <!-- Owner catalog view -->
+  <div class="search-bar" style="margin-bottom:12px">
+    <div class="search-row">
+      <div class="search-wrap">
+        <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path stroke-linecap="round" d="M21 21l-4.35-4.35"/></svg>
+        <input type="text" id="own-q" placeholder="Search counterparty or filename&hellip;" oninput="goOwner()" aria-label="Owner search"/>
+        <button class="clear-btn" id="own-clear-btn" onclick="clearOwnerSearch()" title="Clear">&times;</button>
+      </div>
+    </div>
+    <div class="filters" id="own-filter-bar"></div>
   </div>
-  <div class="admin-section">
-    <h3>📂 Import Updated CSV</h3>
-    <p>Drop a new <code>contract-catalog-fixed.csv</code> to reload instantly. Then export the HTML below to save.</p>
-    <div class="drop-zone" id="drop-zone" onclick="document.getElementById('csv-file-input').click()"
-         ondragover="event.preventDefault();this.classList.add('drag')"
-         ondragleave="this.classList.remove('drag')"
-         ondrop="handleDrop(event)">
-      <div class="icon">📄</div>
-      <p>Click or drag &amp; drop CSV here</p>
+
+  <div class="table-wrap">
+    <div class="table-meta">
+      <span id="own-meta"></span>
     </div>
-    <input type="file" id="csv-file-input" accept=".csv" style="display:none" onchange="handleFileSelect(event)"/>
-    <div class="upload-status" id="upload-status"></div>
-    <div id="csv-preview" style="overflow-x:auto;max-height:200px;overflow-y:auto;margin-top:8px"></div>
-  </div>
-  <div class="admin-section">
-    <h3>💾 Export</h3>
-    <p>Download to replace in your <code>Tools\</code> folder.</p>
-    <div class="admin-export-row">
-      <button class="btn btn-primary" onclick="exportHTML()">⬇ Download index.html</button>
-      <button class="btn btn-secondary" onclick="exportCSVAdmin()">⬇ Download CSV</button>
+    <div style="overflow-x:auto">
+      <table>
+        <thead><tr id="own-thead-row"></tr></thead>
+        <tbody id="own-tbody"></tbody>
+      </table>
     </div>
-  </div>
-  <div class="admin-section">
-    <h3>🤖 Request a Change</h3>
-    <p>Select a contract, describe what you want done, then copy the formatted request into Claude Code.</p>
-    <div style="margin-bottom:14px">
-      <label style="font-size:12px;color:var(--text3);display:block;margin-bottom:5px;font-weight:500">Search contract</label>
-      <input type="text" id="req-search" placeholder="Type counterparty or filename…" oninput="reqFilter()" autocomplete="off" style="width:100%"/>
-      <div id="req-results" class="req-results" style="display:none"></div>
-      <div id="req-selected" style="display:none"></div>
-    </div>
-    <div style="margin-bottom:14px">
-      <label style="font-size:12px;color:var(--text3);display:block;margin-bottom:5px;font-weight:500">What would you like to do?</label>
-      <textarea id="req-instruction" placeholder="e.g. Move to Unsigned, relabel as MNDA, update effective date to 2026-06-01…" rows="3" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;color:var(--text);background:var(--surface);outline:none;resize:vertical;font-family:inherit;line-height:1.5"></textarea>
-    </div>
-    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-      <button class="btn btn-primary" onclick="buildClaudeReq()" style="background:var(--blue);color:#fff;border:none">Build Request</button>
-      <button class="btn btn-secondary" id="copy-req-btn" onclick="copyClaudeReq()" style="display:none">Copy to Clipboard</button>
-      <button class="btn" id="clear-req-btn" onclick="clearClaudeReq()" style="display:none">Clear</button>
-    </div>
-    <div id="req-output" class="req-output" style="display:none"></div>
-  </div>
-  <div class="admin-section" style="border-color:rgba(239,68,68,.3)">
-    <h3 style="color:#ef4444">🔓 Session</h3>
-    <div class="admin-export-row">
-      <button class="btn btn-danger" onclick="adminLock()">Lock &amp; Exit</button>
+    <div id="own-empty" class="empty" style="display:none">
+      <h3>No contracts found</h3>
+      <p style="font-size:13px;color:var(--text4)">Try a different search term.</p>
     </div>
   </div>
+
+  <!-- Admin tools (collapsible) -->
+  <details style="margin-top:20px">
+    <summary style="cursor:pointer;font-size:13px;font-weight:600;color:var(--text2);padding:10px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-lg);list-style:none;display:flex;align-items:center;gap:6px">&#9881; Admin Tools</summary>
+    <div style="padding-top:12px;display:flex;flex-direction:column;gap:12px">
+      <div class="admin-section">
+        <h3>&#128202; Catalog Status</h3>
+        <p>Current snapshot loaded in this session.</p>
+        <div id="admin-stats-row"></div>
+      </div>
+      <div class="admin-section">
+        <h3>&#128194; Import Updated CSV</h3>
+        <p>Drop a new <code>contract-catalog.csv</code> to reload instantly.</p>
+        <div class="drop-zone" id="drop-zone" onclick="document.getElementById('csv-file-input').click()" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="handleDrop(event)">
+          <div class="icon">&#128196;</div>
+          <p>Click or drag &amp; drop CSV here</p>
+        </div>
+        <input type="file" id="csv-file-input" accept=".csv" style="display:none" onchange="handleFileSelect(event)"/>
+        <div class="upload-status" id="upload-status"></div>
+        <div id="csv-preview" style="overflow-x:auto;max-height:200px;overflow-y:auto;margin-top:8px"></div>
+      </div>
+      <div class="admin-section">
+        <h3>&#128190; Export</h3>
+        <p>Download to replace in your <code>Tools\</code> folder.</p>
+        <div class="admin-export-row">
+          <button class="btn btn-primary" onclick="exportHTML()">&#8595; Download index.html</button>
+          <button class="btn btn-secondary" onclick="exportCSVAdmin()">&#8595; Download CSV</button>
+        </div>
+      </div>
+      <div class="admin-section" style="border-color:rgba(239,68,68,.3)">
+        <h3 style="color:#ef4444">&#128275; Session</h3>
+        <div class="admin-export-row">
+          <button class="btn btn-danger" onclick="adminLock()">Lock &amp; Exit</button>
+        </div>
+      </div>
+    </div>
+  </details>
+</div>
+<div id="owner-drawer">
+  <div class="drawer-header">
+    <span class="drawer-title" id="drawer-title">Owner Action</span>
+    <button class="drawer-close" onclick="closeOwnerDrawer()">&times;</button>
+  </div>
+  <div class="drawer-contract-info" id="drawer-contract-info"></div>
+  <div class="drawer-form" id="drawer-form"></div>
+  <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:12px">
+    <button class="btn" style="background:var(--blue);color:#fff;border:none;padding:7px 16px" onclick="buildOwnerReq()">Build Request</button>
+    <button class="btn btn-secondary" id="drawer-copy-btn" onclick="copyOwnerReq()" style="display:none">Copy to Clipboard</button>
+    <button class="btn" onclick="closeOwnerDrawer()">Close</button>
+  </div>
+  <div id="drawer-output" class="drawer-output" style="display:none"></div>
 </div>
 <button class="lock-btn" id="lock-btn" onclick="adminLock()">🔒 Lock Owner</button>
 <script>
@@ -1032,7 +1184,7 @@ async function adminLogin(){
 function adminLock(){adminUnlocked=false;document.getElementById('admin-tab').classList.remove('unlocked');document.getElementById('admin-tab').textContent='🔒 Owner';document.getElementById('lock-btn').classList.remove('show');document.getElementById('tab-admin').classList.remove('visible');switchTab('catalog');}
 const _origSwitchTab=switchTab;
 switchTab=function(tab){
-  if(tab==='admin'){if(!adminUnlocked){showAdminLogin();return;}document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.tab==='admin'));['catalog','expiring','portfolio','coverage','activity'].forEach(t=>{const el=document.getElementById('tab-'+t);if(el)el.style.display='none';});document.getElementById('tab-admin').classList.add('visible');return;}
+  if(tab==='admin'){if(!adminUnlocked){showAdminLogin();return;}document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.tab==='admin'));['catalog','expiring','portfolio','coverage','activity'].forEach(t=>{const el=document.getElementById('tab-'+t);if(el)el.style.display='none';});document.getElementById('tab-admin').classList.add('visible');goOwner();return;}
   document.getElementById('tab-admin').classList.remove('visible');_origSwitchTab(tab);
 };
 function renderAdminStats(){const signed=DATA.filter(r=>r.SigningStatus==='Signed').length;const active=DATA.filter(r=>r.ContractLocation==='01 Active Contracts').length;const types=[...new Set(DATA.map(r=>r.DocType))].length;document.getElementById('admin-stats-row').innerHTML=`<div class="admin-stat"><strong>${DATA.length}</strong>Total</div><div class="admin-stat"><strong>${signed}</strong>Signed</div><div class="admin-stat"><strong>${active}</strong>Active</div><div class="admin-stat"><strong>${types}</strong>Doc Types</div>`;}

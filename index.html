@@ -972,7 +972,8 @@ function renderOwnerTable(){
       const rj=encodeURIComponent(JSON.stringify(r));
       const actBtns=
         '<a href="'+url+'" target="_blank" rel="noopener" class="own-btn" onclick="addRecent(JSON.parse(decodeURIComponent(\''+rj+'\')))">Open</a>'+
-        '<button class="own-btn own-blue" onclick="ownerAction('+idx+',\'manage\')">Manage</button>';
+        '<button class="own-btn own-blue" onclick="ownerAction('+idx+',\'manage\')">Manage</button>'+
+        (!isArchived?'<button class="own-btn own-gray" onclick="ownerAction('+idx+',\'archive\')">Archive</button>':'');
     return '<tr class="'+expiryClass(r)+'">'
       +'<td title="'+e(r.CounterpartyName)+'">'+e(r.CounterpartyName||'—')+'</td>'
       +'<td>'+badge(r.DocType||'—',dtc)+'</td>'
@@ -994,7 +995,7 @@ function ownerAction(idx,action){
   const r=ownerActionRecord;
   document.getElementById('drawer-output').style.display='none';
   document.getElementById('drawer-copy-btn').style.display='none';
-    const titles={scan:'Scan Document',reclassify:'Reclassify Document Type',rename:'Rename File',move:'Move Contract',manage:'Manage Contract'};
+    const titles={scan:'Scan Document',reclassify:'Reclassify Document Type',rename:'Rename File',move:'Move Contract',manage:'Manage Contract',archive:'Archive Contract'};
   document.getElementById('drawer-title').textContent=titles[action]||action;
   document.getElementById('drawer-contract-info').innerHTML=
     '<strong>'+e(r.CounterpartyName)+'</strong> <span class="badge '+(DT_CLASS[r.DocType]||'b-other')+'">'+e(r.DocType)+'</span>'+
@@ -1002,12 +1003,12 @@ function ownerAction(idx,action){
     '<div style="margin-top:2px;color:var(--text3);font-size:11px">'+e(r.ContractLocation)+' \xb7 '+e(r.SigningStatus)+'</div>';
   const form=document.getElementById('drawer-form');
   if(action==='manage'){
-    const types=['NDA','MNDA','MSA','SOW','EULA','IPA','PSA','Subcontract','Amendment','Other'];
+    const types=[...new Set(DATA.map(function(d){return d.DocType;}).filter(Boolean))].sort();
     const allLocs=[['01 Active Contracts','→ Active'],['02 Unsigned Contracts','→ Unsigned'],['03 Archived Contracts','→ Archived']];
     form.innerHTML=
       '<div style="display:flex;flex-direction:column;gap:14px">'+
       '<label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" id="m-scan" checked style="width:14px;height:14px;flex-shrink:0"> Scan document &mdash; check signatures, type &amp; filename</label>'+
-      '<div><label style="display:block;font-size:12px;color:var(--text3);margin-bottom:4px;font-weight:500">Reclassify DocType</label><select id="m-type">'+types.map(function(t){return'<option value="'+t+'"'+(t===r.DocType?' selected':'')+'>'+t+'</option>';}).join('')+'</select></div>'+
+      '<div><label style="display:block;font-size:12px;color:var(--text3);margin-bottom:4px;font-weight:500">Reclassify DocType</label><input list="m-type-list" id="m-type" value="'+e(r.DocType)+'" style="width:200px"/><datalist id="m-type-list">'+types.map(function(t){return'<option value="'+t+'">';}).join('')+'</datalist></div>'+
       '<div><label style="display:block;font-size:12px;color:var(--text3);margin-bottom:4px;font-weight:500">Rename filename</label><input type="text" id="m-name" value="'+e(r.Filename)+'" style="width:100%;max-width:500px"/></div>'+
       '<div><label style="display:block;font-size:12px;color:var(--text3);margin-bottom:4px;font-weight:500">Move to</label><select id="m-loc"><option value="">Keep current location</option>'+allLocs.filter(function(l){return l[0]!==r.ContractLocation;}).map(function(l){return'<option value="'+l[0]+'">'+l[1]+'</option>';}).join('')+'</select></div>'+
       '</div>';
@@ -1019,6 +1020,11 @@ function ownerAction(idx,action){
     } else if(action==='move'){
     const locs=[['01 Active Contracts','→ Active'],['02 Unsigned Contracts','→ Unsigned'],['03 Archived Contracts','→ Archived']].filter(function(l){return l[0]!==r.ContractLocation;});
     form.innerHTML='<label>Destination</label><select id="drawer-move-val">'+locs.map(function(l){return'<option value="'+l[0]+'">'+l[1]+'</option>';}).join('')+'</select>';
+    } else if(action==='archive'){
+    form.innerHTML='';
+    document.getElementById('owner-drawer').classList.add('show');
+    buildOwnerReq();
+    return;
     } else {
     form.innerHTML='';
     }
@@ -1035,7 +1041,9 @@ function buildOwnerReq(){
   if(!r)return;
   const action=ownerActionType;
   let instruction='';
-    if(action==='manage'){
+    if(action==='archive'){
+    instruction='Move this contract from "'+r.ContractLocation+'" to "03 Archived Contracts". Move the file on disk and update contract-catalog.csv: ContractLocation → "03 Archived Contracts", SigningStatus → "'+r.SigningStatus+'".';
+    } else if(action==='manage'){
     const scanEl=document.getElementById('m-scan');
     const typeEl=document.getElementById('m-type');
     const nameEl=document.getElementById('m-name');

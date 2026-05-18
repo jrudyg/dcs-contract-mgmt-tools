@@ -1,0 +1,723 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ARTM Ticket Dashboard</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f5f6f8;--surface:#fff;--surface2:#f9fafb;--border:#e2e5ea;--border2:#f1f3f5;
+  --text:#1a1d23;--text2:#374151;--text3:#6b7280;--text4:#9ca3af;
+  --blue:#2563eb;--blue-light:#eff6ff;--blue-border:#93c5fd;
+  --green:#059669;--green-bg:#d1fae5;--green-text:#065f46;
+  --amber:#d97706;--amber-bg:#fef3c7;--amber-text:#92400e;
+  --red:#dc2626;--red-bg:#fee2e2;--red-text:#991b1b;
+  --purple:#7c3aed;--purple-bg:#ede9fe;--purple-text:#5b21b6;
+  --radius:6px;--radius-lg:8px;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;font-size:14px;background:var(--bg);color:var(--text);min-height:100vh}
+a{color:inherit;text-decoration:none}
+button{font-family:inherit;cursor:pointer}
+body.dark{
+  --bg:#0f1117;--surface:#1a1d27;--surface2:#22263a;--border:#2a2d3a;--border2:#1f2230;
+  --text:#e2e5ea;--text2:#c9cdd6;--text3:#6b7280;--text4:#4b5563;
+  --blue-light:#1e3a5f;--blue-border:#3b82f6;
+  --green-bg:#064e3b;--green-text:#6ee7b7;
+  --amber-bg:#451a03;--amber-text:#fcd34d;
+  --red-bg:#450a0a;--red-text:#fca5a5;
+  --purple-bg:#2e1065;--purple-text:#c4b5fd;
+}
+/* Header */
+header{background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.logo{display:flex;align-items:center;gap:10px;font-size:15px;font-weight:600;color:var(--text)}
+.logo-icon{color:var(--blue)}
+.hdr-right{display:flex;align-items:center;gap:8px}
+.hdr-count{font-size:12px;color:var(--text3)}
+/* Buttons */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:var(--radius);border:1px solid var(--border);background:var(--surface);font-size:13px;color:var(--text2);cursor:pointer;transition:background .15s}
+.btn:hover{background:var(--surface2)}
+.btn-primary{background:var(--blue);color:#fff;border-color:var(--blue)}
+.btn-primary:hover{background:#1d4ed8}
+.btn-secondary{background:var(--surface2);color:var(--text2);border:1px solid var(--border)}
+.theme-btn{width:32px;height:32px;display:inline-flex;align-items:center;justify-content:center;border-radius:var(--radius);border:1px solid var(--border);background:var(--surface);cursor:pointer;font-size:15px}
+.theme-btn:hover{background:var(--surface2)}
+/* Tabs */
+.tabs{display:flex;gap:2px;padding:0 24px;background:var(--surface);border-bottom:1px solid var(--border);overflow-x:auto}
+.tab{padding:10px 16px;font-size:13px;font-weight:500;color:var(--text3);border:none;background:none;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:color .15s}
+.tab:hover{color:var(--text)}
+.tab.active{color:var(--blue);border-bottom-color:var(--blue)}
+/* Main */
+main{max-width:1400px;margin:0 auto;padding:20px 24px}
+/* Stats */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 18px}
+.stat-card.clickable{cursor:pointer;transition:border-color .15s}
+.stat-card.clickable:hover{border-color:var(--blue)}
+.stat-label{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
+.stat-value{font-size:24px;font-weight:600;color:var(--text)}
+.stat-value.green{color:var(--green)}
+.stat-value.amber{color:var(--amber)}
+.stat-value.red{color:var(--red)}
+.stat-sub{font-size:11px;color:var(--text4);margin-top:2px}
+/* Search */
+.search-bar{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 16px;margin-bottom:12px}
+.search-row{display:flex;gap:8px;margin-bottom:10px;align-items:center}
+.search-wrap{position:relative;flex:1}
+.search-wrap svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text4);pointer-events:none}
+input[type=text]{width:100%;padding:8px 32px 8px 34px;border:1px solid var(--border);border-radius:var(--radius);font-size:14px;color:var(--text);background:var(--surface);outline:none;transition:border-color .15s}
+input[type=text]:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+.clear-btn{position:absolute;right:8px;top:50%;transform:translateY(-50%);width:18px;height:18px;border-radius:50%;border:none;background:var(--text4);color:#fff;font-size:11px;display:none;align-items:center;justify-content:center;cursor:pointer}
+.clear-btn.show{display:flex}
+/* Filters */
+.filters{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.filter-group{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.filter-label{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.04em;white-space:nowrap}
+.chip{padding:3px 10px;border-radius:20px;border:1px solid var(--border);background:var(--surface);font-size:12px;color:var(--text2);cursor:pointer;transition:all .15s;white-space:nowrap}
+.chip:hover{border-color:var(--blue-border);background:var(--blue-light);color:var(--blue)}
+.chip.active{background:var(--blue);border-color:var(--blue);color:#fff}
+/* Table */
+.table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden}
+.table-meta{padding:9px 14px;font-size:12px;color:var(--text3);border-bottom:1px solid var(--border2);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.export-btn{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:var(--radius);border:1px solid var(--border);background:var(--surface);font-size:12px;color:var(--text2);cursor:pointer}
+.export-btn:hover{border-color:var(--blue);color:var(--blue)}
+table{width:100%;border-collapse:collapse;table-layout:fixed}
+th{padding:8px 10px;text-align:left;font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;background:var(--surface2);border-bottom:1px solid var(--border);cursor:pointer;user-select:none;white-space:nowrap}
+th.no-sort{cursor:default}
+td{padding:7px 10px;border-bottom:1px solid var(--border2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--surface2)}
+.sort-icon{opacity:.3;font-size:10px;margin-left:2px}
+.sort-icon.active{opacity:1;color:var(--blue)}
+/* Badges */
+.badge{display:inline-flex;align-items:center;padding:2px 7px;border-radius:4px;font-size:11px;font-weight:500;white-space:nowrap}
+.b-mnda{background:#d1fae5;color:#065f46}.b-nda{background:#dbeafe;color:#1e40af}
+.b-msa{background:#fef3c7;color:#92400e}.b-sow{background:#ede9fe;color:#5b21b6}
+.b-sub{background:#fee2e2;color:#991b1b}.b-co{background:#ffedd5;color:#9a3412}
+.b-nc{background:#fce7f3;color:#9d174d}.b-mpa{background:#d1fae5;color:#065f46}
+.b-other{background:#f3f4f6;color:#374151}
+body.dark .b-mnda{background:#064e3b;color:#6ee7b7}.dark .b-nda{background:#1e3a5f;color:#93c5fd}
+body.dark .b-msa{background:#451a03;color:#fcd34d}.dark .b-sow{background:#2e1065;color:#c4b5fd}
+body.dark .b-sub{background:#450a0a;color:#fca5a5}.dark .b-co{background:#431407;color:#fdba74}
+body.dark .b-nc{background:#500724;color:#f9a8d4}.dark .b-other{background:#1f2230;color:#9ca3af}
+/* Status badges */
+.s-new{background:#dbeafe;color:#1e40af}.s-initiate{background:#f0fdf4;color:#166534}
+.s-discovery{background:#fff7ed;color:#9a3412}.s-intake{background:#faf5ff;color:#6b21a8}
+.s-negotiate{background:#fef3c7;color:#92400e}.s-changes{background:#fee2e2;color:#991b1b}
+.s-sent{background:#e0f2fe;color:#0369a1}.s-processed{background:#fdf4ff;color:#86198f}
+.s-completed{background:#d1fae5;color:#065f46}
+body.dark .s-new{background:#1e3a5f;color:#93c5fd}.dark .s-completed{background:#064e3b;color:#6ee7b7}
+body.dark .s-sent{background:#0c4a6e;color:#7dd3fc}.dark .s-negotiate{background:#451a03;color:#fcd34d}
+body.dark .s-changes{background:#450a0a;color:#fca5a5}.dark .s-processed{background:#4a044e;color:#e879f9}
+/* Priority dots */
+.prio{width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:5px;flex-shrink:0}
+.prio-highest{background:#dc2626}.prio-high{background:#f97316}.prio-medium{background:#eab308}
+.prio-low{background:#22c55e}.prio-lowest{background:#6b7280}
+/* SLA indicator */
+.sla-ok{color:var(--green);font-weight:500}.sla-warn{color:var(--amber);font-weight:500}.sla-breach{color:var(--red);font-weight:500}
+/* Panel */
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;margin-bottom:16px}
+.panel-title{font-size:14px;font-weight:600;color:var(--text);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+/* Charts */
+.bar-chart{display:flex;align-items:flex-end;gap:6px;height:160px;padding-bottom:24px;position:relative;margin-top:8px}
+.bar-col{display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;min-width:32px}
+.bar{border-radius:3px 3px 0 0;background:var(--blue);transition:opacity .15s;min-height:2px;width:100%}
+.bar:hover{opacity:.8}
+.bar-label{font-size:10px;color:var(--text3);text-align:center;white-space:nowrap;overflow:hidden;max-width:100%}
+.bar-val{font-size:10px;color:var(--text3);font-weight:500}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+/* Pipeline */
+.pipeline{display:flex;gap:10px;overflow-x:auto;padding-bottom:8px;margin-bottom:16px}
+.pipeline-col{min-width:160px;flex:1}
+.pipeline-header{padding:6px 10px;border-radius:var(--radius) var(--radius) 0 0;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;display:flex;align-items:center;justify-content:space-between}
+.pipeline-body{background:var(--surface2);border:1px solid var(--border);border-top:none;border-radius:0 0 var(--radius) var(--radius);min-height:60px;padding:6px}
+.pcard{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:7px 9px;margin-bottom:5px;font-size:12px;cursor:default}
+.pcard:last-child{margin-bottom:0}
+.pcard-key{font-size:10px;color:var(--blue);font-weight:600;margin-bottom:2px}
+.pcard-sum{color:var(--text2);line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.pcard-meta{display:flex;gap:4px;margin-top:4px;align-items:center;flex-wrap:wrap}
+/* Horizontal bar */
+.hbar-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;font-size:13px}
+.hbar-label{width:120px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:0;color:var(--text2)}
+.hbar-track{flex:1;height:10px;background:var(--border);border-radius:5px;overflow:hidden}
+.hbar-fill{height:100%;border-radius:5px;background:var(--blue)}
+.hbar-val{width:40px;text-align:right;font-size:12px;color:var(--text3);flex-shrink:0}
+/* Empty */
+.empty{text-align:center;padding:48px;color:var(--text4)}
+.empty h3{font-size:15px;font-weight:500;color:var(--text3);margin-bottom:6px}
+/* Admin */
+.admin-section{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:24px;margin-bottom:16px}
+.admin-section h3{font-size:15px;font-weight:600;margin-bottom:6px}
+.admin-section p{font-size:13px;color:var(--text3);margin-bottom:16px;line-height:1.5}
+.drop-zone{border:2px dashed var(--border);border-radius:var(--radius);padding:32px;text-align:center;cursor:pointer;transition:border-color .15s}
+.drop-zone:hover,.drop-zone.drag{border-color:var(--blue)}
+.drop-zone p{margin:0;color:var(--text3);font-size:13px}
+.drop-zone .dz-icon{font-size:28px;margin-bottom:8px}
+.upload-status{margin-top:12px;font-size:13px;display:none}
+.upload-status.ok{color:var(--green);display:block}.upload-status.err{color:var(--red);display:block}
+.admin-export-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:4px}
+/* Footer */
+.footer-note{font-size:11px;color:var(--text4);text-align:right;margin-top:8px}
+/* Mobile */
+@media(max-width:767px){
+  main{padding:12px}
+  .stats-row{grid-template-columns:repeat(2,1fr);gap:8px}
+  .grid-2{grid-template-columns:1fr}
+  .pipeline{flex-direction:column}
+  table{font-size:12px}
+}
+@media print{header,.tabs,.search-bar,.hdr-right{display:none!important}main{padding:0}body{background:#fff}}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">
+    <svg class="logo-icon" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+    ARTM Ticket Dashboard
+  </div>
+  <div class="hdr-right">
+    <span class="hdr-count" id="hdr-count"></span>
+    <button class="theme-btn" onclick="toggleDark()" id="theme-btn" title="Toggle dark mode">🌙</button>
+  </div>
+</header>
+<nav class="tabs" id="tabs-nav">
+  <button class="tab active" onclick="switchTab('queue')" data-tab="queue">📋 Queue</button>
+  <button class="tab" onclick="switchTab('performance')" data-tab="performance">📊 Performance</button>
+  <button class="tab" onclick="switchTab('volume')" data-tab="volume">📈 Volume</button>
+  <button class="tab" onclick="switchTab('tickets')" data-tab="tickets">🎫 Tickets</button>
+  <button class="tab" onclick="switchTab('admin')" data-tab="admin">⚙️ Admin</button>
+</nav>
+<main>
+  <!-- QUEUE TAB -->
+  <div id="tab-queue">
+    <div class="stats-row" id="q-stats"></div>
+    <div class="panel">
+      <div class="panel-title" style="justify-content:space-between">
+        <span>📌 Open Ticket Pipeline</span>
+        <div class="filters" id="q-filters" style="margin:0"></div>
+      </div>
+      <div class="pipeline" id="pipeline"></div>
+    </div>
+  </div>
+  <!-- PERFORMANCE TAB -->
+  <div id="tab-performance" style="display:none">
+    <div class="stats-row" id="p-stats"></div>
+    <div class="grid-2">
+      <div class="panel">
+        <div class="panel-title">🏁 Completed Tickets by Assignee</div>
+        <div class="bar-chart" id="p-assign-chart"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-title">⏱ Avg Resolution Time (hrs) by Assignee</div>
+        <div class="bar-chart" id="p-cycle-chart"></div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">🚨 SLA First-Response Breaches (Open Tickets)</div>
+      <div id="p-sla-table"></div>
+    </div>
+  </div>
+  <!-- VOLUME TAB -->
+  <div id="tab-volume" style="display:none">
+    <div class="stats-row" id="v-stats"></div>
+    <div class="grid-2">
+      <div class="panel">
+        <div class="panel-title">📅 Monthly Ticket Volume</div>
+        <div class="bar-chart" id="v-monthly-chart"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-title">📂 By Contract Type</div>
+        <div id="v-type-chart" style="margin-top:8px"></div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">👤 Top Reporters</div>
+      <div id="v-reporter-chart" style="margin-top:8px"></div>
+    </div>
+  </div>
+  <!-- TICKETS TAB -->
+  <div id="tab-tickets" style="display:none">
+    <div class="search-bar">
+      <div class="search-row">
+        <div class="search-wrap">
+          <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path stroke-linecap="round" d="M21 21l-4.35-4.35"/></svg>
+          <input type="text" id="t-q" placeholder="Search tickets…" oninput="onSearch()">
+          <button class="clear-btn" id="t-clear" onclick="clearSearch()">✕</button>
+        </div>
+        <button class="export-btn" onclick="exportCSV()">↓ CSV</button>
+      </div>
+      <div class="filters" id="t-filters"></div>
+    </div>
+    <div class="table-wrap">
+      <div class="table-meta">
+        <span id="t-meta"></span>
+      </div>
+      <div style="overflow-x:auto">
+        <table>
+          <thead><tr id="t-thead"></tr></thead>
+          <tbody id="t-tbody"></tbody>
+        </table>
+      </div>
+      <div id="t-empty" class="empty" style="display:none"><h3>No tickets found</h3><p style="font-size:13px;color:var(--text4)">Try a different search or filter.</p></div>
+    </div>
+    <p class="footer-note" id="footer-date"></p>
+  </div>
+  <!-- ADMIN TAB -->
+  <div id="tab-admin" style="display:none">
+    <div class="admin-section">
+      <h3>📊 Dataset Status</h3>
+      <p id="admin-source-note">Auto-loaded from <code>ARTM-tickets-05.18.26.csv</code> on startup.</p>
+      <div id="admin-stats" style="display:flex;gap:8px;flex-wrap:wrap"></div>
+    </div>
+    <div class="admin-section">
+      <h3>📂 Import Updated CSV</h3>
+      <p>Drop a new <code>ARTM-tickets-*.csv</code> export to reload the dashboard instantly. All tabs update automatically.</p>
+      <div class="drop-zone" id="drop-zone" onclick="document.getElementById('csv-input').click()" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="handleDrop(event)">
+        <div class="dz-icon">📄</div>
+        <p>Click or drag &amp; drop CSV here</p>
+      </div>
+      <input type="file" id="csv-input" accept=".csv" style="display:none" onchange="handleFile(event)">
+      <div class="upload-status" id="upload-status"></div>
+    </div>
+    <div class="admin-section">
+      <h3>💾 Export</h3>
+      <p>Download a self-contained copy of this dashboard with the current dataset baked in.</p>
+      <div class="admin-export-row">
+        <button class="btn btn-primary" onclick="exportHTML()">↓ Download Dashboard HTML</button>
+        <button class="btn btn-secondary" onclick="exportCSV()">↓ Download CSV</button>
+      </div>
+    </div>
+  </div>
+</main>
+<script>
+
+// ── DATA (populated at runtime from CSV) ──
+let DATA = [];
+
+// ── Constants ──
+const STATUS_ORDER=['New','Initiate','Discovery','Intake Approval','Negotiate','Negotiation','Changes Requested','Sent','Processed For Signatures','Processed for Approval/Signature','Completed'];
+const OPEN_STATUSES=new Set(STATUS_ORDER.filter(s=>s!=='Completed'));
+const TYPE_CLASS={MNDA:'b-mnda',NDA:'b-nda',MSA:'b-msa',MPA:'b-mnda',SOW:'b-sow',Subcontract:'b-sub','Change Order':'b-co','Non-Compete':'b-nc',Other:'b-other'};
+const STATUS_CLASS={
+  'New':'s-new','Initiate':'s-initiate','Discovery':'s-discovery','Intake Approval':'s-intake',
+  'Negotiate':'s-negotiate','Negotiation':'s-negotiate','Changes Requested':'s-changes',
+  'Sent':'s-sent','Processed For Signatures':'s-processed','Processed for Approval/Signature':'s-processed',
+  'Completed':'s-completed'
+};
+const PRIO_CLASS={Highest:'prio-highest',High:'prio-high',Medium:'prio-medium',Low:'prio-low',Lowest:'prio-lowest'};
+const GENERATED=new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
+
+// ── State ──
+let currentTab='queue';
+let tf={assignee:'All',status:'All',type:'All',priority:'All'};
+let tq='',tsf='created',tsd=-1,tFiltered=[];
+let qAssignee='All';
+
+// ── Helpers ──
+function e(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function badge(t,cls){return`<span class="badge ${cls||'b-other'}">${e(t)}</span>`}
+function typeBadge(t){return badge(t,TYPE_CLASS[t]||'b-other')}
+function statusBadge(s){return badge(s,STATUS_CLASS[s]||'b-other')}
+function prioDot(p){return`<span class="prio ${PRIO_CLASS[p]||'prio-low'}"></span>`}
+function fmtDate(iso){if(!iso)return'—';const d=new Date(iso);return d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'2-digit'})}
+function fmtHrs(h){if(h===null||h===undefined)return'—';const abs=Math.abs(h);const hh=Math.floor(abs);const mm=Math.round((abs-hh)*60);return(h<0?'-':'')+hh+'h'+(mm>0?mm+'m':'')}
+function daysSince(iso){if(!iso)return null;return Math.round((new Date()-new Date(iso))/86400000)}
+function avg(arr){if(!arr.length)return 0;return arr.reduce((a,b)=>a+b,0)/arr.length}
+
+// ── Dark mode ──
+function toggleDark(){const dark=document.body.classList.toggle('dark');document.getElementById('theme-btn').textContent=dark?'☀️':'🌙';try{localStorage.setItem('artm-theme',dark?'dark':'light')}catch(e){}}
+(function(){let s;try{s=localStorage.getItem('artm-theme')}catch(e){}const p=window.matchMedia&&window.matchMedia('(prefers-color-scheme:dark)').matches;if(s==='dark'||(s===null&&p)){document.body.classList.add('dark');document.getElementById('theme-btn').textContent='☀️'}})();
+
+// ── Tab system ──
+function switchTab(tab){
+  currentTab=tab;
+  document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
+  ['queue','performance','volume','tickets','admin'].forEach(t=>{const el=document.getElementById('tab-'+t);if(el)el.style.display=t===tab?'block':'none';});
+  if(tab==='queue')renderQueue();
+  if(tab==='performance')renderPerformance();
+  if(tab==='volume')renderVolume();
+  if(tab==='tickets')renderTickets();
+  if(tab==='admin')renderAdmin();
+}
+
+// ══════════════════════════════════════════════
+// QUEUE TAB
+// ══════════════════════════════════════════════
+function renderQueue(){
+  const open=DATA.filter(r=>OPEN_STATUSES.has(r.status));
+  const byA=qAssignee==='All'?open:open.filter(r=>r.assignee===qAssignee);
+  const slaBreach=open.filter(r=>r.firstResponseHrs!==null&&r.firstResponseHrs<0);
+  const ages=open.map(r=>daysSince(r.created)).filter(x=>x!==null);
+  const oldest=ages.length?Math.max(...ages):0;
+  // Stats
+  document.getElementById('q-stats').innerHTML=[
+    ['Open Tickets',open.length,'',''],
+    ['SLA Breaches',slaBreach.length,slaBreach.length>0?'red':'green',''],
+    ['Avg Age (days)',ages.length?Math.round(avg(ages)):0,'',''],
+    ['Oldest (days)',oldest,oldest>14?'amber':'','']
+  ].map(([l,v,c])=>`<div class="stat-card"><div class="stat-label">${l}</div><div class="stat-value ${c}">${v}</div></div>`).join('');
+  // Assignee chips
+  const assignees=['All',...new Set(open.map(r=>r.assignee).filter(Boolean)).values()].sort((a,b)=>a==='All'?-1:b==='All'?1:a.localeCompare(b));
+  document.getElementById('q-filters').innerHTML=assignees.map(a=>`<button class="chip${qAssignee===a?' active':''}" onclick="qAssignee='${e(a)}';renderQueue()">${e(a)}</button>`).join('');
+  // Pipeline
+  const stages=STATUS_ORDER.filter(s=>s!=='Completed');
+  let html='';
+  stages.forEach(stage=>{
+    const cards=byA.filter(r=>r.status===stage||
+      (stage==='Negotiate'&&(r.status==='Negotiate'||r.status==='Negotiation'))||
+      (stage==='Processed For Signatures'&&(r.status==='Processed For Signatures'||r.status==='Processed for Approval/Signature'))
+    );
+    // de-dup for combined stages
+    if(stage==='Negotiation'||stage==='Processed for Approval/Signature')return;
+    const label=stage==='Negotiate'?'Negotiate':stage==='Processed For Signatures'?'Processed':stage;
+    const cls=STATUS_CLASS[stage]||'b-other';
+    html+=`<div class="pipeline-col">
+      <div class="pipeline-header ${cls}">${e(label)}<span>${cards.length}</span></div>
+      <div class="pipeline-body">${cards.length?cards.map(r=>{
+        const age=daysSince(r.created);
+        const breach=r.firstResponseHrs!==null&&r.firstResponseHrs<0;
+        return`<div class="pcard" style="border-left:3px solid ${breach?'var(--red)':'var(--border)'}">
+          <div class="pcard-key">${e(r.key)}</div>
+          <div class="pcard-sum" title="${e(r.summary)}">${e(r.summary)}</div>
+          <div class="pcard-meta">${typeBadge(r.type)}<span style="font-size:10px;color:var(--text4);margin-left:auto">${age!==null?age+'d':''}</span></div>
+        </div>`;
+      }).join(''):'<div style="font-size:11px;color:var(--text4);padding:4px">—</div>'}</div>
+    </div>`;
+  });
+  document.getElementById('pipeline').innerHTML=html;
+}
+
+// ══════════════════════════════════════════════
+// PERFORMANCE TAB
+// ══════════════════════════════════════════════
+function renderPerformance(){
+  const now=new Date();
+  const thisMonth=DATA.filter(r=>r.status==='Completed'&&r.updated&&new Date(r.updated).getMonth()===now.getMonth()&&new Date(r.updated).getFullYear()===now.getFullYear());
+  const completed=DATA.filter(r=>r.status==='Completed');
+  const withRes=completed.filter(r=>r.resolutionHrs!==null);
+  const avgRes=withRes.length?avg(withRes.map(r=>r.resolutionHrs)):null;
+  const open=DATA.filter(r=>OPEN_STATUSES.has(r.status));
+  const breaches=open.filter(r=>r.firstResponseHrs!==null&&r.firstResponseHrs<0);
+  const slaRate=open.filter(r=>r.firstResponseHrs!==null).length>0?
+    Math.round((1-breaches.length/open.filter(r=>r.firstResponseHrs!==null).length)*100):null;
+  document.getElementById('p-stats').innerHTML=[
+    ['Completed (This Mo)',thisMonth.length,'green',''],
+    ['Total Completed',completed.length,'',''],
+    ['Avg Resolution',avgRes!==null?fmtHrs(avgRes):'—','',''],
+    ['SLA Compliance',slaRate!==null?slaRate+'%':'—',slaRate!==null?(slaRate>=80?'green':'red'):'','']
+  ].map(([l,v,c])=>`<div class="stat-card"><div class="stat-label">${l}</div><div class="stat-value ${c}">${v}</div></div>`).join('');
+  // Completed by assignee
+  const assignees=[...new Set(DATA.map(r=>r.assignee).filter(Boolean))].sort();
+  const compByA=assignees.map(a=>{return{a,n:completed.filter(r=>r.assignee===a).length}});
+  const maxComp=Math.max(...compByA.map(x=>x.n),1);
+  document.getElementById('p-assign-chart').innerHTML=compByA.map(x=>{
+    const pct=Math.round((x.n/maxComp)*140);
+    return`<div class="bar-col"><div class="bar-val">${x.n}</div><div class="bar" style="height:${pct}px"></div><div class="bar-label">${e(x.a.split(' ')[0])}</div></div>`;
+  }).join('');
+  // Avg resolution by assignee
+  const cycleByA=assignees.map(a=>{const hrs=completed.filter(r=>r.assignee===a&&r.resolutionHrs!==null).map(r=>r.resolutionHrs);return{a,v:hrs.length?Math.round(avg(hrs)):null}});
+  const maxCyc=Math.max(...cycleByA.map(x=>x.v||0),1);
+  document.getElementById('p-cycle-chart').innerHTML=cycleByA.map(x=>{
+    if(x.v===null)return`<div class="bar-col"><div class="bar-val">—</div><div class="bar" style="height:2px;opacity:.3"></div><div class="bar-label">${e(x.a.split(' ')[0])}</div></div>`;
+    const pct=Math.round((x.v/maxCyc)*140);
+    const col=x.v>200?'var(--red)':x.v>100?'var(--amber)':'var(--green)';
+    return`<div class="bar-col"><div class="bar-val">${x.v}h</div><div class="bar" style="height:${pct}px;background:${col}"></div><div class="bar-label">${e(x.a.split(' ')[0])}</div></div>`;
+  }).join('');
+  // SLA breaches table
+  if(!breaches.length){document.getElementById('p-sla-table').innerHTML='<div class="empty" style="padding:24px"><h3>✅ No open SLA breaches</h3></div>';return;}
+  const sorted=breaches.sort((a,b)=>a.firstResponseHrs-b.firstResponseHrs);
+  document.getElementById('p-sla-table').innerHTML=`<div style="overflow-x:auto"><table>
+    <thead><tr><th class="no-sort">Ticket</th><th class="no-sort">Summary</th><th class="no-sort">Assignee</th><th class="no-sort">Status</th><th class="no-sort">Type</th><th class="no-sort">Overdue</th><th class="no-sort">Created</th></tr></thead>
+    <tbody>${sorted.slice(0,50).map(r=>`<tr>
+      <td style="color:var(--blue);font-weight:500">${e(r.key)}</td>
+      <td style="max-width:280px;overflow:hidden;text-overflow:ellipsis" title="${e(r.summary)}">${e(r.summary)}</td>
+      <td>${e(r.assignee)}</td>
+      <td>${statusBadge(r.status)}</td>
+      <td>${typeBadge(r.type)}</td>
+      <td class="sla-breach">${fmtHrs(Math.abs(r.firstResponseHrs))}</td>
+      <td>${fmtDate(r.created)}</td>
+    </tr>`).join('')}</tbody>
+  </table></div>`;
+}
+
+// ══════════════════════════════════════════════
+// VOLUME TAB
+// ══════════════════════════════════════════════
+function renderVolume(){
+  // Monthly buckets
+  const months={};
+  DATA.forEach(r=>{
+    if(!r.created)return;
+    const d=new Date(r.created);
+    const k=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+    months[k]=(months[k]||0)+1;
+  });
+  const mKeys=Object.keys(months).sort();
+  const mVals=mKeys.map(k=>months[k]);
+  const maxM=Math.max(...mVals,1);
+  const now=new Date();
+  const thisM=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  const lastM=now.getMonth()===0?`${now.getFullYear()-1}-12`:`${now.getFullYear()}-${String(now.getMonth()).padStart(2,'0')}`;
+  document.getElementById('v-stats').innerHTML=[
+    ['Total Tickets',DATA.length,'',''],
+    ['This Month',months[thisM]||0,'',''],
+    ['Last Month',months[lastM]||0,'',''],
+    ['Contract Types',[...new Set(DATA.map(r=>r.type))].length,'','']
+  ].map(([l,v,c])=>`<div class="stat-card"><div class="stat-label">${l}</div><div class="stat-value ${c}">${v}</div></div>`).join('');
+  // Monthly chart
+  const recentKeys=mKeys.slice(-12);
+  const recentVals=recentKeys.map(k=>months[k]);
+  const maxR=Math.max(...recentVals,1);
+  document.getElementById('v-monthly-chart').innerHTML=recentKeys.map((k,i)=>{
+    const pct=Math.round((recentVals[i]/maxR)*140);
+    const label=k.slice(5)+'/'+k.slice(2,4);
+    return`<div class="bar-col"><div class="bar-val">${recentVals[i]}</div><div class="bar" style="height:${pct}px"></div><div class="bar-label">${label}</div></div>`;
+  }).join('');
+  // Type breakdown
+  const typeCounts={};
+  DATA.forEach(r=>{typeCounts[r.type]=(typeCounts[r.type]||0)+1});
+  const typesSorted=Object.entries(typeCounts).sort((a,b)=>b[1]-a[1]);
+  const maxT=typesSorted[0]?typesSorted[0][1]:1;
+  document.getElementById('v-type-chart').innerHTML=typesSorted.map(([t,n])=>`
+    <div class="hbar-row">
+      <div class="hbar-label">${typeBadge(t)}</div>
+      <div class="hbar-track"><div class="hbar-fill" style="width:${Math.round(n/maxT*100)}%"></div></div>
+      <div class="hbar-val">${n}</div>
+    </div>`).join('');
+  // Reporter breakdown
+  const repCounts={};
+  DATA.forEach(r=>{if(r.reporter)repCounts[r.reporter]=(repCounts[r.reporter]||0)+1});
+  const repSorted=Object.entries(repCounts).sort((a,b)=>b[1]-a[1]).slice(0,12);
+  const maxRep=repSorted[0]?repSorted[0][1]:1;
+  document.getElementById('v-reporter-chart').innerHTML=repSorted.map(([rep,n])=>`
+    <div class="hbar-row">
+      <div class="hbar-label" title="${e(rep)}">${e(rep.split(' ').map((w,i)=>i===0?w:w[0]+'.').join(' '))}</div>
+      <div class="hbar-track"><div class="hbar-fill" style="width:${Math.round(n/maxRep*100)}%;background:var(--purple)"></div></div>
+      <div class="hbar-val">${n}</div>
+    </div>`).join('');
+}
+
+// ══════════════════════════════════════════════
+// TICKETS TAB
+// ══════════════════════════════════════════════
+function buildTicketFilters(){
+  const assignees=[...new Set(DATA.map(r=>r.assignee).filter(Boolean))].sort();
+  const statuses=[...new Set(DATA.map(r=>r.status).filter(Boolean))].sort((a,b)=>STATUS_ORDER.indexOf(a)-STATUS_ORDER.indexOf(b));
+  const types=[...new Set(DATA.map(r=>r.type).filter(Boolean))].sort();
+  let h=`<div class="filter-group"><span class="filter-label">Assignee</span>`;
+  h+=`<button class="chip${tf.assignee==='All'?' active':''}" onclick="setTF('assignee','All')">All</button>`;
+  h+=assignees.map(a=>`<button class="chip${tf.assignee===a?' active':''}" onclick="setTF('assignee','${e(a)}')">${e(a.split(' ')[0])}</button>`).join('');
+  h+='</div>';
+  h+=`<div class="filter-group" style="margin-top:6px"><span class="filter-label">Status</span>`;
+  h+=`<button class="chip${tf.status==='All'?' active':''}" onclick="setTF('status','All')">All</button>`;
+  h+=statuses.map(s=>`<button class="chip${tf.status===s?' active':''}" onclick="setTF('status','${e(s)}')">${e(s)}</button>`).join('');
+  h+='</div>';
+  h+=`<div class="filter-group" style="margin-top:6px"><span class="filter-label">Type</span>`;
+  h+=`<button class="chip${tf.type==='All'?' active':''}" onclick="setTF('type','All')">All</button>`;
+  h+=types.map(t=>`<button class="chip${tf.type===t?' active':''}" onclick="setTF('type','${e(t)}')">${e(t)}</button>`).join('');
+  h+='</div>';
+  document.getElementById('t-filters').innerHTML=h;
+}
+function setTF(k,v){tf[k]=v;buildTicketFilters();goTickets();}
+function onSearch(){const q=document.getElementById('t-q').value;document.getElementById('t-clear').classList.toggle('show',q.length>0);goTickets();}
+function clearSearch(){document.getElementById('t-q').value='';document.getElementById('t-clear').classList.remove('show');goTickets();}
+function sortTickets(f){tsf===f?tsd*=-1:(tsf=f,tsd=1);goTickets();}
+
+function renderTickets(){buildTicketFilters();goTickets();document.getElementById('footer-date').textContent='Snapshot: '+GENERATED;}
+
+function goTickets(){
+  const q=(document.getElementById('t-q')||{}).value||'';
+  const ql=q.trim().toLowerCase();
+  tFiltered=DATA.filter(r=>{
+    if(tf.assignee!=='All'&&r.assignee!==tf.assignee)return false;
+    if(tf.status!=='All'&&r.status!==tf.status)return false;
+    if(tf.type!=='All'&&r.type!==tf.type)return false;
+    if(ql&&!r.summary.toLowerCase().includes(ql)&&!r.key.toLowerCase().includes(ql)&&!r.reporter.toLowerCase().includes(ql))return false;
+    return true;
+  });
+  tFiltered.sort((a,b)=>{
+    let av=a[tsf]||'',bv=b[tsf]||'';
+    if(typeof av==='number'||typeof bv==='number'){av=av||0;bv=bv||0;return tsd*(av-bv);}
+    return tsd*av.toString().localeCompare(bv.toString());
+  });
+  const cols=[
+    {l:'Key',f:'key',w:'7%'},{l:'Summary',f:'summary',w:'30%'},
+    {l:'Assignee',f:'assignee',w:'10%'},{l:'Reporter',f:'reporter',w:'10%'},
+    {l:'Type',f:'type',w:'9%'},{l:'Status',f:'status',w:'12%'},
+    {l:'Created',f:'created',w:'8%'},{l:'SLA (First Resp)',f:'firstResponseHrs',w:'8%'},
+    {l:'Resolution',f:'resolutionHrs',w:'6%'}
+  ];
+  document.getElementById('t-thead').innerHTML=cols.map(c=>
+    `<th style="width:${c.w}" onclick="sortTickets('${c.f}')">${c.l}<span class="sort-icon ${tsf===c.f?'active':''}">${tsf===c.f?(tsd===1?'▲':'▼'):'↕'}</span></th>`
+  ).join('');
+  const meta=document.getElementById('t-meta');
+  meta.textContent=`Showing ${tFiltered.length.toLocaleString()} of ${DATA.length.toLocaleString()} tickets`;
+  const empty=document.getElementById('t-empty');
+  if(!tFiltered.length){document.getElementById('t-tbody').innerHTML='';empty.style.display='block';return;}
+  empty.style.display='none';
+  document.getElementById('t-tbody').innerHTML=tFiltered.slice(0,500).map(r=>{
+    const slaCls=r.firstResponseHrs===null?'':r.firstResponseHrs<0?'sla-breach':r.firstResponseHrs<4?'sla-warn':'sla-ok';
+    return`<tr>
+      <td style="color:var(--blue);font-weight:500">${e(r.key)}</td>
+      <td title="${e(r.summary)}">${e(r.summary)}</td>
+      <td>${e(r.assignee)}</td>
+      <td style="color:var(--text3)">${e(r.reporter)}</td>
+      <td>${typeBadge(r.type)}</td>
+      <td>${statusBadge(r.status)}</td>
+      <td style="color:var(--text3)">${fmtDate(r.created)}</td>
+      <td class="${slaCls}">${r.firstResponseHrs!==null?fmtHrs(r.firstResponseHrs):'—'}</td>
+      <td style="color:var(--text3)">${r.resolutionHrs!==null?fmtHrs(r.resolutionHrs):'—'}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════════
+// ADMIN TAB
+// ══════════════════════════════════════════════
+function renderAdmin(){
+  const completed=DATA.filter(r=>r.status==='Completed').length;
+  const open=DATA.filter(r=>OPEN_STATUSES.has(r.status)).length;
+  const types=[...new Set(DATA.map(r=>r.type))].length;
+  document.getElementById('admin-stats').innerHTML=[
+    ['Total',DATA.length],['Open',open],['Completed',completed],['Types',types]
+  ].map(([l,v])=>`<div style="display:inline-block;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:10px 16px;font-size:13px"><strong style="display:block;font-size:20px;font-weight:700;color:var(--blue)">${v}</strong>${l}</div>`).join('');
+}
+
+// ══════════════════════════════════════════════
+// CSV IMPORT
+// ══════════════════════════════════════════════
+function handleDrop(e){e.preventDefault();document.getElementById('drop-zone').classList.remove('drag');const f=e.dataTransfer.files[0];if(f)processCSVFile(f);}
+function handleFile(e){const f=e.target.files[0];if(f)processCSVFile(f);e.target.value='';}
+function processCSVFile(file){
+  const st=document.getElementById('upload-status');
+  if(!file.name.endsWith('.csv')){st.className='upload-status err';st.textContent='⚠ Must be a .csv file';return;}
+  const reader=new FileReader();
+  reader.onload=function(ev){
+    try{
+      const rows=parseCSV(ev.target.result);
+      if(!rows.length)throw new Error('No data rows found');
+      const mapped=rows.map(mapRow).filter(Boolean);
+      if(!mapped.length)throw new Error('No recognizable ARTM rows — check column headers');
+      DATA.length=0;mapped.forEach(r=>DATA.push(r));
+      st.className='upload-status ok';st.textContent=`✅ Loaded ${mapped.length} tickets from ${file.name}`;
+      document.getElementById('hdr-count').textContent=DATA.length+' tickets';
+      // re-render current tab
+      if(currentTab==='queue')renderQueue();
+      else if(currentTab==='performance')renderPerformance();
+      else if(currentTab==='volume')renderVolume();
+      else if(currentTab==='tickets'){buildTicketFilters();goTickets();}
+      else renderAdmin();
+    }catch(err){st.className='upload-status err';st.textContent='⚠ '+err.message;}
+  };
+  reader.readAsText(file);
+}
+
+function parseCSV(text){
+  const lines=text.split(/\r?\n/);
+  if(!lines.length)return[];
+  const headers=parseRow(lines[0]);
+  const rows=[];
+  for(let i=1;i<lines.length;i++){const line=lines[i].trim();if(!line)continue;const vals=parseRow(line);const o={};headers.forEach((h,j)=>o[h]=vals[j]||'');rows.push(o);}
+  return rows;
+}
+function parseRow(line){
+  const result=[];let cur='';let inQ=false;
+  for(let i=0;i<line.length;i++){const c=line[i];if(c==='"'){if(inQ&&line[i+1]==='"'){cur+='"';i++;}else inQ=!inQ;}else if(c===','&&!inQ){result.push(cur);cur='';}else cur+=c;}
+  result.push(cur);return result;
+}
+function mapRow(r){
+  const key=r['Issue key']||'';if(!key)return null;
+  return{
+    key,
+    summary:(r['Summary']||'').trim(),
+    assignee:r['Assignee']||'',
+    reporter:r['Reporter']||'',
+    priority:r['Priority']||'',
+    status:r['Status']||'',
+    resolution:r['Resolution']||'',
+    created:parseDateStr(r['Created']||''),
+    updated:parseDateStr(r['Updated']||''),
+    due:parseDateStr(r['Due date']||''),
+    firstResponse:parseDateStr(r['Custom field ([CHART] Date of First Response)']||''),
+    targetCompletion:parseDateStr(r['Custom field (Target Completion Date)']||''),
+    resolutionHrs:parseHrs(r['Custom field (Time to resolution)']||''),
+    firstResponseHrs:parseHrs(r['Custom field (Time to first response)']||''),
+    type:inferType(r['Summary']||'')
+  };
+}
+const MON={Jan:1,Feb:2,Mar:3,Apr:4,May:5,Jun:6,Jul:7,Aug:8,Sep:9,Oct:10,Nov:11,Dec:12};
+function parseDateStr(s){
+  if(!s)return'';
+  const m=s.trim().match(/^(\d+)\/([A-Za-z]+)\/(\d+)\s+(\d+):(\d+)\s*(AM|PM)?$/i);
+  if(!m){const d=new Date(s);return isNaN(d)?'':d.toISOString().slice(0,16);}
+  let [,d,mo,y,h,mi,ap]=m;
+  const mon=MON[mo.slice(0,3)];if(!mon)return'';
+  h=parseInt(h);mi=parseInt(mi);y=parseInt(y);if(y<100)y+=2000;
+  if(ap&&ap.toUpperCase()==='PM'&&h!==12)h+=12;
+  if(ap&&ap.toUpperCase()==='AM'&&h===12)h=0;
+  return`${y}-${String(mon).padStart(2,'0')}-${String(parseInt(d)).padStart(2,'0')}T${String(h).padStart(2,'0')}:${String(mi).padStart(2,'0')}:00`;
+}
+function parseHrs(s){
+  if(!s)return null;s=s.trim();
+  const neg=s.startsWith('-');s=s.replace(/^-/,'');
+  const parts=s.split(':');
+  try{const h=parseInt(parts[0])+(parts[1]?parseInt(parts[1])/60:0);return Math.round((neg?-h:h)*100)/100;}catch{return null;}
+}
+function inferType(sum){
+  const s=sum.toUpperCase();
+  if(s.includes('MNDA'))return'MNDA';if(s.includes('NDA'))return'NDA';
+  if(s.includes('MSA'))return'MSA';if(s.includes('MPA'))return'MPA';
+  if(s.includes('SOW'))return'SOW';
+  if(s.includes('SUBCONTRACT')||s.includes('SUB AGREEMENT')||s.includes('MASTER SUB'))return'Subcontract';
+  if(s.includes('CHANGE ORDER'))return'Change Order';
+  if(s.includes('NON-COMPETE')||s.includes('NON COMPETE'))return'Non-Compete';
+  if(s.includes('MEWS'))return'MEWS';if(s.includes('PROPOSAL'))return'Proposal';
+  if(s.includes('REDLINE')||s.includes('T&C'))return'T&C Redline';
+  if(s.includes('AMENDMENT'))return'Amendment';if(s.includes('RETAINER'))return'Retainer';
+  if(s.includes('VENDOR SETUP'))return'Vendor Form';return'Other';
+}
+
+// ══════════════════════════════════════════════
+// EXPORT
+// ══════════════════════════════════════════════
+function exportHTML(){
+  const dataJS='let DATA = '+JSON.stringify(DATA)+';';
+  const src=document.documentElement.outerHTML;
+  const updated=src.replace(/let DATA = \[.*?\];/s,dataJS);
+  const blob=new Blob([updated],{type:'text/html'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='artm-dashboard.html';a.click();
+}
+function exportCSV(){
+  if(!DATA.length)return;
+  const cols=['key','summary','assignee','reporter','priority','status','resolution','created','updated','type','firstResponseHrs','resolutionHrs'];
+  const rows=[cols.join(','),...tFiltered.length&&currentTab==='tickets'?tFiltered.map(csvRow):DATA.map(csvRow)];
+  const blob=new Blob([rows.join('\n')],{type:'text/csv'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='artm-export.csv';a.click();
+}
+function csvRow(r){return['key','summary','assignee','reporter','priority','status','resolution','created','updated','type','firstResponseHrs','resolutionHrs'].map(k=>{const v=String(r[k]===null||r[k]===undefined?'':r[k]);return v.includes(',')||v.includes('"')?'"'+v.replace(/"/g,'""')+'"':v;}).join(',');}
+
+// ── Init ──
+const CSV_FILENAME='ARTM-tickets-05.18.26.csv';
+async function initDashboard(){
+  const st=document.getElementById('upload-status');
+  try{
+    const resp=await fetch(CSV_FILENAME);
+    if(!resp.ok)throw new Error('HTTP '+resp.status);
+    const text=await resp.text();
+    const rows=parseCSV(text);
+    const mapped=rows.map(mapRow).filter(Boolean);
+    if(!mapped.length)throw new Error('No recognizable rows in '+CSV_FILENAME);
+    DATA.length=0;mapped.forEach(function(r){DATA.push(r);});
+    document.getElementById('hdr-count').textContent=DATA.length+' tickets';
+    renderQueue();
+  }catch(err){
+    document.getElementById('hdr-count').textContent='No data loaded';
+    switchTab('admin');
+    st.className='upload-status err';
+    st.style.display='block';
+    st.textContent='Could not auto-load '+CSV_FILENAME+' ('+err.message+'). Drop the CSV file below to import manually.';
+  }
+}
+if(DATA.length){document.getElementById('hdr-count').textContent=DATA.length+' tickets';renderQueue();}
+else{initDashboard();}
+</script></body></html>

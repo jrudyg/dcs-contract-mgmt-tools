@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -14,6 +14,7 @@
   --amber:#d97706;--amber-bg:#fef3c7;--amber-text:#92400e;
   --red:#dc2626;--red-bg:#fee2e2;--red-text:#991b1b;
   --purple:#7c3aed;--purple-bg:#ede9fe;--purple-text:#5b21b6;
+  --teal:#0d9488;--teal-bg:#ccfbf1;--teal-text:#134e4a;
   --radius:6px;--radius-lg:8px;
 }
 body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;font-size:14px;background:var(--bg);color:var(--text);min-height:100vh}
@@ -27,14 +28,13 @@ body.dark{
   --amber-bg:#451a03;--amber-text:#fcd34d;
   --red-bg:#450a0a;--red-text:#fca5a5;
   --purple-bg:#2e1065;--purple-text:#c4b5fd;
+  --teal-bg:#022c22;--teal-text:#5eead4;
 }
-/* Header */
 header{background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
-.logo{display:flex;align-items:center;gap:10px;font-size:15px;font-weight:600;color:var(--text)}
+.logo{display:flex;align-items:center;gap:10px;font-size:15px;font-weight:600}
 .logo-icon{color:var(--blue)}
 .hdr-right{display:flex;align-items:center;gap:8px}
 .hdr-count{font-size:12px;color:var(--text3)}
-/* Buttons */
 .btn{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:var(--radius);border:1px solid var(--border);background:var(--surface);font-size:13px;color:var(--text2);cursor:pointer;transition:background .15s}
 .btn:hover{background:var(--surface2)}
 .btn-primary{background:var(--blue);color:#fff;border-color:var(--blue)}
@@ -42,25 +42,19 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:0
 .btn-secondary{background:var(--surface2);color:var(--text2);border:1px solid var(--border)}
 .theme-btn{width:32px;height:32px;display:inline-flex;align-items:center;justify-content:center;border-radius:var(--radius);border:1px solid var(--border);background:var(--surface);cursor:pointer;font-size:15px}
 .theme-btn:hover{background:var(--surface2)}
-/* Tabs */
 .tabs{display:flex;gap:2px;padding:0 24px;background:var(--surface);border-bottom:1px solid var(--border);overflow-x:auto}
 .tab{padding:10px 16px;font-size:13px;font-weight:500;color:var(--text3);border:none;background:none;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:color .15s}
 .tab:hover{color:var(--text)}
 .tab.active{color:var(--blue);border-bottom-color:var(--blue)}
-/* Main */
 main{max-width:1400px;margin:0 auto;padding:20px 24px}
-/* Stats */
 .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
 .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 18px}
 .stat-card.clickable{cursor:pointer;transition:border-color .15s}
 .stat-card.clickable:hover{border-color:var(--blue)}
 .stat-label{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
 .stat-value{font-size:24px;font-weight:600;color:var(--text)}
-.stat-value.green{color:var(--green)}
-.stat-value.amber{color:var(--amber)}
-.stat-value.red{color:var(--red)}
-.stat-sub{font-size:11px;color:var(--text4);margin-top:2px}
-/* Search */
+.stat-value.green{color:var(--green)}.stat-value.amber{color:var(--amber)}.stat-value.red{color:var(--red)}
+.stat-sub{font-size:11px;color:var(--text4);margin-top:3px}
 .search-bar{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 16px;margin-bottom:12px}
 .search-row{display:flex;gap:8px;margin-bottom:10px;align-items:center}
 .search-wrap{position:relative;flex:1}
@@ -69,14 +63,12 @@ input[type=text]{width:100%;padding:8px 32px 8px 34px;border:1px solid var(--bor
 input[type=text]:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.1)}
 .clear-btn{position:absolute;right:8px;top:50%;transform:translateY(-50%);width:18px;height:18px;border-radius:50%;border:none;background:var(--text4);color:#fff;font-size:11px;display:none;align-items:center;justify-content:center;cursor:pointer}
 .clear-btn.show{display:flex}
-/* Filters */
-.filters{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
-.filter-group{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.filters{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.filter-group{display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-bottom:4px}
 .filter-label{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.04em;white-space:nowrap}
 .chip{padding:3px 10px;border-radius:20px;border:1px solid var(--border);background:var(--surface);font-size:12px;color:var(--text2);cursor:pointer;transition:all .15s;white-space:nowrap}
 .chip:hover{border-color:var(--blue-border);background:var(--blue-light);color:var(--blue)}
 .chip.active{background:var(--blue);border-color:var(--blue);color:#fff}
-/* Table */
 .table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden}
 .table-meta{padding:9px 14px;font-size:12px;color:var(--text3);border-bottom:1px solid var(--border2);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
 .export-btn{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:var(--radius);border:1px solid var(--border);background:var(--surface);font-size:12px;color:var(--text2);cursor:pointer}
@@ -89,61 +81,71 @@ tr:last-child td{border-bottom:none}
 tr:hover td{background:var(--surface2)}
 .sort-icon{opacity:.3;font-size:10px;margin-left:2px}
 .sort-icon.active{opacity:1;color:var(--blue)}
-/* Badges */
 .badge{display:inline-flex;align-items:center;padding:2px 7px;border-radius:4px;font-size:11px;font-weight:500;white-space:nowrap}
 .b-mnda{background:#d1fae5;color:#065f46}.b-nda{background:#dbeafe;color:#1e40af}
 .b-msa{background:#fef3c7;color:#92400e}.b-sow{background:#ede9fe;color:#5b21b6}
 .b-sub{background:#fee2e2;color:#991b1b}.b-co{background:#ffedd5;color:#9a3412}
-.b-nc{background:#fce7f3;color:#9d174d}.b-mpa{background:#d1fae5;color:#065f46}
-.b-other{background:#f3f4f6;color:#374151}
-body.dark .b-mnda{background:#064e3b;color:#6ee7b7}.dark .b-nda{background:#1e3a5f;color:#93c5fd}
-body.dark .b-msa{background:#451a03;color:#fcd34d}.dark .b-sow{background:#2e1065;color:#c4b5fd}
-body.dark .b-sub{background:#450a0a;color:#fca5a5}.dark .b-co{background:#431407;color:#fdba74}
-body.dark .b-nc{background:#500724;color:#f9a8d4}.dark .b-other{background:#1f2230;color:#9ca3af}
-/* Status badges */
+.b-nc{background:#fce7f3;color:#9d174d}.b-other{background:#f3f4f6;color:#374151}
+body.dark .b-mnda{background:#064e3b;color:#6ee7b7}body.dark .b-nda{background:#1e3a5f;color:#93c5fd}
+body.dark .b-msa{background:#451a03;color:#fcd34d}body.dark .b-sow{background:#2e1065;color:#c4b5fd}
+body.dark .b-sub{background:#450a0a;color:#fca5a5}body.dark .b-co{background:#431407;color:#fdba74}
+body.dark .b-nc{background:#500724;color:#f9a8d4}body.dark .b-other{background:#1f2230;color:#9ca3af}
 .s-new{background:#dbeafe;color:#1e40af}.s-initiate{background:#f0fdf4;color:#166534}
 .s-discovery{background:#fff7ed;color:#9a3412}.s-intake{background:#faf5ff;color:#6b21a8}
 .s-negotiate{background:#fef3c7;color:#92400e}.s-changes{background:#fee2e2;color:#991b1b}
 .s-sent{background:#e0f2fe;color:#0369a1}.s-processed{background:#fdf4ff;color:#86198f}
 .s-completed{background:#d1fae5;color:#065f46}
-body.dark .s-new{background:#1e3a5f;color:#93c5fd}.dark .s-completed{background:#064e3b;color:#6ee7b7}
-body.dark .s-sent{background:#0c4a6e;color:#7dd3fc}.dark .s-negotiate{background:#451a03;color:#fcd34d}
-body.dark .s-changes{background:#450a0a;color:#fca5a5}.dark .s-processed{background:#4a044e;color:#e879f9}
-/* Priority dots */
+body.dark .s-new{background:#1e3a5f;color:#93c5fd}body.dark .s-completed{background:#064e3b;color:#6ee7b7}
+body.dark .s-sent{background:#0c4a6e;color:#7dd3fc}body.dark .s-negotiate{background:#451a03;color:#fcd34d}
+body.dark .s-changes{background:#450a0a;color:#fca5a5}body.dark .s-processed{background:#4a044e;color:#e879f9}
 .prio{width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:5px;flex-shrink:0}
 .prio-highest{background:#dc2626}.prio-high{background:#f97316}.prio-medium{background:#eab308}
 .prio-low{background:#22c55e}.prio-lowest{background:#6b7280}
-/* SLA indicator */
 .sla-ok{color:var(--green);font-weight:500}.sla-warn{color:var(--amber);font-weight:500}.sla-breach{color:var(--red);font-weight:500}
-/* Panel */
 .panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;margin-bottom:16px}
-.panel-title{font-size:14px;font-weight:600;color:var(--text);margin-bottom:14px;display:flex;align-items:center;gap:8px}
-/* Charts */
+.panel-title{font-size:14px;font-weight:600;color:var(--text);margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.panel-subtitle{font-size:11px;color:var(--text4);font-weight:400;margin-top:2px}
+.caveat{font-size:11px;color:var(--amber);background:var(--amber-bg);border:1px solid var(--amber);border-radius:4px;padding:3px 8px;display:inline-block;margin-bottom:10px}
 .bar-chart{display:flex;align-items:flex-end;gap:6px;height:160px;padding-bottom:24px;position:relative;margin-top:8px}
-.bar-col{display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;min-width:32px}
+.bar-col{display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;min-width:28px}
 .bar{border-radius:3px 3px 0 0;background:var(--blue);transition:opacity .15s;min-height:2px;width:100%}
-.bar:hover{opacity:.8}
+.bar:hover{opacity:.8;cursor:default}
 .bar-label{font-size:10px;color:var(--text3);text-align:center;white-space:nowrap;overflow:hidden;max-width:100%}
 .bar-val{font-size:10px;color:var(--text3);font-weight:500}
 .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
-/* Pipeline */
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:16px}
+.hbar-row{display:flex;align-items:center;gap:8px;margin-bottom:7px;font-size:13px}
+.hbar-label{width:130px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:0;color:var(--text2);font-size:12px}
+.hbar-track{flex:1;height:10px;background:var(--border);border-radius:5px;overflow:hidden}
+.hbar-fill{height:100%;border-radius:5px;transition:width .3s}
+.hbar-val{width:48px;text-align:right;font-size:12px;color:var(--text3);flex-shrink:0}
 .pipeline{display:flex;gap:10px;overflow-x:auto;padding-bottom:8px;margin-bottom:16px}
 .pipeline-col{min-width:160px;flex:1}
 .pipeline-header{padding:6px 10px;border-radius:var(--radius) var(--radius) 0 0;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;display:flex;align-items:center;justify-content:space-between}
 .pipeline-body{background:var(--surface2);border:1px solid var(--border);border-top:none;border-radius:0 0 var(--radius) var(--radius);min-height:60px;padding:6px}
-.pcard{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:7px 9px;margin-bottom:5px;font-size:12px;cursor:default}
+.pcard{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:7px 9px;margin-bottom:5px;font-size:12px}
 .pcard:last-child{margin-bottom:0}
 .pcard-key{font-size:10px;color:var(--blue);font-weight:600;margin-bottom:2px}
 .pcard-sum{color:var(--text2);line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .pcard-meta{display:flex;gap:4px;margin-top:4px;align-items:center;flex-wrap:wrap}
-/* Horizontal bar */
-.hbar-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;font-size:13px}
-.hbar-label{width:120px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:0;color:var(--text2)}
-.hbar-track{flex:1;height:10px;background:var(--border);border-radius:5px;overflow:hidden}
-.hbar-fill{height:100%;border-radius:5px;background:var(--blue)}
-.hbar-val{width:40px;text-align:right;font-size:12px;color:var(--text3);flex-shrink:0}
+/* Aging heatmap */
+.aging-grid{display:grid;grid-template-columns:140px repeat(5,1fr);gap:1px;background:var(--border);border-radius:var(--radius);overflow:hidden;font-size:12px}
+.aging-cell{background:var(--surface);padding:8px 10px;display:flex;align-items:center;justify-content:center;text-align:center}
+.aging-header{background:var(--surface2);font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.04em}
+.aging-label{background:var(--surface2);justify-content:flex-start;font-weight:500;color:var(--text2)}
+.heat-0{background:var(--surface)}
+.heat-1{background:#dbeafe;color:#1e40af}
+.heat-2{background:#fef3c7;color:#92400e}
+.heat-3{background:#fee2e2;color:#991b1b}
+.heat-4{background:#dc2626;color:#fff;font-weight:700}
+/* Cycle time dots */
+.dot-row{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+.dot{width:10px;height:10px;border-radius:50%;display:inline-block;flex-shrink:0}
+.dot-fast{background:var(--green)}.dot-ok{background:var(--blue)}.dot-slow{background:var(--amber)}.dot-very-slow{background:var(--red)}
+.legend-row{display:flex;gap:12px;font-size:11px;color:var(--text3);margin-top:8px;flex-wrap:wrap}
+.legend-item{display:flex;align-items:center;gap:5px}
 /* Empty */
-.empty{text-align:center;padding:48px;color:var(--text4)}
+.empty{text-align:center;padding:40px;color:var(--text4)}
 .empty h3{font-size:15px;font-weight:500;color:var(--text3);margin-bottom:6px}
 /* Admin */
 .admin-section{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:24px;margin-bottom:16px}
@@ -156,16 +158,8 @@ body.dark .s-changes{background:#450a0a;color:#fca5a5}.dark .s-processed{backgro
 .upload-status{margin-top:12px;font-size:13px;display:none}
 .upload-status.ok{color:var(--green);display:block}.upload-status.err{color:var(--red);display:block}
 .admin-export-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:4px}
-/* Footer */
 .footer-note{font-size:11px;color:var(--text4);text-align:right;margin-top:8px}
-/* Mobile */
-@media(max-width:767px){
-  main{padding:12px}
-  .stats-row{grid-template-columns:repeat(2,1fr);gap:8px}
-  .grid-2{grid-template-columns:1fr}
-  .pipeline{flex-direction:column}
-  table{font-size:12px}
-}
+@media(max-width:767px){main{padding:12px}.stats-row{grid-template-columns:repeat(2,1fr);gap:8px}.grid-2,.grid-3{grid-template-columns:1fr}.pipeline{flex-direction:column}.aging-grid{font-size:11px}}
 @media print{header,.tabs,.search-bar,.hdr-right{display:none!important}main{padding:0}body{background:#fff}}
 </style>
 </head>
@@ -184,40 +178,43 @@ body.dark .s-changes{background:#450a0a;color:#fca5a5}.dark .s-processed{backgro
   <button class="tab active" onclick="switchTab('queue')" data-tab="queue">📋 Queue</button>
   <button class="tab" onclick="switchTab('performance')" data-tab="performance">📊 Performance</button>
   <button class="tab" onclick="switchTab('volume')" data-tab="volume">📈 Volume</button>
+  <button class="tab" onclick="switchTab('reports')" data-tab="reports">🔬 Reports</button>
   <button class="tab" onclick="switchTab('tickets')" data-tab="tickets">🎫 Tickets</button>
   <button class="tab" onclick="switchTab('admin')" data-tab="admin">⚙️ Admin</button>
 </nav>
 <main>
-  <!-- QUEUE TAB -->
+  <!-- QUEUE -->
   <div id="tab-queue">
     <div class="stats-row" id="q-stats"></div>
     <div class="panel">
-      <div class="panel-title" style="justify-content:space-between">
+      <div class="panel-title">
         <span>📌 Open Ticket Pipeline</span>
         <div class="filters" id="q-filters" style="margin:0"></div>
       </div>
       <div class="pipeline" id="pipeline"></div>
     </div>
   </div>
-  <!-- PERFORMANCE TAB -->
+  <!-- PERFORMANCE -->
   <div id="tab-performance" style="display:none">
     <div class="stats-row" id="p-stats"></div>
     <div class="grid-2">
       <div class="panel">
-        <div class="panel-title">🏁 Completed Tickets by Assignee</div>
+        <div class="panel-title">🏁 Completed by Assignee</div>
         <div class="bar-chart" id="p-assign-chart"></div>
       </div>
       <div class="panel">
-        <div class="panel-title">⏱ Avg Resolution Time (hrs) by Assignee</div>
+        <div class="panel-title">⏱ Avg Resolution (hrs) by Assignee
+          <span class="caveat" style="font-size:10px">proxy: Updated date</span>
+        </div>
         <div class="bar-chart" id="p-cycle-chart"></div>
       </div>
     </div>
     <div class="panel">
-      <div class="panel-title">🚨 SLA First-Response Breaches (Open Tickets)</div>
+      <div class="panel-title">🚨 Open SLA First-Response Breaches</div>
       <div id="p-sla-table"></div>
     </div>
   </div>
-  <!-- VOLUME TAB -->
+  <!-- VOLUME -->
   <div id="tab-volume" style="display:none">
     <div class="stats-row" id="v-stats"></div>
     <div class="grid-2">
@@ -231,11 +228,75 @@ body.dark .s-changes{background:#450a0a;color:#fca5a5}.dark .s-processed{backgro
       </div>
     </div>
     <div class="panel">
-      <div class="panel-title">👤 Top Reporters</div>
+      <div class="panel-title">👤 Top Reporters (All Time)</div>
       <div id="v-reporter-chart" style="margin-top:8px"></div>
     </div>
   </div>
-  <!-- TICKETS TAB -->
+  <!-- REPORTS -->
+  <div id="tab-reports" style="display:none">
+    <!-- R1: Throughput by Type over Time -->
+    <div class="panel">
+      <div class="panel-title">
+        <div>
+          📊 R1 — Throughput Trend by Contract Type
+          <div class="panel-subtitle">Monthly ticket volume stacked by type · last 10 months · 100% data coverage</div>
+        </div>
+        <div id="r1-type-filter" class="filters" style="margin:0"></div>
+      </div>
+      <div class="bar-chart" id="r1-chart" style="height:200px"></div>
+      <div class="legend-row" id="r1-legend"></div>
+    </div>
+    <!-- R2: Assignee Workload -->
+    <div class="panel">
+      <div class="panel-title">
+        <div>
+          👤 R2 — Assignee Workload Balance
+          <div class="panel-subtitle">Open vs. completed split · queue depth · avg ticket age per assignee</div>
+        </div>
+      </div>
+      <div id="r2-content"></div>
+    </div>
+    <!-- R3: First Response Performance -->
+    <div class="panel">
+      <div class="panel-title">
+        <div>
+          ⚡ R3 — First Response Performance
+          <div class="panel-subtitle">Actual hours: ticket created → first response logged · 60% data coverage (98/164 tickets)</div>
+        </div>
+      </div>
+      <div class="caveat">⚠ 40% of tickets have no first-response timestamp in Jira — log "Date of First Response" on all tickets to improve coverage</div>
+      <div class="grid-2" id="r3-content"></div>
+    </div>
+    <!-- R4: Status Aging Heatmap -->
+    <div class="panel">
+      <div class="panel-title">
+        <div>
+          🌡 R4 — Status Aging Heatmap (Open Tickets)
+          <div class="panel-subtitle">How many open tickets have sat in each stage · by age bucket · today's snapshot</div>
+        </div>
+      </div>
+      <div class="caveat">⚠ Age = days since Created. Stage dwell requires Jira changelog export for exact accuracy.</div>
+      <div id="r4-content" style="overflow-x:auto;margin-top:8px"></div>
+    </div>
+    <!-- R5: Cycle Time by Type -->
+    <div class="panel">
+      <div class="panel-title">
+        <div>
+          ⏳ R5 — Cycle Time by Contract Type (Completed Tickets)
+          <div class="panel-subtitle">Days from created → completed · proxy: Updated date for completed tickets</div>
+        </div>
+      </div>
+      <div class="caveat">⚠ Completion date = Updated date for Status=Completed tickets. Add a "Date Resolved" Jira field for exact tracking.</div>
+      <div id="r5-content" style="margin-top:8px"></div>
+      <div class="legend-row" style="margin-top:12px">
+        <span class="legend-item"><span class="dot dot-fast"></span>&lt;3 days</span>
+        <span class="legend-item"><span class="dot dot-ok"></span>3–7 days</span>
+        <span class="legend-item"><span class="dot dot-slow"></span>8–14 days</span>
+        <span class="legend-item"><span class="dot dot-very-slow"></span>&gt;14 days</span>
+      </div>
+    </div>
+  </div>
+  <!-- TICKETS -->
   <div id="tab-tickets" style="display:none">
     <div class="search-bar">
       <div class="search-row">
@@ -249,9 +310,7 @@ body.dark .s-changes{background:#450a0a;color:#fca5a5}.dark .s-processed{backgro
       <div class="filters" id="t-filters"></div>
     </div>
     <div class="table-wrap">
-      <div class="table-meta">
-        <span id="t-meta"></span>
-      </div>
+      <div class="table-meta"><span id="t-meta"></span></div>
       <div style="overflow-x:auto">
         <table>
           <thead><tr id="t-thead"></tr></thead>
@@ -262,16 +321,16 @@ body.dark .s-changes{background:#450a0a;color:#fca5a5}.dark .s-processed{backgro
     </div>
     <p class="footer-note" id="footer-date"></p>
   </div>
-  <!-- ADMIN TAB -->
+  <!-- ADMIN -->
   <div id="tab-admin" style="display:none">
     <div class="admin-section">
       <h3>📊 Dataset Status</h3>
-      <p id="admin-source-note">Auto-loaded from <code>ARTM-tickets-05.18.26.csv</code> on startup.</p>
+      <p>Currently loaded snapshot.</p>
       <div id="admin-stats" style="display:flex;gap:8px;flex-wrap:wrap"></div>
     </div>
     <div class="admin-section">
       <h3>📂 Import Updated CSV</h3>
-      <p>Drop a new <code>ARTM-tickets-*.csv</code> export to reload the dashboard instantly. All tabs update automatically.</p>
+      <p>Drop a new <code>ARTM-tickets-*.csv</code> export. All tabs including Reports update automatically.</p>
       <div class="drop-zone" id="drop-zone" onclick="document.getElementById('csv-input').click()" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="handleDrop(event)">
         <div class="dz-icon">📄</div>
         <p>Click or drag &amp; drop CSV here</p>
@@ -281,50 +340,56 @@ body.dark .s-changes{background:#450a0a;color:#fca5a5}.dark .s-processed{backgro
     </div>
     <div class="admin-section">
       <h3>💾 Export</h3>
-      <p>Download a self-contained copy of this dashboard with the current dataset baked in.</p>
+      <p>Download a self-contained copy with the current dataset baked in.</p>
       <div class="admin-export-row">
         <button class="btn btn-primary" onclick="exportHTML()">↓ Download Dashboard HTML</button>
         <button class="btn btn-secondary" onclick="exportCSV()">↓ Download CSV</button>
       </div>
     </div>
+    <div class="admin-section" style="border-color:rgba(99,102,241,.3)">
+      <h3>🔮 Data Enhancement Backlog</h3>
+      <p style="margin-bottom:8px">These improvements require changes to your Jira project configuration:</p>
+      <table style="width:100%;border-collapse:collapse;font-size:13px">
+        <thead><tr><th style="text-align:left;padding:6px 10px;background:var(--surface2);border-bottom:1px solid var(--border);font-size:11px;color:var(--text3);text-transform:uppercase">Enhancement</th><th style="text-align:left;padding:6px 10px;background:var(--surface2);border-bottom:1px solid var(--border);font-size:11px;color:var(--text3);text-transform:uppercase">Affects</th><th style="text-align:left;padding:6px 10px;background:var(--surface2);border-bottom:1px solid var(--border);font-size:11px;color:var(--text3);text-transform:uppercase">Jira Action</th></tr></thead>
+        <tbody>
+          <tr><td style="padding:7px 10px;border-bottom:1px solid var(--border2)">Add "Date Resolved" custom field</td><td style="padding:7px 10px;border-bottom:1px solid var(--border2)">R5 Cycle Time</td><td style="padding:7px 10px;border-bottom:1px solid var(--border2)">Custom field + automation on Completed transition</td></tr>
+          <tr><td style="padding:7px 10px;border-bottom:1px solid var(--border2)">Export with changelog for stage dwell</td><td style="padding:7px 10px;border-bottom:1px solid var(--border2)">R4 Status Aging</td><td style="padding:7px 10px;border-bottom:1px solid var(--border2)">Jira API: /rest/api/3/issue?expand=changelog</td></tr>
+          <tr><td style="padding:7px 10px;border-bottom:1px solid var(--border2)">Log first-response date on all tickets</td><td style="padding:7px 10px;border-bottom:1px solid var(--border2)">R3 First Response</td><td style="padding:7px 10px;border-bottom:1px solid var(--border2)">Enforce SLA metric on project; currently 40% missing</td></tr>
+          <tr><td style="padding:7px 10px">Add "Counterparty" structured field</td><td style="padding:7px 10px">All reports</td><td style="padding:7px 10px">Custom field on ticket form; currently embedded in Summary</td></tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 </main>
 <script>
-
-// ── DATA (populated at runtime from CSV) ──
-let DATA = [];
+let DATA = [{"key":"ARTM-181","summary":"Doral OIL9 Mechanical Install Subcontract","assignee":"Rudy Gonzalez","reporter":"Olivia Pennington","priority":"Highest","status":"New","resolution":"","created":"2026-05-15T08:54:00","updated":"2026-05-18T11:47:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":null,"firstResponseHrs":-54.88,"type":"Subcontract"},{"key":"ARTM-180","summary":"EX Erectors - MNDA","assignee":"Jim Baehr","reporter":"Alyssa Colvin","priority":"Highest","status":"Sent","resolution":"","created":"2026-05-14T20:20:00","updated":"2026-05-18T11:56:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":null,"firstResponseHrs":-67.75,"type":"MNDA"},{"key":"ARTM-179","summary":"New Era Conveyor Solutions - MNDA Request","assignee":"Jim Baehr","reporter":"Alyssa Colvin","priority":"Highest","status":"Processed For Signatures","resolution":"","created":"2026-05-14T14:22:00","updated":"2026-05-18T11:44:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":null,"firstResponseHrs":-5.92,"type":"MNDA"},{"key":"ARTM-178","summary":"MNDA for a potential Pallet Rack erector supplier","assignee":"Rudy Gonzalez","reporter":"Bob Hosier","priority":"Highest","status":"Completed","resolution":"","created":"2026-05-12T14:48:00","updated":"2026-05-15T14:01:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":58.88,"firstResponseHrs":0.15,"type":"MNDA"},{"key":"ARTM-177","summary":"McKesson - DCS NDA","assignee":"Rudy Gonzalez","reporter":"Roger Manini","priority":"Highest","status":"New","resolution":"","created":"2026-05-12T12:28:00","updated":"2026-05-15T15:06:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":null,"firstResponseHrs":19.35,"type":"NDA"},{"key":"ARTM-176","summary":"RFP Racking Questionnaire","assignee":"Jim Baehr","reporter":"Roger Manini","priority":"Highest","status":"Completed","resolution":"","created":"2026-05-11T11:44:00","updated":"2026-05-11T12:13:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":null,"firstResponseHrs":-148.35,"type":"Other"},{"key":"ARTM-175","summary":"Quince would like ot begin discussions for DCS to become their main partner for integration services. THe MNDA is the first step needed.","assignee":"Jim Baehr","reporter":"Scott Singer","priority":"Highest","status":"Completed","resolution":"","created":"2026-05-11T11:02:00","updated":"2026-05-11T12:13:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":39.25,"firstResponseHrs":19.85,"type":"MNDA"},{"key":"ARTM-174","summary":"MNDA - Lowrie Electric","assignee":"Jim Baehr","reporter":"Darren Mabe","priority":"Highest","status":"Completed","resolution":"","created":"2026-05-08T10:28:00","updated":"2026-05-12T13:27:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":null,"firstResponseHrs":12.48,"type":"MNDA"},{"key":"ARTM-173","summary":"MNDA - PAR Electrical","assignee":"Jim Baehr","reporter":"Darren Mabe","priority":"Highest","status":"Sent","resolution":"","created":"2026-05-07T15:24:00","updated":"2026-05-11T12:01:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":null,"firstResponseHrs":18.62,"type":"MNDA"},{"key":"ARTM-172","summary":"NDA Request- TopIndustries","assignee":"Jim Baehr","reporter":"Nathan Swift","priority":"Highest","status":"Completed","resolution":"","created":"2026-05-07T14:09:00","updated":"2026-05-11T13:30:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":null,"firstResponseHrs":19.82,"type":"NDA"},{"key":"ARTM-171","summary":"MSA for Ross Stores","assignee":"Rudy Gonzalez","reporter":"Fred Rudolph","priority":"Highest","status":"Discovery","resolution":"","created":"2026-05-06T22:27:00","updated":"2026-05-12T13:04:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":48.97,"firstResponseHrs":-257.63,"type":"MSA"},{"key":"ARTM-170","summary":"FlexDrop NDA to receive client drawings","assignee":"Rudy Gonzalez","reporter":"Mike Hudak","priority":"Highest","status":"Completed","resolution":"","created":"2026-05-05T14:29:00","updated":"2026-05-12T19:20:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":12.5,"firstResponseHrs":-289.6,"type":"NDA"},{"key":"ARTM-169","summary":"RJW Group NDA DATUM prospect","assignee":"Rudy Gonzalez","reporter":"Shawn Cavasos","priority":"Highest","status":"Sent","resolution":"","created":"2026-05-04T16:57:00","updated":"2026-05-08T17:09:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":5.88,"firstResponseHrs":19.05,"type":"NDA"},{"key":"ARTM-168","summary":"Connors Group MNDA","assignee":"Jim Baehr","reporter":"Rudy Gonzalez","priority":"Highest","status":"Discovery","resolution":"","created":"2026-05-04T08:01:00","updated":"2026-05-05T11:59:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":7.87,"firstResponseHrs":-320.07,"type":"MNDA"},{"key":"ARTM-167","summary":"Review of Stord MNDA","assignee":"Jim Baehr","reporter":"Satyen Pathak","priority":"Highest","status":"Completed","resolution":"","created":"2026-04-29T13:16:00","updated":"2026-04-30T08:40:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":null,"firstResponseHrs":-434.82,"type":"MNDA"},{"key":"ARTM-166","summary":"Change Order from GDIT","assignee":"Jim Baehr","reporter":"Mark Kidwell","priority":"Highest","status":"Completed","resolution":"","created":"2026-04-29T09:52:00","updated":"2026-04-30T11:16:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":-26.1,"firstResponseHrs":-438.22,"type":"Change Order"},{"key":"ARTM-165","summary":"SICK - NDA Completion","assignee":"Jim Baehr","reporter":"Pat Switaj","priority":"Highest","status":"Processed for Approval/Signature","resolution":"","created":"2026-04-28T12:45:00","updated":"2026-05-05T11:59:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":null,"firstResponseHrs":19.7,"type":"NDA"},{"key":"ARTM-164","summary":"Levi, Strauss & Company - MNDA","assignee":"Jim Baehr","reporter":"Fred Rudolph","priority":"Highest","status":"Completed","resolution":"","created":"2026-04-27T17:11:00","updated":"2026-05-05T13:35:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":null,"firstResponseHrs":19.23,"type":"MNDA"},{"key":"ARTM-163","summary":"Daimler Truck N.A. -- Bilateral Confidentiality, Master Purchasing Agreement, Master Service Agreement","assignee":"Jim Baehr","reporter":"Roger Manini","priority":"Highest","status":"Negotiate","resolution":"","created":"2026-04-23T15:21:00","updated":"2026-05-01T09:19:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":null,"firstResponseHrs":-4.13,"type":"Other"},{"key":"ARTM-162","summary":"MNDA template from Rivian","assignee":"Jim Baehr","reporter":"Fred Rudolph","priority":"Highest","status":"Discovery","resolution":"","created":"2026-04-22T17:59:00","updated":"2026-04-28T14:09:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":-50.1,"firstResponseHrs":-598.1,"type":"MNDA"},{"key":"ARTM-161","summary":"Element-Logic MNDA","assignee":"Jim Baehr","reporter":"Sarah Haney","priority":"Highest","status":"Negotiation","resolution":"","created":"2026-04-22T10:38:00","updated":"2026-05-01T09:57:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":-49.0,"firstResponseHrs":-31.12,"type":"MNDA"},{"key":"ARTM-160","summary":"Review of IMI Mechanical Engineer Candidate Non-Compete","assignee":"Jim Baehr","reporter":"LeandraBryan@imikansas.com","priority":"Highest","status":"Completed","resolution":"","created":"2026-04-21T11:21:00","updated":"2026-04-24T10:03:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":-52.68,"firstResponseHrs":-628.73,"type":"Non-Compete"},{"key":"ARTM-159","summary":"(Shipper's Supply) MNDA for equipment discussions related to William's Sonoma","assignee":"Rudy Gonzalez","reporter":"Matt Simmons","priority":"Highest","status":"Completed","resolution":"","created":"2026-04-20T15:04:00","updated":"2026-04-24T17:46:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":-66.1,"firstResponseHrs":-21.87,"type":"MNDA"},{"key":"ARTM-158","summary":"Review current MSA and MWO as well as redlined future MWO language with Amazon to determine risk of selling DATUM to Amazon","assignee":"Rudy Gonzalez","reporter":"JJ Phelan","priority":"Highest","status":"Completed","resolution":"","created":"2026-04-20T11:33:00","updated":"2026-04-24T14:44:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":-74.1,"firstResponseHrs":-652.53,"type":"MSA"},{"key":"ARTM-157","summary":"SOW Review & Clean up for Prologis Essentials","assignee":"Jim Baehr","reporter":"Scott Singer","priority":"Highest","status":"Completed","resolution":"","created":"2026-04-17T16:52:00","updated":"2026-04-21T08:38:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":null,"firstResponseHrs":-719.22,"type":"SOW"},{"key":"ARTM-156","summary":"Fox Factory - Need to provide client with Mutual NDA","assignee":"Jim Baehr","reporter":"Scott Singer","priority":"Highest","status":"Completed","resolution":"","created":"2026-04-17T16:12:00","updated":"2026-04-30T11:13:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":-74.1,"firstResponseHrs":19.93,"type":"NDA"},{"key":"ARTM-155","summary":"Could you please provide the most recent mutual NDA that I can share with the client?","assignee":"Jim Baehr","reporter":"Scott Singer","priority":"Highest","status":"Completed","resolution":"","created":"2026-04-17T15:56:00","updated":"2026-04-17T16:56:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":null,"firstResponseHrs":19.75,"type":"NDA"},{"key":"ARTM-154","summary":"Google NDA for RFP Opportunity","assignee":"Jim Baehr","reporter":"Justin Ray","priority":"Highest","status":"Completed","resolution":"","created":"2026-04-16T22:38:00","updated":"2026-04-17T12:05:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":null,"firstResponseHrs":-737.45,"type":"NDA"},{"key":"ARTM-153","summary":"Review of IMI Project Engineer Candidate Non-Compete","assignee":"Jim Baehr","reporter":"LeandraBryan@imikansas.com","priority":"Highest","status":"Completed","resolution":"","created":"2026-04-14T10:50:00","updated":"2026-04-24T14:43:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":-85.88,"firstResponseHrs":-1.63,"type":"Non-Compete"},{"key":"ARTM-152","summary":"JR Automation MNDA","assignee":"Jim Baehr","reporter":"JJ Phelan","priority":"Highest","status":"Completed","resolution":"","created":"2026-04-14T08:36:00","updated":"2026-04-28T14:12:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":null,"firstResponseHrs":-799.48,"type":"MNDA"},{"key":"ARTM-151","summary":"Support for WSI DATUM SOW","assignee":"Rudy Gonzalez","reporter":"Scott Singer","priority":"Highest","status":"Initiate","resolution":"","created":"2026-04-14T08:26:00","updated":"2026-04-16T09:24:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":null,"firstResponseHrs":-799.65,"type":"SOW"},{"key":"ARTM-150","summary":"Proactive Global - DCS MSA to present to Cian Denvir","assignee":"Jim Baehr","reporter":"Ruth Ann Rooker","priority":"Highest","status":"Changes Requested","resolution":"","created":"2026-04-10T14:19:00","updated":"2026-05-08T11:30:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":null,"firstResponseHrs":17.82,"type":"MSA"},{"key":"ARTM-149","summary":"Fanatics MNDA","assignee":"Rudy Gonzalez","reporter":"Rudy Gonzalez","priority":"Highest","status":"Completed","resolution":"","created":"2026-04-09T17:49:00","updated":"2026-05-06T13:56:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":-98.1,"firstResponseHrs":-115.05,"type":"MNDA"},{"key":"ARTM-148","summary":"Testing Salesforce Integration *Do not delete","assignee":"Jim Baehr","reporter":"Brenna Maloy","priority":"Highest","status":"Completed","resolution":"","created":"2026-04-09T13:47:00","updated":"2026-04-09T16:24:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":null,"firstResponseHrs":-914.3,"type":"Other"},{"key":"ARTM-147","summary":"Memphis MEWS Contract","assignee":"Rudy Gonzalez","reporter":"Satyen Pathak","priority":"Highest","status":"Completed","resolution":"","created":"2026-04-09T10:51:00","updated":"2026-04-16T15:23:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":-135.35,"firstResponseHrs":-917.23,"type":"MEWS"},{"key":"ARTM-146","summary":"Biehle redline to section 3 of subcontract.","assignee":"Jim Baehr","reporter":"Candace Robinson","priority":"Highest","status":"Completed","resolution":"","created":"2026-04-08T15:18:00","updated":"2026-04-17T12:27:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":null,"firstResponseHrs":0.57,"type":"Subcontract"},{"key":"ARTM-145","summary":"Capstone MNDA","assignee":"Jim Baehr","reporter":"Candace Robinson","priority":"Highest","status":"Completed","resolution":"","created":"2026-03-30T18:17:00","updated":"2026-03-31T17:23:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":null,"firstResponseHrs":-1149.8,"type":"MNDA"},{"key":"ARTM-144","summary":"MNDA request  General Mechanical Services, Inc.","assignee":"Jim Baehr","reporter":"Wesley Smith","priority":"Highest","status":"Completed","resolution":"","created":"2026-03-30T15:28:00","updated":"2026-04-09T16:26:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":null,"firstResponseHrs":18.08,"type":"MNDA"},{"key":"ARTM-142","summary":"GRACO - Proposal Review","assignee":"Rudy Gonzalez","reporter":"Jim Baehr","priority":"Highest","status":"Completed","resolution":"","created":"2026-03-30T09:07:00","updated":"2026-03-31T08:30:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":-202.1,"firstResponseHrs":-1158.97,"type":"Proposal"},{"key":"ARTM-141","summary":"MNDA with Frazier","assignee":"Sarah Haney","reporter":"Sarah Haney","priority":"Highest","status":"Completed","resolution":"","created":"2026-03-26T17:48:00","updated":"2026-03-27T09:50:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":null,"firstResponseHrs":-1246.28,"type":"MNDA"},{"key":"ARTM-140","summary":"Dambach MNDA","assignee":"Sarah Haney","reporter":"Sarah Haney","priority":"Highest","status":"Completed","resolution":"","created":"2026-03-26T17:47:00","updated":"2026-03-30T09:01:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":null,"firstResponseHrs":-1246.3,"type":"MNDA"},{"key":"ARTM-139","summary":"Robotunits MNDA","assignee":"Jim Baehr","reporter":"Candace Robinson","priority":"Highest","status":"Completed","resolution":"","created":"2026-03-26T13:39:00","updated":"2026-04-07T10:11:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":null,"firstResponseHrs":17.42,"type":"MNDA"},{"key":"ARTM-138","summary":"Guest Engineering MNDA","assignee":"Sarah Haney","reporter":"Matt Ramsey","priority":"Highest","status":"Completed","resolution":"","created":"2026-03-26T11:43:00","updated":"2026-03-31T13:22:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":-210.1,"firstResponseHrs":-1252.37,"type":"MNDA"},{"key":"ARTM-137","summary":"Crawford T&C Redlines","assignee":"Rudy Gonzalez","reporter":"Candace Robinson","priority":"Highest","status":"Intake Approval","resolution":"","created":"2026-03-26T10:20:00","updated":"2026-04-24T17:48:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":-216.93,"firstResponseHrs":-99.67,"type":"T&C Redline"},{"key":"ARTM-136","summary":"Bimbo Vendor Setup Form","assignee":"Rudy Gonzalez","reporter":"Chris Mehl","priority":"Highest","status":"Completed","resolution":"","created":"2026-03-26T10:15:00","updated":"2026-03-27T12:41:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":-216.95,"firstResponseHrs":-1253.83,"type":"Vendor Form"},{"key":"ARTM-135","summary":"Salesforce/Deloitte - MNDA","assignee":"Jim Baehr","reporter":"Gabe Rybicki","priority":"Highest","status":"Completed","resolution":"","created":"2026-03-25T21:42:00","updated":"2026-03-26T11:54:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":-216.95,"firstResponseHrs":-1266.38,"type":"MNDA"},{"key":"ARTM-134","summary":"Koerber - IMI NDA","assignee":"Jim Baehr","reporter":"Meg Smith","priority":"Highest","status":"Completed","resolution":"","created":"2026-03-25T17:44:00","updated":"2026-04-07T10:19:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":-218.1,"firstResponseHrs":16.78,"type":"NDA"},{"key":"ARTM-133","summary":"Worldwide Material Handling - Master Sub Agreement","assignee":"Rudy Gonzalez","reporter":"Callie Harding","priority":"Highest","status":"Completed","resolution":"","created":"2026-03-25T12:48:00","updated":"2026-04-27T09:47:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":-222.42,"firstResponseHrs":-1275.28,"type":"Subcontract"},{"key":"ARTM-132","summary":"NDA Request- Huron","assignee":"Rudy Gonzalez","reporter":"Nathan Swift","priority":"Highest","status":"Completed","resolution":"","created":"2026-03-25T12:43:00","updated":"2026-04-23T17:16:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":-222.42,"firstResponseHrs":-1275.37,"type":"NDA"},{"key":"ARTM-131","summary":"Salesforce is bringing Deloitte to the office on 3/31","assignee":"Jim Baehr","reporter":"Kay Turner","priority":"Highest","status":"Completed","resolution":"","created":"2026-03-24T15:05:00","updated":"2026-03-31T10:38:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":-226.65,"firstResponseHrs":19.85,"type":"Other"},{"key":"ARTM-130","summary":"Edwards Garment MNDA","assignee":"Sarah Haney","reporter":"Roger Manini","priority":"Highest","status":"Completed","resolution":"","created":"2026-03-23T10:27:00","updated":"2026-03-30T10:02:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":-240.98,"firstResponseHrs":19.85,"type":"MNDA"},{"key":"ARTM-129","summary":"Regal-Rexnor Question about T&Cs","assignee":"Jim Baehr","reporter":"Candace Robinson","priority":"Highest","status":"Completed","resolution":"","created":"2026-03-23T10:16:00","updated":"2026-04-28T14:10:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":-236.97,"firstResponseHrs":-1325.82,"type":"T&C Redline"},{"key":"ARTM-128","summary":"Span Tech - MNDA","assignee":"Rudy Gonzalez","reporter":"Matt Greene","priority":"Highest","status":"Completed","resolution":"","created":"2026-03-20T15:19:00","updated":"2026-03-25T16:16:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":-236.78,"firstResponseHrs":17.87,"type":"MNDA"},{"key":"ARTM-127","summary":"Dematic PO Ts & Cs","assignee":"Jim Baehr","reporter":"Olivia Pennington","priority":"Highest","status":"Completed","resolution":"","created":"2026-03-20T14:01:00","updated":"2026-03-20T17:23:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":null,"firstResponseHrs":19.82,"type":"Other"},{"key":"ARTM-126","summary":"MNDA request - Steel Pro","assignee":"Jim Baehr","reporter":"Brent Whittaker","priority":"Highest","status":"Completed","resolution":"","created":"2026-03-19T17:10:00","updated":"2026-03-19T17:27:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":null,"firstResponseHrs":19.77,"type":"MNDA"},{"key":"ARTM-125","summary":"Discussion about Material Supplier Install","assignee":"Jim Baehr","reporter":"Brent Whittaker","priority":"Highest","status":"Discovery","resolution":"","created":"2026-03-19T17:09:00","updated":"2026-04-24T14:42:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":-218.1,"firstResponseHrs":-1414.93,"type":"Other"},{"key":"ARTM-124","summary":"MNDA between DCS and Grupo Ramos","assignee":"Rudy Gonzalez","reporter":"Roger Manini","priority":"Highest","status":"Changes Requested","resolution":"","created":"2026-03-18T09:24:00","updated":"2026-05-12T13:10:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":-258.1,"firstResponseHrs":-847.13,"type":"MNDA"},{"key":"ARTM-123","summary":"Matthews Sub Contract red lines - OIL9, OSC9, OOH9","assignee":"Jim Baehr","reporter":"Jennifer Thompson","priority":"Highest","status":"Completed","resolution":"","created":"2026-03-16T10:28:00","updated":"2026-04-07T09:01:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":-281.5,"firstResponseHrs":19.87,"type":"Other"},{"key":"ARTM-122","summary":"NDA:  WWMH","assignee":"Sarah Haney","reporter":"Matt Greene","priority":"Highest","status":"Completed","resolution":"","created":"2026-03-12T18:02:00","updated":"2026-03-23T11:02:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":null,"firstResponseHrs":17.72,"type":"NDA"},{"key":"ARTM-121","summary":"MNDA with Mihi Engineering","assignee":"Sarah Haney","reporter":"Vijay Kapila","priority":"Highest","status":"Completed","resolution":"","created":"2026-03-12T14:12:00","updated":"2026-03-16T16:55:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":null,"firstResponseHrs":19.87,"type":"MNDA"},{"key":"ARTM-120","summary":"Terralytic - License Services Agreement","assignee":"Rudy Gonzalez","reporter":"Jim Baehr","priority":"Highest","status":"Completed","resolution":"","created":"2026-03-12T12:47:00","updated":"2026-04-02T09:27:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":-295.3,"firstResponseHrs":-293.77,"type":"Other"},{"key":"ARTM-119","summary":"Muir AI MNDA - Two sustainability contracts for review this week","assignee":"Sarah Haney","reporter":"Marty Grady","priority":"Highest","status":"Completed","resolution":"","created":"2026-03-12T02:51:00","updated":"2026-03-23T23:52:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":null,"firstResponseHrs":11.58,"type":"MNDA"},{"key":"ARTM-118","summary":"Safety Manager Agreement","assignee":"Jim Baehr","reporter":"Candace Robinson","priority":"Highest","status":"Completed","resolution":"","created":"2026-03-11T20:03:00","updated":"2026-03-12T14:16:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":null,"firstResponseHrs":5.85,"type":"Other"},{"key":"ARTM-117","summary":"Titan Contract Signature Request","assignee":"Jim Baehr","reporter":"Olivia Pennington","priority":"Highest","status":"Completed","resolution":"","created":"2026-03-11T16:54:00","updated":"2026-03-26T12:55:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":null,"firstResponseHrs":-1607.18,"type":"Other"},{"key":"ARTM-116","summary":"EuroSort - Ts & Cs","assignee":"Rudy Gonzalez","reporter":"Jim Baehr","priority":"Highest","status":"Completed","resolution":"","created":"2026-03-10T15:43:00","updated":"2026-03-30T09:05:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":-308.33,"firstResponseHrs":-1632.37,"type":"Other"},{"key":"ARTM-115","summary":"Fletchline Subcontract - Walmart IND","assignee":"Rudy Gonzalez","reporter":"Brent Whittaker","priority":"Highest","status":"Completed","resolution":"","created":"2026-03-05T10:43:00","updated":"2026-03-31T15:00:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":-308.35,"firstResponseHrs":-1756.38,"type":"Subcontract"},{"key":"ARTM-114","summary":"ROMS MNDA","assignee":"Sarah Haney","reporter":"Justin Willbanks","priority":"Highest","status":"Completed","resolution":"","created":"2026-03-04T19:04:00","updated":"2026-03-11T12:38:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":-338.1,"firstResponseHrs":-1772.02,"type":"MNDA"},{"key":"ARTM-113","summary":"Attabotics MNDA","assignee":"Sarah Haney","reporter":"Justin Willbanks","priority":"Highest","status":"Completed","resolution":"","created":"2026-03-04T19:02:00","updated":"2026-03-05T12:47:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":-338.1,"firstResponseHrs":2.28,"type":"MNDA"},{"key":"ARTM-112","summary":"Titan MNDA request","assignee":"Rudy Gonzalez","reporter":"Jennifer Thompson","priority":"Highest","status":"Completed","resolution":"","created":"2026-03-04T11:00:00","updated":"2026-03-06T09:32:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":-343.97,"firstResponseHrs":18.68,"type":"MNDA"},{"key":"ARTM-111","summary":"APTR has asked us to review and consider an amendment to the current MSA. I'd also like to present an amendment of our own to APTR's MSA regarding candidate ownership being job specific.","assignee":"Sarah Haney","reporter":"Ruth Ann Rooker","priority":"Highest","status":"Completed","resolution":"","created":"2026-03-03T15:19:00","updated":"2026-03-04T11:32:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":-346.1,"firstResponseHrs":19.95,"type":"MSA"},{"key":"ARTM-110","summary":"HCL - MNDA","assignee":"Rudy Gonzalez","reporter":"Roger Manini","priority":"High","status":"Completed","resolution":"","created":"2026-02-27T08:54:00","updated":"2026-03-02T09:02:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":null,"firstResponseHrs":14.8,"type":"MNDA"},{"key":"ARTM-109","summary":"Painting Supplier needs MNDA","assignee":"Jim Baehr","reporter":"Candace Robinson","priority":"Highest","status":"Completed","resolution":"","created":"2026-02-24T11:49:00","updated":"2026-03-31T10:33:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":null,"firstResponseHrs":19.58,"type":"MNDA"},{"key":"ARTM-108","summary":"TerraCon Master Services Agreement","assignee":"Jim Baehr","reporter":"Candace Robinson","priority":"Highest","status":"Completed","resolution":"","created":"2026-02-20T17:43:00","updated":"2026-02-25T11:14:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":null,"firstResponseHrs":18.2,"type":"Other"},{"key":"ARTM-107","summary":"Nordstrom DC699 RFx \u2014 Legal Review Request (MSA + RFx Terms & Conditions)","assignee":"Rudy Gonzalez","reporter":"Scott Singer","priority":"Highest","status":"Completed","resolution":"","created":"2026-02-19T11:41:00","updated":"2026-04-06T09:21:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":-410.1,"firstResponseHrs":-5.18,"type":"MSA"},{"key":"ARTM-106","summary":"EDMCI has redlined our standard subcontract agreement.  We need to review the redlines and work to resolve this by EOW.","assignee":"Rudy Gonzalez","reporter":"Candace Robinson","priority":"Highest","status":"Completed","resolution":"","created":"2026-02-16T14:24:00","updated":"2026-03-23T10:55:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":-436.62,"firstResponseHrs":18.92,"type":"NDA"},{"key":"ARTM-104","summary":"MNDA request","assignee":"Sarah Haney","reporter":"Wesley Smith","priority":"Highest","status":"Completed","resolution":"","created":"2026-02-09T13:43:00","updated":"2026-02-16T09:13:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":null,"firstResponseHrs":-2329.38,"type":"MNDA"},{"key":"ARTM-103","summary":"MNDA request with Intralox","assignee":"Jim Baehr","reporter":"Satyen Pathak","priority":"Highest","status":"Completed","resolution":"","created":"2026-02-05T15:42:00","updated":"2026-04-24T14:36:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":null,"firstResponseHrs":-2423.38,"type":"MNDA"},{"key":"ARTM-102","summary":"Percivon MSA for Engineering services to augment our team","assignee":"Sarah Haney","reporter":"Vijay Kapila","priority":"Highest","status":"Completed","resolution":"","created":"2026-02-05T10:27:00","updated":"2026-02-13T13:06:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":null,"firstResponseHrs":-2428.63,"type":"MSA"},{"key":"ARTM-100","summary":"Connors Group - MNDA","assignee":"Rudy Gonzalez","reporter":"Mark Kidwell","priority":"Highest","status":"Completed","resolution":"","created":"2026-02-04T10:21:00","updated":"2026-02-24T12:30:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":-505.12,"firstResponseHrs":19.9,"type":"MNDA"},{"key":"ARTM-99","summary":"Ross Stores MNDA review","assignee":"Rudy Gonzalez","reporter":"Fred Rudolph","priority":"Highest","status":"Completed","resolution":"","created":"2026-02-03T11:12:00","updated":"2026-03-03T15:45:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":-512.23,"firstResponseHrs":19.92,"type":"MNDA"},{"key":"ARTM-98","summary":"Retainer Agreement - Y Carrot","assignee":"Sarah Haney","reporter":"Rudy Gonzalez","priority":"High","status":"Completed","resolution":"","created":"2026-02-02T14:59:00","updated":"2026-02-26T08:32:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":-506.1,"firstResponseHrs":-2496.1,"type":"Retainer"},{"key":"ARTM-97","summary":"MNDA - MSC","assignee":"Rudy Gonzalez","reporter":"Chris Mehl","priority":"High","status":"Completed","resolution":"","created":"2026-01-30T11:12:00","updated":"2026-03-02T09:24:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":null,"firstResponseHrs":-2571.88,"type":"MNDA"},{"key":"ARTM-96","summary":"Peopleready Proposal Review","assignee":"Sarah Haney","reporter":"Candace Robinson","priority":"Highest","status":"Completed","resolution":"","created":"2026-01-28T16:50:00","updated":"2026-02-02T13:33:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":null,"firstResponseHrs":-2614.25,"type":"Proposal"},{"key":"ARTM-95","summary":"Walmart IND1 SOW - Compliance Report","assignee":"Rudy Gonzalez","reporter":"Rudy Gonzalez","priority":"High","status":"Completed","resolution":"","created":"2026-01-27T13:10:00","updated":"2026-01-27T13:10:00","due":"2026-01-28T00:00:00","firstResponse":"","targetCompletion":"","resolutionHrs":null,"firstResponseHrs":-2641.93,"type":"SOW"},{"key":"ARTM-94","summary":"Review of IMI Project Engineer Candidate Non-Compete","assignee":"Sarah Haney","reporter":"LeandraBryan@imikansas.com","priority":"Highest","status":"Completed","resolution":"","created":"2026-01-26T10:23:00","updated":"2026-02-02T16:37:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":-534.2,"firstResponseHrs":-2668.7,"type":"Non-Compete"},{"key":"ARTM-93","summary":"Murata NDA","assignee":"Rudy Gonzalez","reporter":"Nathan Swift","priority":"Highest","status":"Completed","resolution":"","created":"2026-01-25T21:49:00","updated":"2026-02-16T07:59:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":-517.08,"firstResponseHrs":-2681.27,"type":"NDA"},{"key":"ARTM-92","summary":"Walmart IND1 Signed SOW","assignee":"Rudy Gonzalez","reporter":"Rudy Gonzalez","priority":"Highest","status":"Completed","resolution":"","created":"2026-01-23T15:52:00","updated":"2026-01-29T09:11:00","due":"2026-01-28T00:00:00","firstResponse":"","targetCompletion":"2026-01-27T00:00:00","resolutionHrs":-564.2,"firstResponseHrs":-2735.23,"type":"SOW"},{"key":"ARTM-91","summary":"NDA - LogistiQ","assignee":"Rudy Gonzalez","reporter":"Jim Baehr","priority":"Highest","status":"Completed","resolution":"","created":"2026-01-23T11:31:00","updated":"2026-02-02T09:16:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":-564.25,"firstResponseHrs":-2739.57,"type":"NDA"},{"key":"ARTM-90","summary":"Johnson Electric MNDA","assignee":"Rudy Gonzalez","reporter":"Brad Storms","priority":"Medium","status":"Completed","resolution":"","created":"2026-01-16T12:35:00","updated":"2026-02-02T09:30:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":null,"firstResponseHrs":-49.1,"type":"MNDA"},{"key":"ARTM-88","summary":"Trew - Letter of Authorization","assignee":"Jim Baehr","reporter":"Rudy Gonzalez","priority":"Highest","status":"Completed","resolution":"","created":"2026-01-16T11:03:00","updated":"2026-02-02T09:04:00","due":"2026-01-16T00:00:00","firstResponse":"","targetCompletion":"2026-01-16T00:00:00","resolutionHrs":-608.98,"firstResponseHrs":-2908.05,"type":"Other"},{"key":"ARTM-87","summary":"Review of IMI Mechanical Engineer Candidate Non Compete","assignee":"Sarah Haney","reporter":"LeandraBryan@imikansas.com","priority":"Highest","status":"Completed","resolution":"","created":"2026-01-14T13:31:00","updated":"2026-02-25T16:34:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":-515.38,"firstResponseHrs":18.67,"type":"Non-Compete"},{"key":"ARTM-86","summary":"Mutual NDA - Percivon","assignee":"Rudy Gonzalez","reporter":"Vijay Kapila","priority":"Highest","status":"Completed","resolution":"","created":"2026-01-14T09:37:00","updated":"2026-01-15T13:20:00","due":"2026-01-20T00:00:00","firstResponse":"","targetCompletion":"2026-01-19T00:00:00","resolutionHrs":-626.1,"firstResponseHrs":19.92,"type":"NDA"},{"key":"ARTM-85","summary":"Review Non-Compete - IMI Mechanical Engineer Candidate","assignee":"Sarah Haney","reporter":"LeandraBryan@imikansas.com","priority":"Highest","status":"Completed","resolution":"","created":"2026-01-13T17:02:00","updated":"2026-01-26T13:31:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":-627.03,"firstResponseHrs":-2974.05,"type":"Non-Compete"},{"key":"ARTM-84","summary":"Doral - Subcontract language  change request","assignee":"Jim Baehr","reporter":"Wesley Smith","priority":"Highest","status":"Completed","resolution":"","created":"2026-01-13T15:17:00","updated":"2026-01-29T09:04:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":-626.1,"firstResponseHrs":19.9,"type":"Subcontract"},{"key":"ARTM-83","summary":"Non-Compete Agreement - P&C","assignee":"Sarah Haney","reporter":"Rudy Gonzalez","priority":"High","status":"Completed","resolution":"","created":"2026-01-12T14:17:00","updated":"2026-01-26T10:50:00","due":"2026-01-19T00:00:00","firstResponse":"","targetCompletion":"2026-01-19T00:00:00","resolutionHrs":-634.1,"firstResponseHrs":-3000.8,"type":"Non-Compete"},{"key":"ARTM-82","summary":"Sketchdeck MNDA","assignee":"Sarah Haney","reporter":"Megan Taylor","priority":"Highest","status":"Completed","resolution":"","created":"2026-01-07T15:10:00","updated":"2026-01-19T09:04:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":-642.1,"firstResponseHrs":19.85,"type":"MNDA"},{"key":"ARTM-81","summary":"UpTime Solutions - MNDA","assignee":"Rudy Gonzalez","reporter":"Timothy Le","priority":"Highest","status":"Completed","resolution":"","created":"2026-01-06T13:57:00","updated":"2026-01-14T17:43:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":null,"firstResponseHrs":19.83,"type":"MNDA"},{"key":"ARTM-80","summary":"Working with Walmart on an SOW for a new project, and we\u2019ve received some initial comments from Walmart\u2019s legal team. See e-mail dated Thu 12/18/25 10:17 PM. Please review and provide guidance on next steps or appropriate responses.","assignee":"Jim Baehr","reporter":"Michael Horvath","priority":"Highest","status":"Completed","resolution":"","created":"2025-12-19T11:17:00","updated":"2026-01-12T08:37:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":null,"firstResponseHrs":-3579.8,"type":"SOW"},{"key":"ARTM-79","summary":"Proactive Global Staffing Agreements","assignee":"Jim Baehr","reporter":"Ruth Ann Rooker","priority":"Highest","status":"Discovery","resolution":"","created":"2025-12-19T11:16:00","updated":"2026-04-24T14:30:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":-764.73,"firstResponseHrs":15.88,"type":"Other"},{"key":"ARTM-78","summary":"Action Electric MNDA","assignee":"Rudy Gonzalez","reporter":"Matt Greene","priority":"Highest","status":"Changes Requested","resolution":"","created":"2025-12-17T11:21:00","updated":"2026-05-13T15:30:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":-784.28,"firstResponseHrs":-10.03,"type":"MNDA"},{"key":"ARTM-77","summary":"RDK Fabrication MNDA","assignee":"Sarah Haney","reporter":"Matt Greene","priority":"Highest","status":"Completed","resolution":"","created":"2025-12-17T11:20:00","updated":"2026-03-04T07:40:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":-784.28,"firstResponseHrs":-10.15,"type":"MNDA"},{"key":"ARTM-76","summary":"Walmart MSA Review","assignee":"Jim Baehr","reporter":"Martin Maier","priority":"Highest","status":"Completed","resolution":"","created":"2025-12-17T10:13:00","updated":"2026-01-15T23:58:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":-784.28,"firstResponseHrs":19.8,"type":"MSA"},{"key":"ARTM-75","summary":"Mutual NDA with Trimasys (Contract engineers for Controls)","assignee":"Rudy Gonzalez","reporter":"Vijay Kapila","priority":"Highest","status":"Completed","resolution":"","created":"2025-12-16T14:41:00","updated":"2026-01-06T09:50:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":-789.07,"firstResponseHrs":19.68,"type":"NDA"},{"key":"ARTM-74","summary":"Dematic 2026 Integrator Agreement","assignee":"Jim Baehr","reporter":"Meg Smith","priority":"Highest","status":"Completed","resolution":"","created":"2025-12-16T13:23:00","updated":"2026-01-12T09:00:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":-789.82,"firstResponseHrs":-3649.72,"type":"Other"},{"key":"ARTM-73","summary":"OMNI MNDA for USPS Memphis MEWS","assignee":"Sarah Haney","reporter":"Austin Umstead","priority":"Highest","status":"Completed","resolution":"","created":"2025-12-12T15:21:00","updated":"2026-01-19T09:05:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":null,"firstResponseHrs":-3743.75,"type":"MNDA"},{"key":"ARTM-72","summary":"Tractor Supply MNDA","assignee":"Rudy Gonzalez","reporter":"Alexa Brock","priority":"Highest","status":"Completed","resolution":"","created":"2025-12-09T11:36:00","updated":"2025-12-10T14:08:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":-831.97,"firstResponseHrs":-3819.48,"type":"MNDA"},{"key":"ARTM-71","summary":"Ivesia - Direct Placement Agreement","assignee":"Sarah Haney","reporter":"Ruth Ann Rooker","priority":"Highest","status":"Completed","resolution":"","created":"2025-12-05T09:38:00","updated":"2026-01-19T16:44:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":-850.1,"firstResponseHrs":-3917.45,"type":"Other"},{"key":"ARTM-70","summary":"Bunting Magnetics - MNDA","assignee":"Rudy Gonzalez","reporter":"Olivia Pennington","priority":"High","status":"Completed","resolution":"","created":"2025-12-03T10:44:00","updated":"2026-01-07T09:45:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":-850.38,"firstResponseHrs":-10.88,"type":"MNDA"},{"key":"ARTM-69","summary":"MNDA (renewal) - Mosimtec","assignee":"Rudy Gonzalez","reporter":"Chris Mehl","priority":"Highest","status":"Completed","resolution":"","created":"2025-11-24T15:11:00","updated":"2025-11-25T13:31:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":-914.9,"firstResponseHrs":-4175.9,"type":"MNDA"},{"key":"ARTM-67","summary":"DISNEY - SOW 001","assignee":"Jim Baehr","reporter":"Chris Mehl","priority":"Highest","status":"Negotiation","resolution":"","created":"2025-11-24T14:05:00","updated":"2026-04-07T10:13:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":-914.9,"firstResponseHrs":-4177.0,"type":"SOW"},{"key":"ARTM-66","summary":"APTR -  Staffing Services MSA","assignee":"Sarah Haney","reporter":"Ruth Ann Rooker","priority":"Medium","status":"Completed","resolution":"","created":"2025-11-24T13:57:00","updated":"2026-02-04T11:26:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":-915.02,"firstResponseHrs":19.9,"type":"MSA"},{"key":"ARTM-65","summary":"Vitronic MNDA","assignee":"Sarah Haney","reporter":"Satyen Pathak","priority":"Highest","status":"Completed","resolution":"","created":"2025-11-20T12:01:00","updated":"2025-11-24T13:03:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":-934.28,"firstResponseHrs":-4275.07,"type":"MNDA"},{"key":"ARTM-64","summary":"MNDA - Silman","assignee":"Jim Baehr","reporter":"Meg Smith","priority":"Lowest","status":"Discovery","resolution":"","created":"2025-11-20T08:26:00","updated":"2026-01-30T11:15:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":-937.32,"firstResponseHrs":17.55,"type":"MNDA"},{"key":"ARTM-63","summary":"Robust AI - MNDA","assignee":"Rudy Gonzalez","reporter":"Justin Willbanks","priority":"Highest","status":"Completed","resolution":"","created":"2025-11-19T20:04:00","updated":"2025-12-04T09:40:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":-914.97,"firstResponseHrs":-114.9,"type":"MNDA"},{"key":"ARTM-62","summary":"PetSmart - Royalty Agreement","assignee":"Jim Baehr","reporter":"Justin Ray","priority":"High","status":"Completed","resolution":"","created":"2025-11-19T11:30:00","updated":"2026-01-12T08:55:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":-944.57,"firstResponseHrs":-4299.58,"type":"Other"},{"key":"ARTM-61","summary":"Vertex Form Agreement","assignee":"Rudy Gonzalez","reporter":"Rudy Gonzalez","priority":"Highest","status":"Completed","resolution":"","created":"2025-11-18T08:33:00","updated":"2026-01-19T08:30:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":-954.1,"firstResponseHrs":-4326.53,"type":"Other"},{"key":"ARTM-60","summary":"Disney - Professional Services Agreement","assignee":"Jim Baehr","reporter":"Chris Mehl","priority":"Highest","status":"Completed","resolution":"","created":"2025-11-11T17:00:00","updated":"2026-04-07T09:01:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":-970.1,"firstResponseHrs":-4486.08,"type":"Other"},{"key":"ARTM-59","summary":"Animo Dev, LLC MNDA","assignee":"Rudy Gonzalez","reporter":"Christopher Hogan","priority":"Highest","status":"Completed","resolution":"","created":"2025-11-09T10:57:00","updated":"2025-11-10T08:56:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":null,"firstResponseHrs":-4540.13,"type":"MNDA"},{"key":"ARTM-58","summary":"US Trades Service Agreement","assignee":"Sarah Haney","reporter":"Angela Lasher","priority":"Highest","status":"Completed","resolution":"","created":"2025-11-06T10:27:00","updated":"2026-02-24T12:44:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":-1013.17,"firstResponseHrs":18.52,"type":"Other"},{"key":"ARTM-57","summary":"L3Harris - General Terms & Conditions document from","assignee":"Rudy Gonzalez","reporter":"Fred Rudolph","priority":"Highest","status":"Completed","resolution":"","created":"2025-10-31T09:55:00","updated":"2026-03-03T15:44:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":-1042.1,"firstResponseHrs":-82.02,"type":"Other"},{"key":"ARTM-56","summary":"Wildeck Ts & Cs","assignee":"Jim Baehr","reporter":"Meg Smith","priority":"Lowest","status":"Completed","resolution":"","created":"2025-10-29T20:39:00","updated":"2025-11-03T09:25:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":null,"firstResponseHrs":-4795.43,"type":"Other"},{"key":"ARTM-55","summary":"Bimbo Bakeries Master Service Agreement","assignee":"Rudy Gonzalez","reporter":"Justin Ray","priority":"Highest","status":"Completed","resolution":"","created":"2025-10-29T10:26:00","updated":"2026-01-06T14:52:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":-1042.1,"firstResponseHrs":18.8,"type":"Other"},{"key":"ARTM-54","summary":"Review of Terms and Conditions attached to a services quote","assignee":"Sarah Haney","reporter":"Candace Robinson","priority":"Highest","status":"Completed","resolution":"","created":"2025-10-23T12:15:00","updated":"2025-11-03T09:05:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":-1095.78,"firstResponseHrs":-167.9,"type":"Other"},{"key":"ARTM-53","summary":"TCB Industries - MNDA","assignee":"Sarah Haney","reporter":"Brent Whittaker","priority":"Highest","status":"Completed","resolution":"","created":"2025-10-23T09:24:00","updated":"2025-11-06T14:51:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":-1095.78,"firstResponseHrs":19.75,"type":"MNDA"},{"key":"ARTM-52","summary":"Stream Reality Partners - MNDA","assignee":"Sarah Haney","reporter":"Fred Rudolph","priority":"Highest","status":"Completed","resolution":"","created":"2025-10-22T10:43:00","updated":"2026-03-30T09:18:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":-1102.35,"firstResponseHrs":19.52,"type":"MNDA"},{"key":"ARTM-50","summary":"Bridgestone NDA","assignee":"Rudy Gonzalez","reporter":"Alexa Brock","priority":"Low","status":"Completed","resolution":"","created":"2025-10-17T16:10:00","updated":"2026-01-29T09:11:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":-1113.82,"firstResponseHrs":-70.08,"type":"NDA"},{"key":"ARTM-49","summary":"Bimbo Bakery NDA review","assignee":"Rudy Gonzalez","reporter":"Bob Hosier","priority":"Highest","status":"Completed","resolution":"","created":"2025-10-17T10:03:00","updated":"2026-01-12T08:51:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":-1113.85,"firstResponseHrs":-76.15,"type":"NDA"},{"key":"ARTM-48","summary":"MNDA Nerak","assignee":"Rudy Gonzalez","reporter":"Brad Storms","priority":"Highest","status":"Completed","resolution":"","created":"2025-10-15T12:07:00","updated":"2025-11-10T08:51:00","due":"2025-10-31T00:00:00","firstResponse":"","targetCompletion":"2025-10-24T00:00:00","resolutionHrs":-1140.67,"firstResponseHrs":16.52,"type":"MNDA"},{"key":"ARTM-46","summary":"Cardinal Health - MNDA","assignee":"Jim Baehr","reporter":"Rudy Gonzalez","priority":"Highest","status":"Completed","resolution":"","created":"2025-10-10T08:53:00","updated":"2026-01-12T08:50:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":-1162.1,"firstResponseHrs":-5263.2,"type":"MNDA"},{"key":"ARTM-45","summary":"Mujin - Supplier Subcontractor Agreement","assignee":"Jim Baehr","reporter":"Rudy Gonzalez","priority":"Low","status":"Discovery","resolution":"","created":"2025-10-07T14:23:00","updated":"2026-01-12T08:50:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":-1162.1,"firstResponseHrs":-5329.7,"type":"Subcontract"},{"key":"ARTM-44","summary":"MNDA - US Trades LLC","assignee":"Rudy Gonzalez","reporter":"Angela Lasher","priority":"Highest","status":"Completed","resolution":"","created":"2025-10-07T12:49:00","updated":"2025-10-28T14:57:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":-1190.73,"firstResponseHrs":-5331.28,"type":"MNDA"},{"key":"ARTM-40","summary":"TREW MSA","assignee":"Jim Baehr","reporter":"Rudy Gonzalez","priority":"Highest","status":"Completed","resolution":"","created":"2025-10-06T12:47:00","updated":"2026-01-12T08:49:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":-1190.73,"firstResponseHrs":-5355.3,"type":"MSA"},{"key":"ARTM-39","summary":"Clorox MNDA","assignee":"Jim Baehr","reporter":"Rudy Gonzalez","priority":"Medium","status":"Completed","resolution":"","created":"2025-10-06T08:55:00","updated":"2025-10-06T12:45:00","due":"","firstResponse":"","targetCompletion":"2025-10-01T00:00:00","resolutionHrs":null,"firstResponseHrs":-5359.17,"type":"MNDA"},{"key":"ARTM-37","summary":"Intralox","assignee":"Jim Baehr","reporter":"Rudy Gonzalez","priority":"Medium","status":"Completed","resolution":"","created":"2025-09-25T10:54:00","updated":"2025-09-30T15:14:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":null,"firstResponseHrs":-5621.2,"type":"Other"},{"key":"ARTM-36","summary":"Graco -- Contract Support","assignee":"Jim Baehr","reporter":"Rudy Gonzalez","priority":"Medium","status":"Completed","resolution":"","created":"2025-09-25T09:33:00","updated":"2025-10-07T14:12:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":null,"firstResponseHrs":-5622.53,"type":"Other"},{"key":"ARTM-35","summary":"Golden Goose- MNDA","assignee":"Jim Baehr","reporter":"Rudy Gonzalez","priority":"Medium","status":"Completed","resolution":"","created":"2025-09-24T16:41:00","updated":"2025-09-25T14:41:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":null,"firstResponseHrs":-5639.4,"type":"MNDA"},{"key":"ARTM-34","summary":"General Dynamics - Customer Agreement","assignee":"Jim Baehr","reporter":"Rudy Gonzalez","priority":"Medium","status":"Completed","resolution":"","created":"2025-09-24T16:35:00","updated":"2025-09-25T14:41:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":null,"firstResponseHrs":-5639.5,"type":"Other"},{"key":"ARTM-33","summary":"Geek+ MSA and MNDA","assignee":"Jim Baehr","reporter":"Rudy Gonzalez","priority":"Medium","status":"Changes Requested","resolution":"","created":"2025-09-24T16:03:00","updated":"2026-04-09T16:26:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":-1253.42,"firstResponseHrs":-5640.03,"type":"MNDA"},{"key":"ARTM-32","summary":"ScanSource -- Datum MSA, EULA, & SOW","assignee":"Jim Baehr","reporter":"Rudy Gonzalez","priority":"Medium","status":"Completed","resolution":"","created":"2025-09-24T15:56:00","updated":"2025-10-15T15:50:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":null,"firstResponseHrs":-5640.15,"type":"MSA"},{"key":"ARTM-31","summary":"Disney Lump Sum Construction Contract","assignee":"Jim Baehr","reporter":"Rudy Gonzalez","priority":"Medium","status":"Completed","resolution":"","created":"2025-09-24T15:11:00","updated":"2025-10-07T14:03:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":-1253.42,"firstResponseHrs":-5640.9,"type":"Other"},{"key":"ARTM-30","summary":"Subcontractor Language - Change Order Billing Process.","assignee":"Jim Baehr","reporter":"Rudy Gonzalez","priority":"Medium","status":"Completed","resolution":"","created":"2025-09-23T16:41:00","updated":"2026-01-12T08:49:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":-1267.02,"firstResponseHrs":-5663.42,"type":"Subcontract"},{"key":"ARTM-29","summary":"ATG - MNDA","assignee":"Rudy Gonzalez","reporter":"Rudy Gonzalez","priority":"Medium","status":"Completed","resolution":"","created":"2025-09-23T15:41:00","updated":"2025-10-07T13:47:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":null,"firstResponseHrs":-5664.4,"type":"MNDA"},{"key":"ARTM-28","summary":"Wiese rental agreement","assignee":"Jim Baehr","reporter":"Rudy Gonzalez","priority":"Medium","status":"Completed","resolution":"","created":"2025-09-23T15:31:00","updated":"2025-09-30T11:23:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":null,"firstResponseHrs":-5664.57,"type":"Other"},{"key":"ARTM-41","summary":"Schmalz - NDA","assignee":"Rudy Gonzalez","reporter":"Austin Umstead","priority":"Medium","status":"Completed","resolution":"","created":"2025-09-23T13:22:00","updated":"2025-10-08T12:02:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":-1269.77,"firstResponseHrs":-5666.72,"type":"NDA"},{"key":"ARTM-27","summary":"Tompkins Robotics","assignee":"Rudy Gonzalez","reporter":"Rudy Gonzalez","priority":"Low","status":"Discovery","resolution":"","created":"2025-09-23T08:40:00","updated":"2026-02-27T08:58:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":-1189.87,"firstResponseHrs":-5671.42,"type":"Other"},{"key":"ARTM-26","summary":"Terracon - MSA","assignee":"Rudy Gonzalez","reporter":"Rudy Gonzalez","priority":"Medium","status":"Completed","resolution":"","created":"2025-09-23T08:38:00","updated":"2025-11-06T15:27:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":null,"firstResponseHrs":-5671.45,"type":"MSA"},{"key":"ARTM-25","summary":"Columbia Okura - Terms and Conditions","assignee":"Rudy Gonzalez","reporter":"Rudy Gonzalez","priority":"Low","status":"Discovery","resolution":"","created":"2025-09-23T08:38:00","updated":"2026-01-12T08:48:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":-1253.38,"firstResponseHrs":-5671.47,"type":"Other"},{"key":"ARTM-24","summary":"HireQuest - MSA","assignee":"Sarah Haney","reporter":"Rudy Gonzalez","priority":"Medium","status":"Completed","resolution":"","created":"2025-09-23T08:36:00","updated":"2026-03-09T16:12:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":-1253.38,"firstResponseHrs":-5671.48,"type":"MSA"},{"key":"ARTM-23","summary":"HazTek - Proposal Review","assignee":"Rudy Gonzalez","reporter":"Rudy Gonzalez","priority":"Medium","status":"Completed","resolution":"","created":"2025-09-23T08:36:00","updated":"2025-10-15T15:46:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":-1253.38,"firstResponseHrs":-5671.48,"type":"Proposal"},{"key":"ARTM-22","summary":"JDM Mechanical -  Contract Support","assignee":"Jim Baehr","reporter":"Rudy Gonzalez","priority":"Medium","status":"Completed","resolution":"","created":"2025-09-23T08:35:00","updated":"2025-10-07T13:51:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":null,"firstResponseHrs":-5671.5,"type":"Other"},{"key":"ARTM-21","summary":"Applied Technology Group - MSA","assignee":"Jim Baehr","reporter":"Rudy Gonzalez","priority":"Medium","status":"Completed","resolution":"","created":"2025-09-23T08:34:00","updated":"2025-12-11T11:51:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":null,"firstResponseHrs":-5671.52,"type":"MSA"},{"key":"ARTM-20","summary":"PeopleReady - Staffing Agreement","assignee":"Jim Baehr","reporter":"Rudy Gonzalez","priority":"Medium","status":"Sent","resolution":"","created":"2025-09-23T08:33:00","updated":"2026-05-11T15:19:00","due":"2025-09-15T00:00:00","firstResponse":"","targetCompletion":"","resolutionHrs":-1190.32,"firstResponseHrs":-5671.53,"type":"Other"},{"key":"ARTM-17","summary":"MOVU MOU","assignee":"Jim Baehr","reporter":"Rudy Gonzalez","priority":"Medium","status":"Discovery","resolution":"","created":"2025-09-23T07:54:00","updated":"2025-11-03T09:38:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":-1253.55,"firstResponseHrs":-5672.18,"type":"Other"},{"key":"ARTM-16","summary":"Sephora MNDA","assignee":"Jim Baehr","reporter":"Rudy Gonzalez","priority":"Medium","status":"Completed","resolution":"","created":"2025-09-22T17:29:00","updated":"2025-10-30T13:19:00","due":"2025-09-24T00:00:00","firstResponse":"","targetCompletion":"2025-09-24T00:00:00","resolutionHrs":-1253.4,"firstResponseHrs":-5686.6,"type":"MNDA"},{"key":"ARTM-15","summary":"ScanSource MSA, SOW And EULA","assignee":"Jim Baehr","reporter":"Rudy Gonzalez","priority":"Medium","status":"Completed","resolution":"","created":"2025-09-20T10:43:00","updated":"2025-10-30T13:16:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":null,"firstResponseHrs":-5741.37,"type":"MSA"},{"key":"ARTM-14","summary":"Uni Express Inc. -- MNDA","assignee":"Jim Baehr","reporter":"Rudy Gonzalez","priority":"Medium","status":"Completed","resolution":"","created":"2025-09-19T15:41:00","updated":"2025-10-30T13:11:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":null,"firstResponseHrs":-5760.4,"type":"MNDA"},{"key":"ARTM-13","summary":"RXO - Agreement for \"Yard Jockey Facilitation\"","assignee":"Rudy Gonzalez","reporter":"Rudy Gonzalez","priority":"Medium","status":"Completed","resolution":"","created":"2025-09-19T12:27:00","updated":"2026-01-12T08:46:00","due":"2025-10-10T00:00:00","firstResponse":"","targetCompletion":"2025-10-03T00:00:00","resolutionHrs":-1250.1,"firstResponseHrs":-5763.65,"type":"Other"},{"key":"ARTM-12","summary":"YASKAWA AMERICA, INC. -  TERMS AND CONDITIONS OF SALE","assignee":"Rudy Gonzalez","reporter":"Rudy Gonzalez","priority":"Medium","status":"Discovery","resolution":"","created":"2025-09-19T12:16:00","updated":"2025-11-03T09:32:00","due":"","firstResponse":"","targetCompletion":"2025-10-03T00:00:00","resolutionHrs":-1253.57,"firstResponseHrs":-5763.82,"type":"Other"},{"key":"ARTM-11","summary":"Honeywell Intelligrated Integrator Agreement","assignee":"Jim Baehr","reporter":"Rudy Gonzalez","priority":"Medium","status":"Negotiation","resolution":"","created":"2025-09-19T10:28:00","updated":"2026-03-31T10:32:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":-1287.57,"firstResponseHrs":-5765.62,"type":"Other"},{"key":"ARTM-10","summary":"OPEX CORPORATION Reseller Products and Software Distribution Agreement","assignee":"Jim Baehr","reporter":"Rudy Gonzalez","priority":"Medium","status":"Completed","resolution":"","created":"2025-09-19T10:22:00","updated":"2025-10-30T13:09:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":null,"firstResponseHrs":-5765.72,"type":"Other"},{"key":"ARTM-9","summary":"A-Lign Professional Services Agreement","assignee":"Jim Baehr","reporter":"Rudy Gonzalez","priority":"Medium","status":"Completed","resolution":"","created":"2025-09-19T10:00:00","updated":"2026-04-07T09:33:00","due":"2025-10-03T00:00:00","firstResponse":"","targetCompletion":"2025-10-03T00:00:00","resolutionHrs":null,"firstResponseHrs":-5766.08,"type":"Other"},{"key":"ARTM-8","summary":"MNDA for Hunter Douglas","assignee":"Rudy Gonzalez","reporter":"Jim Baehr","priority":"High","status":"Completed","resolution":"","created":"2025-09-18T15:01:00","updated":"2025-10-30T13:08:00","due":"2025-09-23T00:00:00","firstResponse":"","targetCompletion":"2025-09-23T00:00:00","resolutionHrs":-1293.02,"firstResponseHrs":-5785.07,"type":"MNDA"},{"key":"ARTM-7","summary":"MNDA - MC Dean and Waller","assignee":"Jim Baehr","reporter":"Rudy Gonzalez","priority":"Medium","status":"Completed","resolution":"","created":"2025-09-18T14:14:00","updated":"2025-10-15T15:01:00","due":"2025-10-17T00:00:00","firstResponse":"","targetCompletion":"2025-09-26T00:00:00","resolutionHrs":-1293.7,"firstResponseHrs":19.0,"type":"MNDA"},{"key":"ARTM-42","summary":"A-LIGN MSA","assignee":"Rudy Gonzalez","reporter":"Adam Bommer","priority":"Medium","status":"Completed","resolution":"","created":"2025-08-11T14:22:00","updated":"2025-10-30T11:40:00","due":"","firstResponse":"","targetCompletion":"","resolutionHrs":-1516.1,"firstResponseHrs":-6697.72,"type":"MSA"}];
 
 // ── Constants ──
-const JIRA_BASE='https://designedconveyor.atlassian.net/browse/';
-function jiraUrl(key){return JIRA_BASE+key;}
 const STATUS_ORDER=['New','Initiate','Discovery','Intake Approval','Negotiate','Negotiation','Changes Requested','Sent','Processed For Signatures','Processed for Approval/Signature','Completed'];
 const OPEN_STATUSES=new Set(STATUS_ORDER.filter(s=>s!=='Completed'));
 const TYPE_CLASS={MNDA:'b-mnda',NDA:'b-nda',MSA:'b-msa',MPA:'b-mnda',SOW:'b-sow',Subcontract:'b-sub','Change Order':'b-co','Non-Compete':'b-nc',Other:'b-other'};
-const STATUS_CLASS={
-  'New':'s-new','Initiate':'s-initiate','Discovery':'s-discovery','Intake Approval':'s-intake',
-  'Negotiate':'s-negotiate','Negotiation':'s-negotiate','Changes Requested':'s-changes',
-  'Sent':'s-sent','Processed For Signatures':'s-processed','Processed for Approval/Signature':'s-processed',
-  'Completed':'s-completed'
-};
+const STATUS_CLASS={'New':'s-new','Initiate':'s-initiate','Discovery':'s-discovery','Intake Approval':'s-intake','Negotiate':'s-negotiate','Negotiation':'s-negotiate','Changes Requested':'s-changes','Sent':'s-sent','Processed For Signatures':'s-processed','Processed for Approval/Signature':'s-processed','Completed':'s-completed'};
 const PRIO_CLASS={Highest:'prio-highest',High:'prio-high',Medium:'prio-medium',Low:'prio-low',Lowest:'prio-lowest'};
+const TYPE_COLORS={MNDA:'#059669',NDA:'#2563eb',MSA:'#d97706',SOW:'#7c3aed',Subcontract:'#dc2626','Change Order':'#f97316','Non-Compete':'#db2777',MPA:'#0d9488',Other:'#6b7280'};
 const GENERATED=new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
+const TODAY=new Date();TODAY.setHours(0,0,0,0);
 
 // ── State ──
-let currentTab='queue';
-let tf={assignee:'All',status:'All',type:'All',priority:'All'};
-let tq='',tsf='created',tsd=-1,tFiltered=[];
-let qAssignee='All';
+let currentTab='queue',qAssignee='All';
+let tf={assignee:'All',status:'All',type:'All'},tq='',tsf='created',tsd=-1,tFiltered=[];
+let r1TypeFilter='All';
 
 // ── Helpers ──
 function e(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
 function badge(t,cls){return`<span class="badge ${cls||'b-other'}">${e(t)}</span>`}
 function typeBadge(t){return badge(t,TYPE_CLASS[t]||'b-other')}
 function statusBadge(s){return badge(s,STATUS_CLASS[s]||'b-other')}
-function prioDot(p){return`<span class="prio ${PRIO_CLASS[p]||'prio-low'}"></span>`}
 function fmtDate(iso){if(!iso)return'—';const d=new Date(iso);return d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'2-digit'})}
 function fmtHrs(h){if(h===null||h===undefined)return'—';const abs=Math.abs(h);const hh=Math.floor(abs);const mm=Math.round((abs-hh)*60);return(h<0?'-':'')+hh+'h'+(mm>0?mm+'m':'')}
-function daysSince(iso){if(!iso)return null;return Math.round((new Date()-new Date(iso))/86400000)}
+function daysSince(iso){if(!iso)return null;return Math.round((TODAY-new Date(iso))/86400000)}
+function daysBetween(a,b){if(!a||!b)return null;return Math.round((new Date(b)-new Date(a))/86400000)}
 function avg(arr){if(!arr.length)return 0;return arr.reduce((a,b)=>a+b,0)/arr.length}
+function median(arr){if(!arr.length)return 0;const s=[...arr].sort((a,b)=>a-b);const m=Math.floor(s.length/2);return s.length%2?s[m]:(s[m-1]+s[m])/2}
 
 // ── Dark mode ──
 function toggleDark(){const dark=document.body.classList.toggle('dark');document.getElementById('theme-btn').textContent=dark?'☀️':'🌙';try{localStorage.setItem('artm-theme',dark?'dark':'light')}catch(e){}}
@@ -334,16 +399,17 @@ function toggleDark(){const dark=document.body.classList.toggle('dark');document
 function switchTab(tab){
   currentTab=tab;
   document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
-  ['queue','performance','volume','tickets','admin'].forEach(t=>{const el=document.getElementById('tab-'+t);if(el)el.style.display=t===tab?'block':'none';});
+  ['queue','performance','volume','reports','tickets','admin'].forEach(t=>{const el=document.getElementById('tab-'+t);if(el)el.style.display=t===tab?'block':'none';});
   if(tab==='queue')renderQueue();
   if(tab==='performance')renderPerformance();
   if(tab==='volume')renderVolume();
+  if(tab==='reports')renderReports();
   if(tab==='tickets')renderTickets();
   if(tab==='admin')renderAdmin();
 }
 
 // ══════════════════════════════════════════════
-// QUEUE TAB
+// QUEUE
 // ══════════════════════════════════════════════
 function renderQueue(){
   const open=DATA.filter(r=>OPEN_STATUSES.has(r.status));
@@ -351,27 +417,19 @@ function renderQueue(){
   const slaBreach=open.filter(r=>r.firstResponseHrs!==null&&r.firstResponseHrs<0);
   const ages=open.map(r=>daysSince(r.created)).filter(x=>x!==null);
   const oldest=ages.length?Math.max(...ages):0;
-  // Stats
   document.getElementById('q-stats').innerHTML=[
     ['Open Tickets',open.length,'',''],
     ['SLA Breaches',slaBreach.length,slaBreach.length>0?'red':'green',''],
     ['Avg Age (days)',ages.length?Math.round(avg(ages)):0,'',''],
     ['Oldest (days)',oldest,oldest>14?'amber':'','']
   ].map(([l,v,c])=>`<div class="stat-card"><div class="stat-label">${l}</div><div class="stat-value ${c}">${v}</div></div>`).join('');
-  // Assignee chips
-  const assignees=['All',...new Set(open.map(r=>r.assignee).filter(Boolean)).values()].sort((a,b)=>a==='All'?-1:b==='All'?1:a.localeCompare(b));
-  document.getElementById('q-filters').innerHTML=assignees.map(a=>`<button class="chip${qAssignee===a?' active':''}" onclick="qAssignee='${e(a)}';renderQueue()">${e(a)}</button>`).join('');
-  // Pipeline
-  const stages=STATUS_ORDER.filter(s=>s!=='Completed');
+  const assignees=['All',...new Set(open.map(r=>r.assignee).filter(Boolean))].sort((a,b)=>a==='All'?-1:b==='All'?1:a.localeCompare(b));
+  document.getElementById('q-filters').innerHTML=assignees.map(a=>`<button class="chip${qAssignee===a?' active':''}" onclick="qAssignee='${e(a)}';renderQueue()">${e(a.split(' ')[0])}</button>`).join('');
+  const stages=['New','Initiate','Discovery','Intake Approval','Negotiate','Changes Requested','Sent','Processed For Signatures'];
   let html='';
   stages.forEach(stage=>{
-    const cards=byA.filter(r=>r.status===stage||
-      (stage==='Negotiate'&&(r.status==='Negotiate'||r.status==='Negotiation'))||
-      (stage==='Processed For Signatures'&&(r.status==='Processed For Signatures'||r.status==='Processed for Approval/Signature'))
-    );
-    // de-dup for combined stages
-    if(stage==='Negotiation'||stage==='Processed for Approval/Signature')return;
-    const label=stage==='Negotiate'?'Negotiate':stage==='Processed For Signatures'?'Processed':stage;
+    const cards=byA.filter(r=>r.status===stage||(stage==='Negotiate'&&r.status==='Negotiation')||(stage==='Processed For Signatures'&&r.status==='Processed for Approval/Signature'));
+    const label=stage==='Processed For Signatures'?'Processed':stage;
     const cls=STATUS_CLASS[stage]||'b-other';
     html+=`<div class="pipeline-col">
       <div class="pipeline-header ${cls}">${e(label)}<span>${cards.length}</span></div>
@@ -379,7 +437,7 @@ function renderQueue(){
         const age=daysSince(r.created);
         const breach=r.firstResponseHrs!==null&&r.firstResponseHrs<0;
         return`<div class="pcard" style="border-left:3px solid ${breach?'var(--red)':'var(--border)'}">
-          <div class="pcard-key"><a href="${jiraUrl(r.key)}" target="_blank" rel="noopener" style="color:var(--blue)">${e(r.key)}</a></div>
+          <div class="pcard-key">${e(r.key)}</div>
           <div class="pcard-sum" title="${e(r.summary)}">${e(r.summary)}</div>
           <div class="pcard-meta">${typeBadge(r.type)}<span style="font-size:10px;color:var(--text4);margin-left:auto">${age!==null?age+'d':''}</span></div>
         </div>`;
@@ -390,34 +448,33 @@ function renderQueue(){
 }
 
 // ══════════════════════════════════════════════
-// PERFORMANCE TAB
+// PERFORMANCE
 // ══════════════════════════════════════════════
 function renderPerformance(){
   const now=new Date();
-  const thisMonth=DATA.filter(r=>r.status==='Completed'&&r.updated&&new Date(r.updated).getMonth()===now.getMonth()&&new Date(r.updated).getFullYear()===now.getFullYear());
   const completed=DATA.filter(r=>r.status==='Completed');
-  const withRes=completed.filter(r=>r.resolutionHrs!==null);
-  const avgRes=withRes.length?avg(withRes.map(r=>r.resolutionHrs)):null;
+  const thisMonth=completed.filter(r=>r.updated&&new Date(r.updated).getMonth()===now.getMonth()&&new Date(r.updated).getFullYear()===now.getFullYear());
   const open=DATA.filter(r=>OPEN_STATUSES.has(r.status));
   const breaches=open.filter(r=>r.firstResponseHrs!==null&&r.firstResponseHrs<0);
-  const slaRate=open.filter(r=>r.firstResponseHrs!==null).length>0?
-    Math.round((1-breaches.length/open.filter(r=>r.firstResponseHrs!==null).length)*100):null;
+  const withFR=open.filter(r=>r.firstResponseHrs!==null);
+  const slaRate=withFR.length?Math.round((1-breaches.length/withFR.length)*100):null;
   document.getElementById('p-stats').innerHTML=[
-    ['Completed (This Mo)',thisMonth.length,'green',''],
-    ['Total Completed',completed.length,'',''],
-    ['Avg Resolution',avgRes!==null?fmtHrs(avgRes):'—','',''],
-    ['SLA Compliance',slaRate!==null?slaRate+'%':'—',slaRate!==null?(slaRate>=80?'green':'red'):'','']
+    ['Completed (This Mo)',thisMonth.length,'green'],
+    ['Total Completed',completed.length,''],
+    ['Open Tickets',open.length,''],
+    ['SLA Compliance',slaRate!==null?slaRate+'%':'—',slaRate!==null?(slaRate>=80?'green':'red'):'']
   ].map(([l,v,c])=>`<div class="stat-card"><div class="stat-label">${l}</div><div class="stat-value ${c}">${v}</div></div>`).join('');
-  // Completed by assignee
   const assignees=[...new Set(DATA.map(r=>r.assignee).filter(Boolean))].sort();
-  const compByA=assignees.map(a=>{return{a,n:completed.filter(r=>r.assignee===a).length}});
+  const compByA=assignees.map(a=>({a,n:completed.filter(r=>r.assignee===a).length}));
   const maxComp=Math.max(...compByA.map(x=>x.n),1);
   document.getElementById('p-assign-chart').innerHTML=compByA.map(x=>{
     const pct=Math.round((x.n/maxComp)*140);
     return`<div class="bar-col"><div class="bar-val">${x.n}</div><div class="bar" style="height:${pct}px"></div><div class="bar-label">${e(x.a.split(' ')[0])}</div></div>`;
   }).join('');
-  // Avg resolution by assignee
-  const cycleByA=assignees.map(a=>{const hrs=completed.filter(r=>r.assignee===a&&r.resolutionHrs!==null).map(r=>r.resolutionHrs);return{a,v:hrs.length?Math.round(avg(hrs)):null}});
+  const cycleByA=assignees.map(a=>{
+    const days=completed.filter(r=>r.assignee===a&&r.created&&r.updated).map(r=>daysBetween(r.created,r.updated)).filter(d=>d!==null&&d>=0);
+    return{a,v:days.length?Math.round(avg(days)*24):null};
+  });
   const maxCyc=Math.max(...cycleByA.map(x=>x.v||0),1);
   document.getElementById('p-cycle-chart').innerHTML=cycleByA.map(x=>{
     if(x.v===null)return`<div class="bar-col"><div class="bar-val">—</div><div class="bar" style="height:2px;opacity:.3"></div><div class="bar-label">${e(x.a.split(' ')[0])}</div></div>`;
@@ -425,70 +482,53 @@ function renderPerformance(){
     const col=x.v>200?'var(--red)':x.v>100?'var(--amber)':'var(--green)';
     return`<div class="bar-col"><div class="bar-val">${x.v}h</div><div class="bar" style="height:${pct}px;background:${col}"></div><div class="bar-label">${e(x.a.split(' ')[0])}</div></div>`;
   }).join('');
-  // SLA breaches table
   if(!breaches.length){document.getElementById('p-sla-table').innerHTML='<div class="empty" style="padding:24px"><h3>✅ No open SLA breaches</h3></div>';return;}
   const sorted=breaches.sort((a,b)=>a.firstResponseHrs-b.firstResponseHrs);
   document.getElementById('p-sla-table').innerHTML=`<div style="overflow-x:auto"><table>
     <thead><tr><th class="no-sort">Ticket</th><th class="no-sort">Summary</th><th class="no-sort">Assignee</th><th class="no-sort">Status</th><th class="no-sort">Type</th><th class="no-sort">Overdue</th><th class="no-sort">Created</th></tr></thead>
     <tbody>${sorted.slice(0,50).map(r=>`<tr>
-      <td style="font-weight:500"><a href="${jiraUrl(r.key)}" target="_blank" rel="noopener" style="color:var(--blue)">${e(r.key)}</a></td>
-      <td style="max-width:280px;overflow:hidden;text-overflow:ellipsis" title="${e(r.summary)}">${e(r.summary)}</td>
-      <td>${e(r.assignee)}</td>
-      <td>${statusBadge(r.status)}</td>
-      <td>${typeBadge(r.type)}</td>
+      <td style="color:var(--blue);font-weight:500">${e(r.key)}</td>
+      <td style="max-width:280px" title="${e(r.summary)}">${e(r.summary)}</td>
+      <td>${e(r.assignee)}</td><td>${statusBadge(r.status)}</td><td>${typeBadge(r.type)}</td>
       <td class="sla-breach">${fmtHrs(Math.abs(r.firstResponseHrs))}</td>
-      <td>${fmtDate(r.created)}</td>
-    </tr>`).join('')}</tbody>
-  </table></div>`;
+      <td style="color:var(--text3)">${fmtDate(r.created)}</td>
+    </tr>`).join('')}</tbody></table></div>`;
 }
 
 // ══════════════════════════════════════════════
-// VOLUME TAB
+// VOLUME
 // ══════════════════════════════════════════════
 function renderVolume(){
-  // Monthly buckets
   const months={};
-  DATA.forEach(r=>{
-    if(!r.created)return;
-    const d=new Date(r.created);
-    const k=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
-    months[k]=(months[k]||0)+1;
-  });
+  DATA.forEach(r=>{if(!r.created)return;const d=new Date(r.created);const k=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;months[k]=(months[k]||0)+1;});
   const mKeys=Object.keys(months).sort();
-  const mVals=mKeys.map(k=>months[k]);
-  const maxM=Math.max(...mVals,1);
   const now=new Date();
   const thisM=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
   const lastM=now.getMonth()===0?`${now.getFullYear()-1}-12`:`${now.getFullYear()}-${String(now.getMonth()).padStart(2,'0')}`;
   document.getElementById('v-stats').innerHTML=[
-    ['Total Tickets',DATA.length,'',''],
-    ['This Month',months[thisM]||0,'',''],
-    ['Last Month',months[lastM]||0,'',''],
-    ['Contract Types',[...new Set(DATA.map(r=>r.type))].length,'','']
+    ['Total Tickets',DATA.length,''],
+    ['This Month',months[thisM]||0,''],
+    ['Last Month',months[lastM]||0,''],
+    ['Contract Types',[...new Set(DATA.map(r=>r.type))].length,'']
   ].map(([l,v,c])=>`<div class="stat-card"><div class="stat-label">${l}</div><div class="stat-value ${c}">${v}</div></div>`).join('');
-  // Monthly chart
   const recentKeys=mKeys.slice(-12);
   const recentVals=recentKeys.map(k=>months[k]);
   const maxR=Math.max(...recentVals,1);
   document.getElementById('v-monthly-chart').innerHTML=recentKeys.map((k,i)=>{
-    const pct=Math.round((recentVals[i]/maxR)*140);
+    const pct=Math.round((recentVals[i]/maxR)*160);
     const label=k.slice(5)+'/'+k.slice(2,4);
     return`<div class="bar-col"><div class="bar-val">${recentVals[i]}</div><div class="bar" style="height:${pct}px"></div><div class="bar-label">${label}</div></div>`;
   }).join('');
-  // Type breakdown
-  const typeCounts={};
-  DATA.forEach(r=>{typeCounts[r.type]=(typeCounts[r.type]||0)+1});
+  const typeCounts={};DATA.forEach(r=>{typeCounts[r.type]=(typeCounts[r.type]||0)+1});
   const typesSorted=Object.entries(typeCounts).sort((a,b)=>b[1]-a[1]);
   const maxT=typesSorted[0]?typesSorted[0][1]:1;
   document.getElementById('v-type-chart').innerHTML=typesSorted.map(([t,n])=>`
     <div class="hbar-row">
       <div class="hbar-label">${typeBadge(t)}</div>
-      <div class="hbar-track"><div class="hbar-fill" style="width:${Math.round(n/maxT*100)}%"></div></div>
+      <div class="hbar-track"><div class="hbar-fill" style="width:${Math.round(n/maxT*100)}%;background:${TYPE_COLORS[t]||'var(--blue)'}"></div></div>
       <div class="hbar-val">${n}</div>
     </div>`).join('');
-  // Reporter breakdown
-  const repCounts={};
-  DATA.forEach(r=>{if(r.reporter)repCounts[r.reporter]=(repCounts[r.reporter]||0)+1});
+  const repCounts={};DATA.forEach(r=>{if(r.reporter)repCounts[r.reporter]=(repCounts[r.reporter]||0)+1});
   const repSorted=Object.entries(repCounts).sort((a,b)=>b[1]-a[1]).slice(0,12);
   const maxRep=repSorted[0]?repSorted[0][1]:1;
   document.getElementById('v-reporter-chart').innerHTML=repSorted.map(([rep,n])=>`
@@ -497,6 +537,228 @@ function renderVolume(){
       <div class="hbar-track"><div class="hbar-fill" style="width:${Math.round(n/maxRep*100)}%;background:var(--purple)"></div></div>
       <div class="hbar-val">${n}</div>
     </div>`).join('');
+}
+
+// ══════════════════════════════════════════════
+// REPORTS TAB — 5 analytical reports
+// ══════════════════════════════════════════════
+function renderReports(){
+  renderR1();renderR2();renderR3();renderR4();renderR5();
+}
+
+// R1: Throughput trend by type
+function renderR1(){
+  const allTypes=[...new Set(DATA.map(r=>r.type))].sort();
+  const filtered=r1TypeFilter==='All'?DATA:DATA.filter(r=>r.type===r1TypeFilter);
+  // Build monthly buckets
+  const months={};
+  filtered.forEach(r=>{
+    if(!r.created)return;
+    const d=new Date(r.created);
+    const k=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+    if(!months[k])months[k]={};
+    months[k][r.type]=(months[k][r.type]||0)+1;
+  });
+  const mKeys=Object.keys(months).sort().slice(-10);
+  const maxVal=Math.max(...mKeys.map(k=>Object.values(months[k]).reduce((a,b)=>a+b,0)),1);
+  // Type filter chips
+  document.getElementById('r1-type-filter').innerHTML=
+    ['All',...allTypes].map(t=>`<button class="chip${r1TypeFilter===t?' active':''}" onclick="r1TypeFilter='${e(t)}';renderR1()">${r1TypeFilter==='All'&&t==='All'?'All Types':e(t)}</button>`).join('');
+  // Stacked bars
+  const usedTypes=r1TypeFilter==='All'?allTypes:[r1TypeFilter];
+  document.getElementById('r1-chart').innerHTML=mKeys.map(k=>{
+    const total=Object.values(months[k]).reduce((a,b)=>a+b,0);
+    const pct=Math.round((total/maxVal)*180);
+    const label=k.slice(5)+'/'+k.slice(2,4);
+    const segments=usedTypes.map(t=>months[k][t]||0);
+    const segTotal=segments.reduce((a,b)=>a+b,0);
+    const bars=usedTypes.map((t,i)=>{
+      const h=segTotal>0?Math.round((segments[i]/segTotal)*pct):0;
+      return h>0?`<div style="width:100%;height:${h}px;background:${TYPE_COLORS[t]||'var(--blue)'};border-radius:${i===0?'3px 3px 0 0':'0'};flex-shrink:0"></div>`:'';
+    }).reverse().join('');
+    return`<div class="bar-col">
+      <div class="bar-val">${total}</div>
+      <div style="display:flex;flex-direction:column-reverse;width:100%;height:${pct}px;align-items:stretch">${bars}</div>
+      <div class="bar-label">${label}</div>
+    </div>`;
+  }).join('');
+  // Legend
+  document.getElementById('r1-legend').innerHTML=usedTypes.map(t=>`<span class="legend-item"><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:${TYPE_COLORS[t]||'var(--blue)'}"></span>${e(t)}</span>`).join('');
+}
+
+// R2: Assignee workload balance
+function renderR2(){
+  const assignees=[...new Set(DATA.map(r=>r.assignee).filter(Boolean))].sort();
+  const open=DATA.filter(r=>OPEN_STATUSES.has(r.status));
+  const completed=DATA.filter(r=>r.status==='Completed');
+  let html=`<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:13px">
+    <thead><tr>
+      <th class="no-sort" style="padding:8px 10px;text-align:left;font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;background:var(--surface2);border-bottom:1px solid var(--border)">Assignee</th>
+      <th class="no-sort" style="padding:8px 10px;text-align:center;font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;background:var(--surface2);border-bottom:1px solid var(--border)">Total</th>
+      <th class="no-sort" style="padding:8px 10px;text-align:center;font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;background:var(--surface2);border-bottom:1px solid var(--border)">Open</th>
+      <th class="no-sort" style="padding:8px 10px;text-align:center;font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;background:var(--surface2);border-bottom:1px solid var(--border)">Completed</th>
+      <th class="no-sort" style="padding:8px 10px;text-align:center;font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;background:var(--surface2);border-bottom:1px solid var(--border)">Completion %</th>
+      <th class="no-sort" style="padding:8px 10px;text-align:center;font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;background:var(--surface2);border-bottom:1px solid var(--border)">Avg Open Age (d)</th>
+      <th class="no-sort" style="padding:8px 10px;text-align:left;font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;background:var(--surface2);border-bottom:1px solid var(--border)">Open Queue Distribution</th>
+    </tr></thead><tbody>`;
+  const totalOpen=open.length||1;
+  assignees.forEach(a=>{
+    const total=DATA.filter(r=>r.assignee===a).length;
+    const aOpen=open.filter(r=>r.assignee===a);
+    const aComp=completed.filter(r=>r.assignee===a).length;
+    const pct=total>0?Math.round(aComp/total*100):0;
+    const ages=aOpen.map(r=>daysSince(r.created)).filter(x=>x!==null);
+    const avgAge=ages.length?Math.round(avg(ages)):0;
+    const queuePct=Math.round(aOpen.length/totalOpen*100);
+    html+=`<tr>
+      <td style="padding:8px 10px;border-bottom:1px solid var(--border2);font-weight:500">${e(a)}</td>
+      <td style="padding:8px 10px;border-bottom:1px solid var(--border2);text-align:center">${total}</td>
+      <td style="padding:8px 10px;border-bottom:1px solid var(--border2);text-align:center;color:${aOpen.length>10?'var(--red)':aOpen.length>5?'var(--amber)':'var(--text)'};font-weight:${aOpen.length>5?'600':'400'}">${aOpen.length}</td>
+      <td style="padding:8px 10px;border-bottom:1px solid var(--border2);text-align:center;color:var(--green)">${aComp}</td>
+      <td style="padding:8px 10px;border-bottom:1px solid var(--border2);text-align:center">
+        <div style="display:flex;align-items:center;gap:6px;justify-content:center">
+          <div style="width:60px;height:6px;background:var(--border);border-radius:3px;overflow:hidden"><div style="height:100%;width:${pct}%;background:${pct>=80?'var(--green)':pct>=60?'var(--blue)':'var(--amber)'};border-radius:3px"></div></div>
+          <span>${pct}%</span>
+        </div>
+      </td>
+      <td style="padding:8px 10px;border-bottom:1px solid var(--border2);text-align:center;color:${avgAge>14?'var(--red)':avgAge>7?'var(--amber)':'var(--text)'}">${ages.length?avgAge+'d':'—'}</td>
+      <td style="padding:8px 10px;border-bottom:1px solid var(--border2)">
+        <div style="display:flex;align-items:center;gap:6px">
+          <div style="flex:1;height:8px;background:var(--border);border-radius:4px;overflow:hidden"><div style="height:100%;width:${queuePct}%;background:var(--blue);border-radius:4px"></div></div>
+          <span style="font-size:11px;color:var(--text3);width:36px">${aOpen.length} (${queuePct}%)</span>
+        </div>
+      </td>
+    </tr>`;
+  });
+  html+='</tbody></table></div>';
+  document.getElementById('r2-content').innerHTML=html;
+}
+
+// R3: First response performance
+function renderR3(){
+  // Compute actual hours from created → firstResponse date
+  const withFR=DATA.filter(r=>r.created&&r.firstResponse);
+  const frHours=withFR.map(r=>({
+    key:r.key,assignee:r.assignee,type:r.type,status:r.status,
+    hrs:Math.max(0,daysBetween(r.created,r.firstResponse)*24+(new Date(r.firstResponse)-new Date(r.created))/3600000%24)
+  }));
+  const assignees=[...new Set(DATA.map(r=>r.assignee).filter(Boolean))].sort();
+  const types=[...new Set(DATA.map(r=>r.type))].sort();
+  // By assignee
+  const byAssignee=assignees.map(a=>{
+    const hrs=frHours.filter(r=>r.assignee===a).map(r=>r.hrs);
+    return{a,n:hrs.length,avg:hrs.length?avg(hrs):null,med:hrs.length?median(hrs):null,p90:hrs.length?hrs.sort((x,y)=>x-y)[Math.floor(hrs.length*.9)]||0:null};
+  });
+  const maxAvg=Math.max(...byAssignee.map(x=>x.avg||0),1);
+  const byAssigneeHTML=`<div class="panel" style="margin:0">
+    <div class="panel-title" style="font-size:13px">By Assignee <span style="font-size:11px;color:var(--text4);font-weight:400">(${withFR.length} tickets with data)</span></div>
+    <div class="bar-chart" style="height:140px">${byAssignee.map(x=>{
+      if(x.avg===null)return`<div class="bar-col"><div class="bar-val">—</div><div class="bar" style="height:2px;opacity:.3"></div><div class="bar-label">${e(x.a.split(' ')[0])}</div></div>`;
+      const pct=Math.round((x.avg/maxAvg)*120);
+      const col=x.avg<=24?'var(--green)':x.avg<=72?'var(--amber)':'var(--red)';
+      return`<div class="bar-col" title="Avg:${x.avg.toFixed(1)}h Med:${x.med.toFixed(1)}h"><div class="bar-val">${x.avg.toFixed(0)}h</div><div class="bar" style="height:${pct}px;background:${col}"></div><div class="bar-label">${e(x.a.split(' ')[0])}<br><span style="color:var(--text4)">(${x.n})</span></div></div>`;
+    }).join('')}</div>
+    <div class="legend-row"><span class="legend-item"><span class="dot dot-fast"></span>≤24h</span><span class="legend-item"><span class="dot dot-slow"></span>24–72h</span><span class="legend-item"><span class="dot dot-very-slow"></span>&gt;72h</span><span style="color:var(--text4);font-size:11px">Avg hours to first response</span></div>
+  </div>`;
+  // By type
+  const byType=types.map(t=>{
+    const hrs=frHours.filter(r=>r.type===t).map(r=>r.hrs);
+    return{t,n:hrs.length,avg:hrs.length?avg(hrs):null};
+  }).filter(x=>x.avg!==null).sort((a,b)=>a.avg-b.avg);
+  const maxT=Math.max(...byType.map(x=>x.avg||0),1);
+  const byTypeHTML=`<div class="panel" style="margin:0">
+    <div class="panel-title" style="font-size:13px">By Contract Type</div>
+    ${byType.map(x=>`<div class="hbar-row">
+      <div class="hbar-label">${typeBadge(x.t)}</div>
+      <div class="hbar-track"><div class="hbar-fill" style="width:${Math.round(x.avg/maxT*100)}%;background:${x.avg<=24?'var(--green)':x.avg<=72?'var(--amber)':'var(--red)'}"></div></div>
+      <div class="hbar-val">${x.avg.toFixed(0)}h<span style="color:var(--text4);font-size:10px;margin-left:3px">(${x.n})</span></div>
+    </div>`).join('')}
+  </div>`;
+  document.getElementById('r3-content').innerHTML=byAssigneeHTML+byTypeHTML;
+}
+
+// R4: Status aging heatmap
+function renderR4(){
+  const open=DATA.filter(r=>OPEN_STATUSES.has(r.status));
+  const stages=['New','Initiate','Discovery','Intake Approval','Negotiate','Changes Requested','Sent','Processed For Signatures'];
+  const buckets=['0–3d','4–7d','8–14d','15–30d','30+d'];
+  function ageBucket(days){
+    if(days<=3)return 0;if(days<=7)return 1;if(days<=14)return 2;if(days<=30)return 3;return 4;
+  }
+  // Build grid
+  let html=`<div class="aging-grid">
+    <div class="aging-cell aging-header aging-label">Stage</div>
+    ${buckets.map(b=>`<div class="aging-cell aging-header">${b}</div>`).join('')}`;
+  stages.forEach(stage=>{
+    const tickets=open.filter(r=>r.status===stage||(stage==='Negotiate'&&r.status==='Negotiation')||(stage==='Processed For Signatures'&&r.status==='Processed for Approval/Signature'));
+    const counts=[0,0,0,0,0];
+    tickets.forEach(r=>{const d=daysSince(r.created);if(d!==null)counts[ageBucket(d)]++;});
+    const maxC=Math.max(...counts,1);
+    const label=stage==='Processed For Signatures'?'Processed':stage;
+    html+=`<div class="aging-cell aging-label">${e(label)}</div>`;
+    counts.forEach((n,i)=>{
+      const intensity=n===0?0:n<=1?1:n<=3?2:n<=5?3:4;
+      html+=`<div class="aging-cell heat-${intensity}" title="${n} ticket${n!==1?'s':''} aged ${buckets[i]}">${n>0?n:''}</div>`;
+    });
+  });
+  html+='</div>';
+  // Summary below
+  const stuckTickets=open.filter(r=>daysSince(r.created)>14).sort((a,b)=>daysSince(b.created)-daysSince(a.created));
+  if(stuckTickets.length){
+    html+=`<div style="margin-top:16px"><div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:8px">⚠ Tickets Aged 15+ Days (${stuckTickets.length})</div>
+    <div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px">
+      <thead><tr><th class="no-sort" style="padding:6px 10px;text-align:left;font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;background:var(--surface2);border-bottom:1px solid var(--border)">Ticket</th><th class="no-sort" style="padding:6px 10px;text-align:left;font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;background:var(--surface2);border-bottom:1px solid var(--border)">Summary</th><th class="no-sort" style="padding:6px 10px;text-align:left;font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;background:var(--surface2);border-bottom:1px solid var(--border)">Assignee</th><th class="no-sort" style="padding:6px 10px;text-align:left;font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;background:var(--surface2);border-bottom:1px solid var(--border)">Stage</th><th class="no-sort" style="padding:6px 10px;text-align:left;font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;background:var(--surface2);border-bottom:1px solid var(--border)">Age</th></tr></thead>
+      <tbody>${stuckTickets.map(r=>{const age=daysSince(r.created);return`<tr>
+        <td style="padding:6px 10px;border-bottom:1px solid var(--border2);color:var(--blue);font-weight:500">${e(r.key)}</td>
+        <td style="padding:6px 10px;border-bottom:1px solid var(--border2);max-width:280px;overflow:hidden;text-overflow:ellipsis" title="${e(r.summary)}">${e(r.summary)}</td>
+        <td style="padding:6px 10px;border-bottom:1px solid var(--border2)">${e(r.assignee)}</td>
+        <td style="padding:6px 10px;border-bottom:1px solid var(--border2)">${statusBadge(r.status)}</td>
+        <td style="padding:6px 10px;border-bottom:1px solid var(--border2);color:${age>30?'var(--red)':'var(--amber)'};font-weight:600">${age}d</td>
+      </tr>`;}).join('')}</tbody>
+    </table></div></div>`;
+  }
+  document.getElementById('r4-content').innerHTML=html;
+}
+
+// R5: Cycle time by contract type
+function renderR5(){
+  const completed=DATA.filter(r=>r.status==='Completed'&&r.created&&r.updated);
+  const types=[...new Set(completed.map(r=>r.type))].sort();
+  function dotClass(d){if(d<=3)return'dot-fast';if(d<=7)return'dot-ok';if(d<=14)return'dot-slow';return'dot-very-slow';}
+  const rows=types.map(t=>{
+    const tickets=completed.filter(r=>r.type===t);
+    const days=tickets.map(r=>Math.max(0,daysBetween(r.created,r.updated))).filter(d=>d!==null);
+    if(!days.length)return null;
+    const a=avg(days);const m=median(days);const mx=Math.max(...days);const mn=Math.min(...days);
+    return{t,n:tickets.length,avg:a,med:m,max:mx,min:mn,days:days.sort((a,b)=>a-b)};
+  }).filter(Boolean).sort((a,b)=>a.avg-b.avg);
+  const maxAvg=Math.max(...rows.map(r=>r.avg),1);
+  let html=`<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:13px">
+    <thead><tr>
+      <th class="no-sort" style="padding:8px 10px;text-align:left;font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;background:var(--surface2);border-bottom:1px solid var(--border)">Contract Type</th>
+      <th class="no-sort" style="padding:8px 10px;text-align:center;font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;background:var(--surface2);border-bottom:1px solid var(--border)">Count</th>
+      <th class="no-sort" style="padding:8px 10px;text-align:center;font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;background:var(--surface2);border-bottom:1px solid var(--border)">Avg Days</th>
+      <th class="no-sort" style="padding:8px 10px;text-align:center;font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;background:var(--surface2);border-bottom:1px solid var(--border)">Median</th>
+      <th class="no-sort" style="padding:8px 10px;text-align:center;font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;background:var(--surface2);border-bottom:1px solid var(--border)">Min → Max</th>
+      <th class="no-sort" style="padding:8px 10px;text-align:left;font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;background:var(--surface2);border-bottom:1px solid var(--border)">Distribution</th>
+    </tr></thead><tbody>`;
+  rows.forEach(r=>{
+    const barW=Math.round(r.avg/maxAvg*100);
+    const col=r.avg<=3?'var(--green)':r.avg<=7?'var(--blue)':r.avg<=14?'var(--amber)':'var(--red)';
+    const dots=r.days.slice(0,30).map(d=>`<span class="dot ${dotClass(d)}" title="${d}d"></span>`).join('');
+    html+=`<tr>
+      <td style="padding:8px 10px;border-bottom:1px solid var(--border2)">${typeBadge(r.t)}</td>
+      <td style="padding:8px 10px;border-bottom:1px solid var(--border2);text-align:center">${r.n}</td>
+      <td style="padding:8px 10px;border-bottom:1px solid var(--border2);text-align:center;font-weight:600;color:${col}">${r.avg.toFixed(1)}</td>
+      <td style="padding:8px 10px;border-bottom:1px solid var(--border2);text-align:center">${r.med.toFixed(1)}</td>
+      <td style="padding:8px 10px;border-bottom:1px solid var(--border2);text-align:center;color:var(--text3)">${r.min}d → ${r.max}d</td>
+      <td style="padding:8px 10px;border-bottom:1px solid var(--border2)">
+        <div class="dot-row">${dots}</div>
+      </td>
+    </tr>`;
+  });
+  html+='</tbody></table></div>';
+  document.getElementById('r5-content').innerHTML=html;
 }
 
 // ══════════════════════════════════════════════
@@ -509,12 +771,10 @@ function buildTicketFilters(){
   let h=`<div class="filter-group"><span class="filter-label">Assignee</span>`;
   h+=`<button class="chip${tf.assignee==='All'?' active':''}" onclick="setTF('assignee','All')">All</button>`;
   h+=assignees.map(a=>`<button class="chip${tf.assignee===a?' active':''}" onclick="setTF('assignee','${e(a)}')">${e(a.split(' ')[0])}</button>`).join('');
-  h+='</div>';
-  h+=`<div class="filter-group" style="margin-top:6px"><span class="filter-label">Status</span>`;
+  h+=`</div><div class="filter-group"><span class="filter-label">Status</span>`;
   h+=`<button class="chip${tf.status==='All'?' active':''}" onclick="setTF('status','All')">All</button>`;
   h+=statuses.map(s=>`<button class="chip${tf.status===s?' active':''}" onclick="setTF('status','${e(s)}')">${e(s)}</button>`).join('');
-  h+='</div>';
-  h+=`<div class="filter-group" style="margin-top:6px"><span class="filter-label">Type</span>`;
+  h+=`</div><div class="filter-group"><span class="filter-label">Type</span>`;
   h+=`<button class="chip${tf.type==='All'?' active':''}" onclick="setTF('type','All')">All</button>`;
   h+=types.map(t=>`<button class="chip${tf.type===t?' active':''}" onclick="setTF('type','${e(t)}')">${e(t)}</button>`).join('');
   h+='</div>';
@@ -524,12 +784,9 @@ function setTF(k,v){tf[k]=v;buildTicketFilters();goTickets();}
 function onSearch(){const q=document.getElementById('t-q').value;document.getElementById('t-clear').classList.toggle('show',q.length>0);goTickets();}
 function clearSearch(){document.getElementById('t-q').value='';document.getElementById('t-clear').classList.remove('show');goTickets();}
 function sortTickets(f){tsf===f?tsd*=-1:(tsf=f,tsd=1);goTickets();}
-
 function renderTickets(){buildTicketFilters();goTickets();document.getElementById('footer-date').textContent='Snapshot: '+GENERATED;}
-
 function goTickets(){
-  const q=(document.getElementById('t-q')||{}).value||'';
-  const ql=q.trim().toLowerCase();
+  const ql=((document.getElementById('t-q')||{}).value||'').trim().toLowerCase();
   tFiltered=DATA.filter(r=>{
     if(tf.assignee!=='All'&&r.assignee!==tf.assignee)return false;
     if(tf.status!=='All'&&r.status!==tf.status)return false;
@@ -537,187 +794,54 @@ function goTickets(){
     if(ql&&!r.summary.toLowerCase().includes(ql)&&!r.key.toLowerCase().includes(ql)&&!r.reporter.toLowerCase().includes(ql))return false;
     return true;
   });
-  tFiltered.sort((a,b)=>{
-    let av=a[tsf]||'',bv=b[tsf]||'';
-    if(typeof av==='number'||typeof bv==='number'){av=av||0;bv=bv||0;return tsd*(av-bv);}
-    return tsd*av.toString().localeCompare(bv.toString());
-  });
-  const cols=[
-    {l:'Key',f:'key',w:'7%'},{l:'Summary',f:'summary',w:'30%'},
-    {l:'Assignee',f:'assignee',w:'10%'},{l:'Reporter',f:'reporter',w:'10%'},
-    {l:'Type',f:'type',w:'9%'},{l:'Status',f:'status',w:'12%'},
-    {l:'Created',f:'created',w:'8%'},{l:'SLA (First Resp)',f:'firstResponseHrs',w:'8%'},
-    {l:'Resolution',f:'resolutionHrs',w:'6%'}
-  ];
-  document.getElementById('t-thead').innerHTML=cols.map(c=>
-    `<th style="width:${c.w}" onclick="sortTickets('${c.f}')">${c.l}<span class="sort-icon ${tsf===c.f?'active':''}">${tsf===c.f?(tsd===1?'▲':'▼'):'↕'}</span></th>`
-  ).join('');
-  const meta=document.getElementById('t-meta');
-  meta.textContent=`Showing ${tFiltered.length.toLocaleString()} of ${DATA.length.toLocaleString()} tickets`;
+  tFiltered.sort((a,b)=>{let av=a[tsf]||'',bv=b[tsf]||'';if(typeof av==='number'||typeof bv==='number'){av=av||0;bv=bv||0;return tsd*(av-bv);}return tsd*av.toString().localeCompare(bv.toString());});
+  const cols=[{l:'Key',f:'key',w:'7%'},{l:'Summary',f:'summary',w:'30%'},{l:'Assignee',f:'assignee',w:'10%'},{l:'Reporter',f:'reporter',w:'10%'},{l:'Type',f:'type',w:'9%'},{l:'Status',f:'status',w:'11%'},{l:'Created',f:'created',w:'8%'},{l:'SLA (FR)',f:'firstResponseHrs',w:'7%'},{l:'Resolution',f:'resolutionHrs',w:'8%'}];
+  document.getElementById('t-thead').innerHTML=cols.map(c=>`<th style="width:${c.w}" onclick="sortTickets('${c.f}')">${c.l}<span class="sort-icon ${tsf===c.f?'active':''}">${tsf===c.f?(tsd===1?'▲':'▼'):'↕'}</span></th>`).join('');
+  document.getElementById('t-meta').textContent=`Showing ${tFiltered.length.toLocaleString()} of ${DATA.length.toLocaleString()} tickets`;
   const empty=document.getElementById('t-empty');
   if(!tFiltered.length){document.getElementById('t-tbody').innerHTML='';empty.style.display='block';return;}
   empty.style.display='none';
   document.getElementById('t-tbody').innerHTML=tFiltered.slice(0,500).map(r=>{
     const slaCls=r.firstResponseHrs===null?'':r.firstResponseHrs<0?'sla-breach':r.firstResponseHrs<4?'sla-warn':'sla-ok';
-    return`<tr>
-      <td style="font-weight:500"><a href="${jiraUrl(r.key)}" target="_blank" rel="noopener" style="color:var(--blue)">${e(r.key)}</a></td>
-      <td title="${e(r.summary)}">${e(r.summary)}</td>
-      <td>${e(r.assignee)}</td>
-      <td style="color:var(--text3)">${e(r.reporter)}</td>
-      <td>${typeBadge(r.type)}</td>
-      <td>${statusBadge(r.status)}</td>
-      <td style="color:var(--text3)">${fmtDate(r.created)}</td>
-      <td class="${slaCls}">${r.firstResponseHrs!==null?fmtHrs(r.firstResponseHrs):'—'}</td>
-      <td style="color:var(--text3)">${r.resolutionHrs!==null?fmtHrs(r.resolutionHrs):'—'}</td>
-    </tr>`;
+    return`<tr><td style="color:var(--blue);font-weight:500">${e(r.key)}</td><td title="${e(r.summary)}">${e(r.summary)}</td><td>${e(r.assignee)}</td><td style="color:var(--text3)">${e(r.reporter)}</td><td>${typeBadge(r.type)}</td><td>${statusBadge(r.status)}</td><td style="color:var(--text3)">${fmtDate(r.created)}</td><td class="${slaCls}">${r.firstResponseHrs!==null?fmtHrs(r.firstResponseHrs):'—'}</td><td style="color:var(--text3)">${r.resolutionHrs!==null?fmtHrs(r.resolutionHrs):'—'}</td></tr>`;
   }).join('');
 }
 
 // ══════════════════════════════════════════════
-// ADMIN TAB
+// ADMIN
 // ══════════════════════════════════════════════
 function renderAdmin(){
   const completed=DATA.filter(r=>r.status==='Completed').length;
   const open=DATA.filter(r=>OPEN_STATUSES.has(r.status)).length;
   const types=[...new Set(DATA.map(r=>r.type))].length;
-  document.getElementById('admin-stats').innerHTML=[
-    ['Total',DATA.length],['Open',open],['Completed',completed],['Types',types]
-  ].map(([l,v])=>`<div style="display:inline-block;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:10px 16px;font-size:13px"><strong style="display:block;font-size:20px;font-weight:700;color:var(--blue)">${v}</strong>${l}</div>`).join('');
+  document.getElementById('admin-stats').innerHTML=[['Total',DATA.length],['Open',open],['Completed',completed],['Types',types]].map(([l,v])=>`<div style="display:inline-block;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:10px 16px;font-size:13px"><strong style="display:block;font-size:20px;font-weight:700;color:var(--blue)">${v}</strong>${l}</div>`).join('');
 }
 
 // ══════════════════════════════════════════════
 // CSV IMPORT
 // ══════════════════════════════════════════════
-function handleDrop(e){e.preventDefault();document.getElementById('drop-zone').classList.remove('drag');const f=e.dataTransfer.files[0];if(f)processCSVFile(f);}
-function handleFile(e){const f=e.target.files[0];if(f)processCSVFile(f);e.target.value='';}
+function handleDrop(ev){ev.preventDefault();document.getElementById('drop-zone').classList.remove('drag');const f=ev.dataTransfer.files[0];if(f)processCSVFile(f);}
+function handleFile(ev){const f=ev.target.files[0];if(f)processCSVFile(f);ev.target.value='';}
 function processCSVFile(file){
   const st=document.getElementById('upload-status');
   if(!file.name.endsWith('.csv')){st.className='upload-status err';st.textContent='⚠ Must be a .csv file';return;}
   const reader=new FileReader();
-  reader.onload=function(ev){
-    try{
-      const rows=parseCSV(ev.target.result);
-      if(!rows.length)throw new Error('No data rows found');
-      const mapped=rows.map(mapRow).filter(Boolean);
-      if(!mapped.length)throw new Error('No recognizable ARTM rows — check column headers');
-      DATA.length=0;mapped.forEach(r=>DATA.push(r));
-      st.className='upload-status ok';st.textContent=`✅ Loaded ${mapped.length} tickets from ${file.name}`;
-      document.getElementById('hdr-count').textContent=DATA.length+' tickets';
-      // re-render current tab
-      if(currentTab==='queue')renderQueue();
-      else if(currentTab==='performance')renderPerformance();
-      else if(currentTab==='volume')renderVolume();
-      else if(currentTab==='tickets'){buildTicketFilters();goTickets();}
-      else renderAdmin();
-    }catch(err){st.className='upload-status err';st.textContent='⚠ '+err.message;}
-  };
+  reader.onload=function(ev){try{const rows=parseCSV(ev.target.result);if(!rows.length)throw new Error('No data rows');const mapped=rows.map(mapRow).filter(Boolean);if(!mapped.length)throw new Error('No ARTM rows found');DATA.length=0;mapped.forEach(r=>DATA.push(r));st.className='upload-status ok';st.textContent=`✅ Loaded ${mapped.length} tickets from ${file.name}`;document.getElementById('hdr-count').textContent=DATA.length+' tickets';r1TypeFilter='All';if(currentTab==='queue')renderQueue();else if(currentTab==='performance')renderPerformance();else if(currentTab==='volume')renderVolume();else if(currentTab==='reports')renderReports();else if(currentTab==='tickets'){buildTicketFilters();goTickets();}else renderAdmin();}catch(err){st.className='upload-status err';st.textContent='⚠ '+err.message;}};
   reader.readAsText(file);
 }
-
-function parseCSV(text){
-  const lines=text.split(/\r?\n/);
-  if(!lines.length)return[];
-  const headers=parseRow(lines[0]);
-  const rows=[];
-  for(let i=1;i<lines.length;i++){const line=lines[i].trim();if(!line)continue;const vals=parseRow(line);const o={};headers.forEach((h,j)=>o[h]=vals[j]||'');rows.push(o);}
-  return rows;
-}
-function parseRow(line){
-  const result=[];let cur='';let inQ=false;
-  for(let i=0;i<line.length;i++){const c=line[i];if(c==='"'){if(inQ&&line[i+1]==='"'){cur+='"';i++;}else inQ=!inQ;}else if(c===','&&!inQ){result.push(cur);cur='';}else cur+=c;}
-  result.push(cur);return result;
-}
-function mapRow(r){
-  const key=r['Issue key']||'';if(!key)return null;
-  return{
-    key,
-    summary:(r['Summary']||'').trim(),
-    assignee:r['Assignee']||'',
-    reporter:r['Reporter']||'',
-    priority:r['Priority']||'',
-    status:r['Status']||'',
-    resolution:r['Resolution']||'',
-    created:parseDateStr(r['Created']||''),
-    updated:parseDateStr(r['Updated']||''),
-    due:parseDateStr(r['Due date']||''),
-    firstResponse:parseDateStr(r['Custom field ([CHART] Date of First Response)']||''),
-    targetCompletion:parseDateStr(r['Custom field (Target Completion Date)']||''),
-    resolutionHrs:parseHrs(r['Custom field (Time to resolution)']||''),
-    firstResponseHrs:parseHrs(r['Custom field (Time to first response)']||''),
-    type:inferType(r['Summary']||'')
-  };
-}
+function parseCSV(text){const lines=text.split(/\r?\n/);if(!lines.length)return[];const headers=parseRow(lines[0]);const rows=[];for(let i=1;i<lines.length;i++){const line=lines[i].trim();if(!line)continue;const vals=parseRow(line);const o={};headers.forEach((h,j)=>o[h]=vals[j]||'');rows.push(o);}return rows;}
+function parseRow(line){const result=[];let cur='';let inQ=false;for(let i=0;i<line.length;i++){const c=line[i];if(c==='"'){if(inQ&&line[i+1]==='"'){cur+='"';i++;}else inQ=!inQ;}else if(c===','&&!inQ){result.push(cur);cur='';}else cur+=c;}result.push(cur);return result;}
 const MON={Jan:1,Feb:2,Mar:3,Apr:4,May:5,Jun:6,Jul:7,Aug:8,Sep:9,Oct:10,Nov:11,Dec:12};
-function parseDateStr(s){
-  if(!s)return'';
-  const m=s.trim().match(/^(\d+)\/([A-Za-z]+)\/(\d+)\s+(\d+):(\d+)\s*(AM|PM)?$/i);
-  if(!m){const d=new Date(s);return isNaN(d)?'':d.toISOString().slice(0,16);}
-  let [,d,mo,y,h,mi,ap]=m;
-  const mon=MON[mo.slice(0,3)];if(!mon)return'';
-  h=parseInt(h);mi=parseInt(mi);y=parseInt(y);if(y<100)y+=2000;
-  if(ap&&ap.toUpperCase()==='PM'&&h!==12)h+=12;
-  if(ap&&ap.toUpperCase()==='AM'&&h===12)h=0;
-  return`${y}-${String(mon).padStart(2,'0')}-${String(parseInt(d)).padStart(2,'0')}T${String(h).padStart(2,'0')}:${String(mi).padStart(2,'0')}:00`;
-}
-function parseHrs(s){
-  if(!s)return null;s=s.trim();
-  const neg=s.startsWith('-');s=s.replace(/^-/,'');
-  const parts=s.split(':');
-  try{const h=parseInt(parts[0])+(parts[1]?parseInt(parts[1])/60:0);return Math.round((neg?-h:h)*100)/100;}catch{return null;}
-}
-function inferType(sum){
-  const s=sum.toUpperCase();
-  if(s.includes('MNDA'))return'MNDA';if(s.includes('NDA'))return'NDA';
-  if(s.includes('MSA'))return'MSA';if(s.includes('MPA'))return'MPA';
-  if(s.includes('SOW'))return'SOW';
-  if(s.includes('SUBCONTRACT')||s.includes('SUB AGREEMENT')||s.includes('MASTER SUB'))return'Subcontract';
-  if(s.includes('CHANGE ORDER'))return'Change Order';
-  if(s.includes('NON-COMPETE')||s.includes('NON COMPETE'))return'Non-Compete';
-  if(s.includes('MEWS'))return'MEWS';if(s.includes('PROPOSAL'))return'Proposal';
-  if(s.includes('REDLINE')||s.includes('T&C'))return'T&C Redline';
-  if(s.includes('AMENDMENT'))return'Amendment';if(s.includes('RETAINER'))return'Retainer';
-  if(s.includes('VENDOR SETUP'))return'Vendor Form';return'Other';
-}
+function parseDateStr(s){if(!s)return'';const m=s.trim().match(/^(\d+)\/([A-Za-z]+)\/(\d+)\s+(\d+):(\d+)\s*(AM|PM)?$/i);if(!m){const d=new Date(s);return isNaN(d)?'':d.toISOString().slice(0,16);}let[,d,mo,y,h,mi,ap]=m;const mon=MON[mo.slice(0,3)];if(!mon)return'';h=parseInt(h);mi=parseInt(mi);y=parseInt(y);if(y<100)y+=2000;if(ap&&ap.toUpperCase()==='PM'&&h!==12)h+=12;if(ap&&ap.toUpperCase()==='AM'&&h===12)h=0;return`${y}-${String(mon).padStart(2,'0')}-${String(parseInt(d)).padStart(2,'0')}T${String(h).padStart(2,'0')}:${String(mi).padStart(2,'0')}:00`;}
+function parseHrs(s){if(!s)return null;s=s.trim();const neg=s.startsWith('-');s=s.replace(/^-/,'');const parts=s.split(':');try{const h=parseInt(parts[0])+(parts[1]?parseInt(parts[1])/60:0);return Math.round((neg?-h:h)*100)/100;}catch{return null;}}
+function inferType(sum){const s=sum.toUpperCase();if(s.includes('MNDA'))return'MNDA';if(s.includes('NDA'))return'NDA';if(s.includes('MSA'))return'MSA';if(s.includes('MPA'))return'MPA';if(s.includes('SOW'))return'SOW';if(s.includes('SUBCONTRACT')||s.includes('SUB AGREEMENT')||s.includes('MASTER SUB'))return'Subcontract';if(s.includes('CHANGE ORDER'))return'Change Order';if(s.includes('NON-COMPETE')||s.includes('NON COMPETE'))return'Non-Compete';if(s.includes('MEWS'))return'MEWS';if(s.includes('PROPOSAL'))return'Proposal';if(s.includes('REDLINE')||s.includes('T&C'))return'T&C Redline';if(s.includes('AMENDMENT'))return'Amendment';if(s.includes('RETAINER'))return'Retainer';if(s.includes('VENDOR SETUP'))return'Vendor Form';return'Other';}
+function mapRow(r){const key=r['Issue key']||'';if(!key)return null;return{key,summary:(r['Summary']||'').trim(),assignee:r['Assignee']||'',reporter:r['Reporter']||'',priority:r['Priority']||'',status:r['Status']||'',resolution:r['Resolution']||'',created:parseDateStr(r['Created']||''),updated:parseDateStr(r['Updated']||''),due:parseDateStr(r['Due date']||''),firstResponse:parseDateStr(r['Custom field ([CHART] Date of First Response)']||''),targetCompletion:parseDateStr(r['Custom field (Target Completion Date)']||''),resolutionHrs:parseHrs(r['Custom field (Time to resolution)']||''),firstResponseHrs:parseHrs(r['Custom field (Time to first response)']||''),type:inferType(r['Summary']||'')};}
 
-// ══════════════════════════════════════════════
-// EXPORT
-// ══════════════════════════════════════════════
-function exportHTML(){
-  const dataJS='let DATA = '+JSON.stringify(DATA)+';';
-  const src=document.documentElement.outerHTML;
-  const updated=src.replace(/let DATA = \[.*?\];/s,dataJS);
-  const blob=new Blob([updated],{type:'text/html'});
-  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='artm-dashboard.html';a.click();
-}
-function exportCSV(){
-  if(!DATA.length)return;
-  const cols=['key','summary','assignee','reporter','priority','status','resolution','created','updated','type','firstResponseHrs','resolutionHrs'];
-  const rows=[cols.join(','),...tFiltered.length&&currentTab==='tickets'?tFiltered.map(csvRow):DATA.map(csvRow)];
-  const blob=new Blob([rows.join('\n')],{type:'text/csv'});
-  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='artm-export.csv';a.click();
-}
-function csvRow(r){return['key','summary','assignee','reporter','priority','status','resolution','created','updated','type','firstResponseHrs','resolutionHrs'].map(k=>{const v=String(r[k]===null||r[k]===undefined?'':r[k]);return v.includes(',')||v.includes('"')?'"'+v.replace(/"/g,'""')+'"':v;}).join(',');}
+// ── Export ──
+function exportHTML(){const dataJS='let DATA = '+JSON.stringify(DATA)+';';const src=document.documentElement.outerHTML;const updated=src.replace(/let DATA = \[.*?\];/s,dataJS);const blob=new Blob([updated],{type:'text/html'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='artm-dashboard.html';a.click();}
+function exportCSV(){if(!DATA.length)return;const src=tFiltered.length&&currentTab==='tickets'?tFiltered:DATA;const cols=['key','summary','assignee','reporter','priority','status','created','updated','type','firstResponseHrs','resolutionHrs'];const rows=[cols.join(','),...src.map(r=>cols.map(k=>{const v=String(r[k]===null||r[k]===undefined?'':r[k]);return v.includes(',')||v.includes('"')?'"'+v.replace(/"/g,'""')+'"':v;}).join(','))];const blob=new Blob([rows.join('\n')],{type:'text/csv'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='artm-export.csv';a.click();}
 
 // ── Init ──
-var csvUrl=new URL('ARTM-tickets-05.18.26.csv',window.location.href).href;
-fetch(csvUrl)
-  .then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.text();})
-  .then(function(text){
-    const mapped=parseCSV(text).map(mapRow).filter(Boolean);
-    if(!mapped.length)throw new Error('No rows parsed');
-    DATA.length=0;mapped.forEach(function(r){DATA.push(r);});
-    document.getElementById('hdr-count').textContent=DATA.length+' tickets';
-    renderQueue();
-  })
-  .catch(function(err){
-    console.error('CSV load error:',err,'URL:',csvUrl);
-    document.getElementById('hdr-count').textContent='Load error';
-    var isLocal=window.location.protocol==='file:';
-    document.getElementById('q-stats').innerHTML=
-      '<div style="grid-column:1/-1;padding:20px;background:#fee2e2;border:1px solid #fca5a5;border-radius:8px;color:#991b1b;font-size:13px;line-height:1.6">'+
-      (isLocal
-        ?'&#9888; Cannot load CSV from a local file. Open this page via your <strong>SharePoint URL</strong>, or use <strong>Admin → Import CSV</strong> to load data manually.'
-        :'&#9888; Failed to load data.<br><strong>Attempted URL:</strong> '+csvUrl+'<br>Verify that <code>ARTM-tickets-05.18.26.csv</code> is in the same folder as this HTML file.')+
-      '</div>';
-  });
+document.getElementById('hdr-count').textContent=DATA.length+' tickets';
+renderQueue();
 </script></body></html>

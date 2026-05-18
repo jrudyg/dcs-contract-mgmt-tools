@@ -1,0 +1,1243 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Contract Catalog</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f5f6f8;--surface:#fff;--surface2:#f9fafb;--border:#e2e5ea;--border2:#f1f3f5;
+  --text:#1a1d23;--text2:#374151;--text3:#6b7280;--text4:#9ca3af;
+  --blue:#2563eb;--blue-light:#eff6ff;--blue-border:#93c5fd;
+  --green:#059669;--green-bg:#d1fae5;--green-text:#065f46;
+  --amber:#d97706;--amber-bg:#fef3c7;--amber-text:#92400e;
+  --red:#dc2626;--red-bg:#fee2e2;--red-text:#991b1b;
+  --radius:6px;--radius-lg:8px;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;font-size:14px;background:var(--bg);color:var(--text);min-height:100vh}
+a{color:inherit;text-decoration:none}
+button{font-family:inherit;cursor:pointer}
+
+/* Dark mode */
+body.dark{
+  --bg:#0f1117;--surface:#1a1d27;--surface2:#22263a;--border:#2a2d3a;--border2:#1f2230;
+  --text:#e2e5ea;--text2:#c9cdd6;--text3:#6b7280;--text4:#4b5563;
+  --blue-light:#1e3a5f;--blue-border:#3b82f6;
+  --green-bg:#064e3b;--green-text:#6ee7b7;
+  --amber-bg:#451a03;--amber-text:#fcd34d;
+  --red-bg:#450a0a;--red-text:#fca5a5;
+}
+
+/* Header */
+header{background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.logo{display:flex;align-items:center;gap:10px;font-size:15px;font-weight:600;color:var(--text)}
+.logo-icon{color:var(--blue)}
+.hdr-right{display:flex;align-items:center;gap:8px}
+.hdr-count{font-size:12px;color:var(--text3)}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:var(--radius);border:1px solid var(--border);background:var(--surface);font-size:13px;color:var(--text2);cursor:pointer;transition:background .15s}
+.btn:hover{background:var(--surface2)}
+.btn-icon{width:32px;height:32px;padding:0;justify-content:center;border-radius:var(--radius);border:1px solid var(--border);background:var(--surface);color:var(--text3);cursor:pointer;transition:all .15s;display:inline-flex;align-items:center}
+.btn-icon:hover{color:var(--text);background:var(--surface2)}
+.btn-icon.active{color:var(--blue);border-color:var(--blue);background:var(--blue-light)}
+
+/* Tabs */
+.tabs{display:flex;gap:2px;padding:0 24px;background:var(--surface);border-bottom:1px solid var(--border);overflow-x:auto}
+.tab{padding:10px 16px;font-size:13px;font-weight:500;color:var(--text3);border:none;background:none;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:color .15s}
+.tab:hover{color:var(--text)}
+.tab.active{color:var(--blue);border-bottom-color:var(--blue)}
+
+/* Main */
+main{max-width:1400px;margin:0 auto;padding:20px 24px}
+
+/* Stats */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 18px;cursor:default}
+.stat-card.clickable{cursor:pointer;transition:border-color .15s}
+.stat-card.clickable:hover{border-color:var(--blue)}
+.stat-label{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
+.stat-value{font-size:24px;font-weight:600;color:var(--text)}
+.stat-value.green{color:var(--green)}
+.stat-value.amber{color:var(--amber)}
+.stat-value.red{color:var(--red)}
+
+/* Search bar */
+.search-bar{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 16px;margin-bottom:12px}
+.search-row{display:flex;gap:8px;margin-bottom:10px;align-items:center}
+.search-wrap{position:relative;flex:1}
+.search-wrap svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text4);pointer-events:none}
+input[type=text]{width:100%;padding:8px 32px 8px 34px;border:1px solid var(--border);border-radius:var(--radius);font-size:14px;color:var(--text);background:var(--surface);outline:none;transition:border-color .15s}
+input[type=text]:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+.clear-btn{position:absolute;right:8px;top:50%;transform:translateY(-50%);width:18px;height:18px;border-radius:50%;border:none;background:var(--text4);color:#fff;font-size:11px;display:none;align-items:center;justify-content:center;cursor:pointer;line-height:1}
+.clear-btn.show{display:flex}
+
+/* Filters */
+.filters{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.filter-group{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.filter-label{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.04em;white-space:nowrap}
+.chip{padding:3px 10px;border-radius:20px;border:1px solid var(--border);background:var(--surface);font-size:12px;color:var(--text2);cursor:pointer;transition:all .15s;white-space:nowrap}
+.chip:hover{border-color:var(--blue-border);background:var(--blue-light);color:var(--blue)}
+.chip.active{background:var(--blue);border-color:var(--blue);color:#fff}
+
+/* Column toggle */
+.col-toggle-wrap{position:relative}
+.col-toggle-panel{position:absolute;top:calc(100% + 6px);right:0;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:10px;min-width:180px;z-index:50;box-shadow:0 4px 16px rgba(0,0,0,.1)}
+.col-toggle-panel label{display:flex;align-items:center;gap:8px;padding:4px 6px;border-radius:4px;cursor:pointer;font-size:13px;color:var(--text2)}
+.col-toggle-panel label:hover{background:var(--surface2)}
+.col-toggle-panel input[type=checkbox]{accent-color:var(--blue);width:14px;height:14px}
+
+/* Recently viewed */
+.recent-bar{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:10px 14px;margin-bottom:12px;display:none}
+.recent-bar.show{display:block}
+.recent-title{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+.recent-items{display:flex;gap:6px;flex-wrap:wrap}
+.recent-item{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;border:1px solid var(--border);background:var(--surface2);font-size:12px;color:var(--text2);cursor:pointer;transition:all .15s;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.recent-item:hover{border-color:var(--blue-border);color:var(--blue)}
+
+/* Settings panel */
+.settings-panel{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:12px 16px;margin-bottom:12px;display:none}
+.settings-panel label{font-size:12px;color:var(--text3);display:block;margin-bottom:5px;font-weight:500}
+.settings-panel input[type=text]{padding:6px 10px;font-size:12px;font-family:monospace}
+.hint{font-size:11px;color:var(--text4);margin-top:5px}
+
+/* Table */
+.table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden}
+.table-meta{padding:9px 14px;font-size:12px;color:var(--text3);border-bottom:1px solid var(--border2);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.export-btn{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:var(--radius);border:1px solid var(--border);background:var(--surface);font-size:12px;color:var(--text2);cursor:pointer}
+.export-btn:hover{border-color:var(--blue);color:var(--blue)}
+.exp-legend{display:flex;align-items:center;gap:10px;font-size:11px;color:var(--text3)}
+.legend-dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:3px}
+table{width:100%;border-collapse:collapse;table-layout:fixed}
+th{padding:8px 10px;text-align:left;font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;background:var(--surface2);border-bottom:1px solid var(--border);cursor:pointer;user-select:none;white-space:nowrap}
+th.no-sort{cursor:default}
+td{padding:7px 10px;border-bottom:1px solid var(--border2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--surface2)}
+tr.exp-red td{background:#fff5f5}
+tr.exp-red:hover td{background:#fee2e2}
+tr.exp-amber td{background:#fffbeb}
+tr.exp-amber:hover td{background:#fef3c7}
+body.dark tr.exp-red td{background:#2d1515!important}
+body.dark tr.exp-red:hover td{background:#3d1a1a!important}
+body.dark tr.exp-amber td{background:#2d2010!important}
+body.dark tr.exp-amber:hover td{background:#3d2a10!important}
+.sort-icon{opacity:.3;font-size:10px;margin-left:2px}
+.sort-icon.active{opacity:1;color:var(--blue)}
+
+/* File icons */
+.fi{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:3px;font-size:9px;font-weight:700;flex-shrink:0;margin-right:5px}
+.fi-pdf{background:#fee2e2;color:#dc2626}
+.fi-docx,.fi-doc{background:#dbeafe;color:#1d4ed8}
+.fi-msg{background:#f3e8ff;color:#7e22ce}
+.fi-other{background:#f3f4f6;color:#6b7280}
+body.dark .fi-pdf{background:#4c1111;color:#f87171}
+body.dark .fi-docx,body.dark .fi-doc{background:#1e3a5f;color:#93c5fd}
+body.dark .fi-msg{background:#3b1f5e;color:#c4b5fd}
+body.dark .fi-other{background:#22263a;color:#6b7280}
+.fn-cell{display:flex;align-items:center}
+
+/* Badges */
+.badge{display:inline-flex;align-items:center;padding:2px 7px;border-radius:4px;font-size:11px;font-weight:500;white-space:nowrap}
+.b-nda{background:#dbeafe;color:#1e40af}.b-mnda{background:#d1fae5;color:#065f46}
+.b-msa{background:#fef3c7;color:#92400e}.b-sow{background:#ede9fe;color:#5b21b6}
+.b-sub{background:#fee2e2;color:#991b1b}.b-cda,.b-other{background:#f3f4f6;color:#374151}
+.b-eula,.b-ipa,.b-psa{background:#fce7f3;color:#9d174d}.b-amendment{background:#ffedd5;color:#9a3412}
+.b-signed{background:#d1fae5;color:#065f46}.b-unsigned{background:#fef3c7;color:#92400e}
+.b-active{background:#d1fae5;color:#065f46}.b-pending{background:#f3f4f6;color:#6b7280}
+body.dark .b-nda{background:#1e3a5f;color:#93c5fd}body.dark .b-mnda{background:#064e3b;color:#6ee7b7}
+body.dark .b-msa{background:#451a03;color:#fcd34d}body.dark .b-sow{background:#2e1065;color:#c4b5fd}
+body.dark .b-sub{background:#450a0a;color:#fca5a5}body.dark .b-cda,body.dark .b-other{background:#1f2230;color:#9ca3af}
+body.dark .b-eula,body.dark .b-ipa,body.dark .b-psa{background:#500724;color:#f9a8d4}
+body.dark .b-amendment{background:#431407;color:#fdba74}
+body.dark .b-signed{background:#064e3b;color:#6ee7b7}body.dark .b-unsigned{background:#451a03;color:#fcd34d}
+body.dark .b-active{background:#064e3b;color:#6ee7b7}body.dark .b-pending{background:#1f2230;color:#9ca3af}
+.exp-badge{display:inline-flex;align-items:center;padding:2px 6px;border-radius:4px;font-size:10px;font-weight:600}
+.exp-red-b{background:var(--red-bg);color:var(--red-text)}
+.exp-amber-b{background:var(--amber-bg);color:var(--amber-text)}
+
+/* Action buttons */
+.action-cell{display:flex;align-items:center;gap:4px}
+.open-btn{display:inline-flex;align-items:center;gap:3px;padding:3px 9px;border-radius:var(--radius);border:1px solid var(--border);background:var(--surface);font-size:12px;color:var(--text2);cursor:pointer;transition:all .15s}
+.open-btn:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-light)}
+.copy-btn{width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;border-radius:var(--radius);border:1px solid var(--border);background:var(--surface);color:var(--text3);cursor:pointer;transition:all .15s;font-size:12px;position:relative}
+.copy-btn:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-light)}
+.copy-btn .tooltip{position:absolute;bottom:calc(100% + 4px);left:50%;transform:translateX(-50%);background:#1a1d23;color:#fff;font-size:10px;padding:2px 6px;border-radius:3px;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .15s}
+.copy-btn.copied .tooltip{opacity:1}
+
+/* Empty */
+.empty{text-align:center;padding:48px;color:var(--text4)}
+.empty-icon{margin:0 auto 12px;opacity:.3}
+.empty h3{font-size:15px;font-weight:500;color:var(--text3);margin-bottom:6px}
+.suggestions{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:8px}
+.sug-chip{padding:3px 10px;border-radius:20px;border:1px solid var(--border);background:var(--surface);font-size:12px;color:var(--text2);cursor:pointer}
+.sug-chip:hover{border-color:var(--blue);color:var(--blue)}
+
+/* Section panels */
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;margin-bottom:16px}
+.panel-title{font-size:14px;font-weight:600;color:var(--text);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.panel-title svg{color:var(--text3)}
+
+/* Charts */
+.chart-wrap{overflow-x:auto}
+.bar-chart{display:flex;align-items:flex-end;gap:6px;height:160px;padding-bottom:24px;position:relative}
+.bar-col{display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;min-width:40px}
+.bar{border-radius:3px 3px 0 0;background:var(--blue);transition:opacity .15s;min-height:2px}
+.bar:hover{opacity:.8}
+.bar-label{font-size:10px;color:var(--text3);text-align:center;white-space:nowrap}
+.bar-val{font-size:10px;color:var(--text3);font-weight:500}
+
+/* Coverage table */
+.cov-table{width:100%;border-collapse:collapse;font-size:13px}
+.cov-table th{padding:7px 10px;text-align:left;font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;background:var(--surface2);border-bottom:1px solid var(--border)}
+.cov-table td{padding:6px 10px;border-bottom:1px solid var(--border2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cov-table tr:hover td{background:var(--surface2)}
+.cov-check{color:var(--green);font-size:14px}
+.cov-x{color:var(--red-text);font-size:14px}
+.cov-filter{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+
+/* Expiry dashboard */
+.exp-group{margin-bottom:20px}
+.exp-group-title{font-size:13px;font-weight:600;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.exp-count{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;font-size:11px;font-weight:700}
+.exp-count.red{background:var(--red-bg);color:var(--red-text)}
+.exp-count.amber{background:var(--amber-bg);color:var(--amber-text)}
+
+/* Portfolio */
+.port-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+.port-list{list-style:none}
+.port-item{display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border2);font-size:13px}
+.port-item:last-child{border-bottom:none}
+.port-bar-wrap{flex:1;margin:0 10px;height:6px;background:var(--border);border-radius:3px;overflow:hidden}
+.port-bar{height:100%;background:var(--blue);border-radius:3px}
+.port-num{font-size:12px;color:var(--text3);font-weight:500;min-width:30px;text-align:right}
+.print-btn{display:inline-flex;align-items:center;gap:5px;padding:6px 14px;border-radius:var(--radius);border:1px solid var(--border);background:var(--surface);font-size:13px;color:var(--text2);cursor:pointer}
+.print-btn:hover{background:var(--surface2)}
+
+/* Mobile */
+@media(max-width:767px){
+  main{padding:12px}
+  .stats-row{grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:12px}
+  table{display:none}
+  .card-list{display:block}
+  .port-grid{grid-template-columns:1fr}
+}
+@media(min-width:768px){.card-list{display:none}}
+.contract-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:12px 14px;margin-bottom:8px}
+.contract-card.exp-red{border-left:3px solid var(--red);background:#fff5f5}
+.contract-card.exp-amber{border-left:3px solid var(--amber);background:#fffbeb}
+body.dark .contract-card{background:var(--surface);border-color:var(--border)}
+body.dark .contract-card.exp-red{background:#2d1515}
+body.dark .contract-card.exp-amber{background:#2d2010}
+.card-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:6px}
+.card-name{font-weight:500;font-size:14px}
+.card-badges{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px}
+.card-fn{font-size:11px;color:var(--text3);font-family:monospace;display:flex;align-items:center;gap:4px;margin-bottom:8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.card-footer{display:flex;align-items:center;justify-content:space-between}
+.card-date{font-size:11px;color:var(--text4)}
+
+/* Print */
+@media print{
+  header,.tabs,.search-bar,.recent-bar,.settings-panel,.hdr-right,.print-btn,#tabs-nav{display:none!important}
+  main{padding:0}
+  body{background:#fff;color:#000}
+}
+
+/* Theme btn */
+.theme-btn{width:32px;height:32px;display:inline-flex;align-items:center;justify-content:center;border-radius:var(--radius);border:1px solid var(--border);background:var(--surface);cursor:pointer;font-size:15px}
+.theme-btn:hover{background:var(--surface2)}
+
+/* Footer */
+.footer-note{font-size:11px;color:var(--text4);text-align:right;margin-top:8px}
+
+/* ── Admin Panel ── */
+.tab-admin{margin-left:auto;opacity:.5;font-size:12px}
+.tab-admin.unlocked{opacity:1;color:var(--amber)}
+#admin-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center}
+#admin-overlay.show{display:flex}
+.admin-modal{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:32px;width:360px;max-width:92vw}
+.admin-modal h3{font-size:16px;font-weight:600;margin-bottom:4px}
+.admin-modal p{font-size:13px;color:var(--text3);margin-bottom:20px}
+.admin-modal input{width:100%;border:1px solid var(--border);border-radius:var(--radius);padding:9px 12px;font-size:14px;background:var(--surface2);color:var(--text);margin-bottom:12px;box-sizing:border-box}
+.admin-modal input:focus{outline:none;border-color:var(--blue)}
+.admin-modal .btn-row{display:flex;gap:8px;justify-content:flex-end}
+.admin-modal .btn{padding:8px 16px;border-radius:var(--radius);border:none;font-size:13px;font-weight:500;cursor:pointer}
+.admin-modal .btn-primary{background:var(--blue);color:#fff}
+.admin-modal .btn-cancel{background:var(--surface2);color:var(--text2);border:1px solid var(--border)}
+.admin-modal .err{color:var(--red);font-size:12px;margin-top:-8px;margin-bottom:10px;display:none}
+#tab-admin{display:none}
+#tab-admin.visible{display:block}
+.admin-section{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:24px;margin-bottom:16px}
+.admin-section h3{font-size:15px;font-weight:600;margin-bottom:6px}
+.admin-section p{font-size:13px;color:var(--text3);margin-bottom:16px;line-height:1.5}
+.admin-section .drop-zone{border:2px dashed var(--border);border-radius:var(--radius);padding:32px;text-align:center;cursor:pointer;transition:border-color .15s}
+.admin-section .drop-zone:hover,.admin-section .drop-zone.drag{border-color:var(--blue)}
+.admin-section .drop-zone p{margin:0;color:var(--text3);font-size:13px}
+.admin-section .drop-zone .icon{font-size:28px;margin-bottom:8px}
+.upload-status{margin-top:12px;font-size:13px;display:none}
+.upload-status.ok{color:var(--green);display:block}
+.upload-status.err{color:var(--red);display:block}
+.admin-export-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:4px}
+.admin-export-row .btn{padding:9px 18px;border-radius:var(--radius);border:none;font-size:13px;font-weight:500;cursor:pointer}
+.admin-export-row .btn-primary{background:var(--blue);color:#fff}
+.admin-export-row .btn-secondary{background:var(--surface2);color:var(--text2);border:1px solid var(--border)}
+.admin-export-row .btn-danger{background:rgba(239,68,68,.1);color:#ef4444;border:1px solid rgba(239,68,68,.3)}
+.admin-stat{display:inline-block;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:10px 16px;margin:4px;font-size:13px}
+.admin-stat strong{display:block;font-size:20px;font-weight:700;color:var(--blue)}
+.preview-table{width:100%;border-collapse:collapse;font-size:12px;margin-top:12px}
+.preview-table th{background:var(--surface2);padding:6px 8px;text-align:left;border-bottom:1px solid var(--border);font-weight:500;color:var(--text3)}
+.preview-table td{padding:6px 8px;border-bottom:1px solid var(--border);color:var(--text2)}
+.lock-btn{position:fixed;bottom:16px;right:16px;background:rgba(245,158,11,.1);color:#f59e0b;border:1px solid rgba(245,158,11,.3);border-radius:20px;padding:6px 14px;font-size:12px;cursor:pointer;display:none;z-index:500}
+.lock-btn.show{display:block}
+
+.own-action-cell{display:flex;gap:3px;flex-wrap:wrap}
+.own-btn{display:inline-flex;align-items:center;padding:2px 7px;border-radius:var(--radius);border:1px solid var(--border);background:var(--surface);font-size:11px;color:var(--text2);cursor:pointer;white-space:nowrap;transition:all .15s}
+.own-btn.own-green:hover{border-color:#059669;color:#059669;background:#d1fae5}
+.own-btn.own-amber:hover{border-color:#d97706;color:#d97706;background:#fef3c7}
+.own-btn.own-gray:hover{border-color:var(--text3);color:var(--text3);background:var(--surface2)}
+.own-btn.own-blue:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-light)}
+#owner-drawer{position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:2px solid var(--blue);padding:16px 24px 20px;z-index:300;box-shadow:0 -4px 24px rgba(0,0,0,.15);display:none}
+#owner-drawer.show{display:block}
+.drawer-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.drawer-title{font-size:14px;font-weight:600;color:var(--text)}
+.drawer-close{width:28px;height:28px;border:none;background:none;cursor:pointer;font-size:18px;color:var(--text3);display:flex;align-items:center;justify-content:center;border-radius:var(--radius)}
+.drawer-close:hover{background:var(--surface2);color:var(--text)}
+.drawer-contract-info{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:8px 12px;font-size:12px;line-height:1.7;margin-bottom:10px}
+.drawer-form{margin-bottom:4px}
+.drawer-form label{font-size:12px;color:var(--text3);display:block;margin-bottom:4px;font-weight:500}
+.drawer-form select,.drawer-form input[type=text]{padding:7px 10px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;background:var(--surface);color:var(--text);outline:none;min-width:200px}
+.drawer-output{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:12px;font-family:monospace;font-size:12px;white-space:pre-wrap;max-height:220px;overflow-y:auto;line-height:1.6;color:var(--text2);margin-top:10px}
+
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <svg class="logo-icon" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+    Contract Catalog
+  </div>
+  <div class="hdr-right">
+    <span class="hdr-count" id="hdr-count"></span>
+    <button class="btn" onclick="toggleSettings()" title="Settings">
+      <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><circle cx="12" cy="12" r="3"/></svg>
+      Settings
+    </button>
+    <button class="theme-btn" onclick="toggleDark()" id="theme-btn" title="Toggle dark mode">🌙</button>
+  </div>
+</header>
+
+<nav class="tabs" id="tabs-nav">
+  <button class="tab active" onclick="switchTab('catalog')" data-tab="catalog">📋 Catalog</button>
+  <button class="tab" onclick="switchTab('expiring')" data-tab="expiring">⏰ Expiring</button>
+  <button class="tab" onclick="switchTab('portfolio')" data-tab="portfolio">📊 Portfolio</button>
+  <button class="tab" onclick="switchTab('coverage')" data-tab="coverage">🔍 Coverage</button>
+  <button class="tab" onclick="switchTab('activity')" data-tab="activity">📈 Activity</button>
+  <button class="tab tab-admin" onclick="showAdminLogin()" data-tab="admin" id="admin-tab">🔒 Owner</button>
+</nav>
+
+<main>
+  <div id="settings-panel" class="settings-panel">
+    <label>SharePoint document library base URL</label>
+    <input type="text" id="sp-base" value="https://diakoniagroupllc.sharepoint.com/sites/ContractManagement/Shared%20Documents"/>
+    <p class="hint">Links resolve to: {URL}/{ContractLocation}/{FilePath}?web=1</p>
+  </div>
+
+  <!-- CATALOG TAB -->
+  <div id="tab-catalog">
+    <div class="stats-row" id="stats"></div>
+
+    <div class="search-bar">
+      <div class="search-row">
+        <div class="search-wrap">
+          <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path stroke-linecap="round" d="M21 21l-4.35-4.35"/></svg>
+          <input type="text" id="q" placeholder="Search counterparty or filename… (press / to focus)" oninput="onSearch()" aria-label="Search"/>
+          <button class="clear-btn" id="clear-btn" onclick="clearSearch()" title="Clear (Esc)">✕</button>
+        </div>
+        <div class="col-toggle-wrap">
+          <button class="btn" onclick="toggleColPanel()" id="col-btn" title="Show/hide columns">
+            <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18"/></svg>
+            Columns
+          </button>
+          <div class="col-toggle-panel" id="col-panel" style="display:none">
+            <label><input type="checkbox" id="col-notes" onchange="go()"> Notes</label>
+            <label><input type="checkbox" id="col-version" onchange="go()"> Version</label>
+            <label><input type="checkbox" id="col-amendment" onchange="go()"> Amendment #</label>
+          </div>
+        </div>
+      </div>
+      <div class="filters" id="filter-bar"></div>
+    </div>
+
+    <div class="recent-bar" id="recent-bar">
+      <div class="recent-title">Recently viewed</div>
+      <div class="recent-items" id="recent-items"></div>
+    </div>
+
+    <div class="table-wrap">
+      <div class="table-meta">
+        <span id="meta"></span>
+        <div style="display:flex;align-items:center;gap:10px">
+          <div class="exp-legend" id="exp-legend" style="display:none">
+            <span><span class="legend-dot" style="background:#dc2626"></span>≤30d</span>
+            <span><span class="legend-dot" style="background:#d97706"></span>≤90d</span>
+          </div>
+          <button class="export-btn" onclick="exportCSV()">
+            <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+            Export
+          </button>
+        </div>
+      </div>
+      <div style="overflow-x:auto">
+        <table>
+          <thead><tr id="thead-row"></tr></thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+      <div class="card-list" id="card-list"></div>
+      <div id="empty" class="empty" style="display:none">
+        <svg class="empty-icon" width="40" height="40" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path stroke-linecap="round" d="M21 21l-4.35-4.35"/></svg>
+        <h3>No contracts found</h3>
+        <p id="empty-msg" style="font-size:13px;color:var(--text4)">Try adjusting your filters.</p>
+        <div class="suggestions" id="suggestions"></div>
+      </div>
+    </div>
+    <p class="footer-note" id="footer-date"></p>
+  </div>
+
+  <!-- EXPIRING TAB -->
+  <div id="tab-expiring" style="display:none">
+    <div id="exp-content"></div>
+  </div>
+
+  <!-- PORTFOLIO TAB -->
+  <div id="tab-portfolio" style="display:none">
+    <div style="display:flex;justify-content:flex-end;margin-bottom:12px">
+      <button class="print-btn" onclick="window.print()">
+        <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+        Print
+      </button>
+    </div>
+    <div id="portfolio-content"></div>
+  </div>
+
+  <!-- COVERAGE TAB -->
+  <div id="tab-coverage" style="display:none">
+    <div id="coverage-content"></div>
+  </div>
+
+  <!-- ACTIVITY TAB -->
+  <div id="tab-activity" style="display:none">
+    <div id="activity-content"></div>
+  </div>
+</main>
+
+<script>
+let DATA = [];
+const GENERATED = new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
+document.getElementById('footer-date').textContent = 'Catalog generated ' + GENERATED;
+document.getElementById('hdr-count').textContent = 'Loading…';
+
+// ── Constants ──
+const DT_CLASS={NDA:'b-nda',MNDA:'b-mnda',MSA:'b-msa',SOW:'b-sow',Subcontract:'b-sub',CDA:'b-cda',EULA:'b-eula',IPA:'b-ipa',PSA:'b-psa',Amendment:'b-amendment',Other:'b-other'};
+const FOLDER_MAP={'01 Active Contracts':'01 Active Contracts','02 Unsigned Contracts':'02 Unsigned Contracts','03 Archived Contracts':'03 Archived Contracts'};
+const SUGGEST_MAP={nda:['MNDA','CDA'],confidential:['NDA','CDA','MNDA'],master:['MSA'],work:['SOW'],service:['SOW','PSA'],sub:['Subcontract'],software:['EULA','MSA'],partner:['IPA']};
+
+// ── State ──
+let sf='CounterpartyName',sd=1,filtered=[],recentlyViewed=[];
+let af={types:new Set(),status:'All',loc:'01 Active Contracts'};
+let currentTab='catalog';
+const today=new Date();today.setHours(0,0,0,0);
+
+// ── Helpers ──
+function e(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;')}
+function badge(t,c){return`<span class="badge ${c}">${e(t)}</span>`}
+function daysTo(s){if(!s)return null;const d=new Date(s);if(isNaN(d))return null;return Math.round((d-today)/86400000)}
+function expiryClass(r){const d=daysTo(r.ExpirationDate);if(d===null)return'';if(d<=0)return'exp-red';if(d<=30)return'exp-red';if(d<=90)return'exp-amber';return''}
+function expiryBadge(r){const d=daysTo(r.ExpirationDate);if(d===null||d>90)return'';if(d<=0)return'<span class="exp-badge exp-red-b">Expired</span>';if(d<=30)return`<span class="exp-badge exp-red-b">⚠ ${d}d</span>`;return`<span class="exp-badge exp-amber-b">${d}d</span>`}
+function fileIcon(ext){const x=(ext||'').toLowerCase();if(x==='.pdf')return'<span class="fi fi-pdf">PDF</span>';if(x==='.docx')return'<span class="fi fi-docx">DOC</span>';if(x==='.doc')return'<span class="fi fi-doc">DOC</span>';if(x==='.msg')return'<span class="fi fi-msg">MSG</span>';return'<span class="fi fi-other">—</span>'}
+function spUrl(r){
+  const base=(document.getElementById('sp-base').value||'').replace(/\/$/,'');
+  const loc=FOLDER_MAP[r.ContractLocation]||r.ContractLocation;
+  const fp=r.FilePath||(r.VendorFolder+'/'+r.Filename);
+  return base+'/'+loc+'/'+fp.split('/').map(s=>encodeURIComponent(s||'')).join('/')+'?web=1';
+}
+
+// ── Dark mode ──
+function toggleDark(){
+  const dark=document.body.classList.toggle('dark');
+  document.getElementById('theme-btn').textContent=dark?'☀️':'🌙';
+  try{localStorage.setItem('cm-theme',dark?'dark':'light')}catch(e){}
+}
+(function(){
+  let saved;try{saved=localStorage.getItem('cm-theme')}catch(e){}
+  const prefersDark=window.matchMedia&&window.matchMedia('(prefers-color-scheme:dark)').matches;
+  if(saved==='dark'||(saved===null&&prefersDark)){document.body.classList.add('dark');document.getElementById('theme-btn').textContent='☀️'}
+})();
+
+// ── Settings ──
+function toggleSettings(){if(!adminUnlocked){showAdminLogin();return;}const p=document.getElementById('settings-panel');p.style.display=p.style.display==='none'?'block':'none';}
+
+// ── Column toggle ──
+function toggleColPanel(){const p=document.getElementById('col-panel');p.style.display=p.style.display==='none'?'block':'none'}
+document.addEventListener('click',e=>{if(!e.target.closest('.col-toggle-wrap'))document.getElementById('col-panel').style.display='none'});
+
+// ── Tab system ──
+function switchTab(tab){
+  currentTab=tab;
+  document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
+  ['catalog','expiring','portfolio','coverage','activity'].forEach(t=>{
+    document.getElementById('tab-'+t).style.display=t===tab?'block':'none';
+  });
+  if(tab==='expiring')renderExpiring();
+  if(tab==='portfolio')renderPortfolio();
+  if(tab==='coverage')renderCoverage();
+  if(tab==='activity')renderActivity();
+}
+
+// ── Stats ──
+function buildStats(){
+  const signed=DATA.filter(r=>r.SigningStatus==='Signed').length;
+  const active=DATA.filter(r=>r.ContractLocation==='01 Active Contracts').length;
+  const exp90=DATA.filter(r=>{const d=daysTo(r.ExpirationDate);return d!==null&&d<=90&&d>0}).length;
+  const types=new Set(DATA.map(r=>r.DocType).filter(Boolean)).size;
+  const hasExp=DATA.some(r=>daysTo(r.ExpirationDate)!==null);
+  if(hasExp)document.getElementById('exp-legend').style.display='flex';
+  document.getElementById('stats').innerHTML=[
+    ['Total',DATA.length.toLocaleString(),'',false],
+    ['Active',active.toLocaleString(),'',false],
+    ['Unsigned',(DATA.length-active).toLocaleString(),'amber',false],
+    hasExp?['Expiring ≤90d',exp90.toLocaleString(),exp90>0?'amber':'','expiring']:['Doc Types',types,'',false]
+  ].map(([l,v,c,tab])=>`<div class="stat-card ${tab?'clickable':''}" ${tab?`onclick="switchTab('${tab}')"`:''}>
+    <div class="stat-label">${l}</div><div class="stat-value ${c}">${v}</div>
+  </div>`).join('');
+}
+
+// ── Filters ──
+function buildFilters(){
+  const HIDDEN_TYPES=new Set(['License','Tax-Form','Insurance','Other']);
+  const allTypes=[...new Set(DATA.map(r=>r.DocType).filter(Boolean))].filter(t=>!HIDDEN_TYPES.has(t)).sort();
+  let h=`<div class="filter-group"><span class="filter-label">Type</span>`;
+  h+=`<button class="chip${af.types.size===0?' active':''}" onclick="setTypeAll()">All</button>`;
+  h+=allTypes.map(t=>`<button class="chip${af.types.has(t)?' active':''}" onclick="toggleType('${e(t)}')">${e(t)}</button>`).join('');
+  h+='</div>';
+  h+=`<div class="filter-group"><span class="filter-label">Folder</span>`;
+  h+=[['All','All'],['01 Active Contracts','01 Active Contracts'],['02 Unsigned Contracts','02 Unsigned Contracts'],['03 Archived Contracts','03 Archived Contracts']].map(([v,l])=>`<button class="chip${af.loc===v?' active':''}" onclick="setF('loc','${e(v)}')">${l}</button>`).join('');
+  h+='</div>';
+  document.getElementById('filter-bar').innerHTML=h;
+}
+function setTypeAll(){af.types.clear();buildFilters();go()}
+function toggleType(t){af.types.has(t)?af.types.delete(t):af.types.add(t);buildFilters();go()}
+function setF(k,v){af[k]=v;buildFilters();go()}
+
+// ── Search ──
+function onSearch(){
+  const q=document.getElementById('q').value;
+  document.getElementById('clear-btn').classList.toggle('show',q.length>0);
+  go();
+}
+function clearSearch(){document.getElementById('q').value='';document.getElementById('clear-btn').classList.remove('show');go()}
+
+// ── Sort ──
+function sortBy(f){sf===f?sd*=-1:(sf=f,sd=1);renderThead();go()}
+function renderThead(){
+  const cols=getColumns();
+  document.getElementById('thead-row').innerHTML=cols.map(c=>
+    `<th style="width:${c.w}" class="${c.sort?'':'no-sort'}" ${c.sort?`onclick="sortBy('${c.field}')"`:''}>${c.label}${c.sort?`<span id="si-${c.field}" class="sort-icon ${sf===c.field?'active':''}">${sf===c.field?(sd===1?'▲':'▼'):'↕'}</span>`:''}</th>`
+  ).join('');
+}
+function getColumns(){
+  const showNotes=document.getElementById('col-notes')?.checked;
+  const showVer=document.getElementById('col-version')?.checked;
+  const showAmend=document.getElementById('col-amendment')?.checked;
+  const cols=[
+    {label:'Counterparty',field:'CounterpartyName',w:'20%',sort:true},
+    {label:'Type',field:'DocType',w:'8%',sort:false},
+    {label:'Status',field:'',w:'8%',sort:false},
+    {label:'Folder',field:'',w:'8%',sort:false},
+    {label:'Filename',field:'Filename',w:'28%',sort:true},
+    {label:'Date',field:'EffectiveDate',w:'8%',sort:true},
+    {label:'',field:'',w:'12%',sort:false},
+  ];
+  if(showNotes)cols.splice(6,0,{label:'Notes',field:'Notes',w:'12%',sort:false});
+  if(showVer)cols.splice(6,0,{label:'Ver',field:'VersionLabel',w:'6%',sort:false});
+  if(showAmend)cols.splice(6,0,{label:'Amend #',field:'AmendmentNumber',w:'7%',sort:false});
+  return cols;
+}
+
+// ── Recently viewed ──
+function addRecent(r){
+  recentlyViewed=recentlyViewed.filter(x=>x.Filename!==r.Filename);
+  recentlyViewed.unshift(r);
+  if(recentlyViewed.length>5)recentlyViewed.pop();
+  renderRecent();
+}
+function renderRecent(){
+  const bar=document.getElementById('recent-bar');
+  const items=document.getElementById('recent-items');
+  if(!recentlyViewed.length){bar.classList.remove('show');return}
+  bar.classList.add('show');
+  items.innerHTML=recentlyViewed.map(r=>`<a href="${spUrl(r)}" target="_blank" rel="noopener" class="recent-item" onclick="addRecent(JSON.parse(decodeURIComponent('${encodeURIComponent(JSON.stringify(r))}')))">${fileIcon(r.Extension)}<span>${e(r.CounterpartyName||'')}</span></a>`).join('');
+}
+
+// ── Copy link ──
+function copyLink(url,btn){
+  navigator.clipboard.writeText(url).then(()=>{
+    btn.classList.add('copied');
+    btn.querySelector('.tooltip').textContent='Copied!';
+    setTimeout(()=>{btn.classList.remove('copied');btn.querySelector('.tooltip').textContent='Copy link'},1500);
+  }).catch(()=>{
+    btn.querySelector('.tooltip').textContent='Failed';
+    btn.classList.add('copied');
+    setTimeout(()=>{btn.classList.remove('copied')},1500);
+  });
+}
+
+// ── Main filter + render ──
+function go(){
+  const q=(document.getElementById('q').value||'').trim().toLowerCase();
+  filtered=DATA.filter(r=>{
+    if(af.types.size>0&&!af.types.has(r.DocType))return false;
+    if(af.status!=='All'&&r.SigningStatus!==af.status)return false;
+    if(af.loc!=='All'&&r.ContractLocation!==af.loc)return false;
+    if(q){
+      const n=(r.CounterpartyName||'').toLowerCase();
+      const fn=(r.Filename||'').toLowerCase();
+      if(!n.includes(q)&&!fn.includes(q))return false;
+    }
+    return true;
+  });
+  filtered.sort((a,b)=>{
+    const av=(a[sf]||'').toLowerCase(),bv=(b[sf]||'').toLowerCase();
+    return av<bv?-sd:av>bv?sd:0;
+  });
+  renderThead();
+  renderTable(q);
+}
+
+function renderTable(q){
+  const LIMIT=500;
+  const tbody=document.getElementById('tbody');
+  const cardList=document.getElementById('card-list');
+  const empty=document.getElementById('empty');
+  const meta=document.getElementById('meta');
+  const showNotes=document.getElementById('col-notes')?.checked;
+  const showVer=document.getElementById('col-version')?.checked;
+  const showAmend=document.getElementById('col-amendment')?.checked;
+
+  meta.textContent=`Showing ${Math.min(filtered.length,LIMIT).toLocaleString()} of ${filtered.length.toLocaleString()} · ${DATA.length.toLocaleString()} total`;
+
+  if(!filtered.length){
+    tbody.innerHTML='';cardList.innerHTML='';empty.style.display='block';
+    const sugg=getSuggestions(q);
+    document.getElementById('empty-msg').textContent=sugg.types.length?'No results — did you mean:':'Try a different search term or clear your filters.';
+    document.getElementById('suggestions').innerHTML=sugg.types.map(t=>`<button class="sug-chip" onclick="toggleType('${t}');clearSearch()">${t}</button>`).join('');
+    return;
+  }
+  empty.style.display='none';
+  const slice=filtered.slice(0,LIMIT);
+
+  tbody.innerHTML=slice.map(r=>{
+    const ec=expiryClass(r);
+    const dtc=DT_CLASS[r.DocType]||'b-other';
+    const stc=r.SigningStatus==='Signed'?'b-signed':'b-unsigned';
+    const locB=r.ContractLocation==='01 Active Contracts'?badge('Active','b-active'):badge('Unsigned','b-unsigned');
+    const fn=r.Filename||'';
+    const trunc=fn.length>46?fn.slice(0,43)+'…':fn;
+    const expB=expiryBadge(r);
+    const date=(r.EffectiveDate||'').slice(0,10)||'—';
+    const url=spUrl(r);
+    const rj=encodeURIComponent(JSON.stringify(r));
+    let extra='';
+    if(showAmend)extra+=`<td style="font-size:12px;color:var(--text3)">${e(r.AmendmentNumber)||'—'}</td>`;
+    if(showVer)extra+=`<td style="font-size:12px;color:var(--text3)">${e(r.VersionLabel)||'—'}</td>`;
+    if(showNotes)extra+=`<td style="font-size:12px;color:var(--text3)" title="${e(r.Notes)}">${e((r.Notes||'').slice(0,40))||'—'}</td>`;
+    return`<tr class="${ec}">
+      <td title="${e(r.CounterpartyName)}">${e(r.CounterpartyName||'—')}</td>
+      <td>${badge(r.DocType||'—',dtc)}</td>
+      <td>${badge(r.SigningStatus||'—',stc)}</td>
+      <td>${locB}</td>
+      <td title="${e(fn)}" style="font-family:monospace;font-size:11px;color:var(--text3)">
+        <div class="fn-cell">${fileIcon(r.Extension)}${e(trunc)}${expB?' '+expB:''}</div>
+      </td>
+      <td style="font-size:12px;color:var(--text3)">${date}</td>
+      ${extra}
+      <td>
+        <div class="action-cell">
+          <a href="${url}" target="_blank" rel="noopener" class="open-btn" onclick="addRecent(JSON.parse(decodeURIComponent('${rj}')))">
+            <svg width="10" height="10" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+            Open
+          </a>
+          <button class="copy-btn" onclick="copyLink('${url}',this)" title="Copy link">
+            <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path stroke-linecap="round" stroke-linejoin="round" d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+            <span class="tooltip">Copy link</span>
+          </button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('')+(filtered.length>LIMIT?`<tr><td colspan="20" style="text-align:center;padding:10px;font-size:12px;color:var(--text4)">Showing first ${LIMIT} of ${filtered.length.toLocaleString()} — refine search to see more</td></tr>`:'');
+
+  // Mobile cards
+  cardList.innerHTML=slice.map(r=>{
+    const ec=expiryClass(r);
+    const url=spUrl(r);
+    const fn=r.Filename||'';
+    const trunc=fn.length>48?fn.slice(0,45)+'…':fn;
+    const rj=encodeURIComponent(JSON.stringify(r));
+    return`<div class="contract-card ${ec}">
+      <div class="card-top"><span class="card-name">${e(r.CounterpartyName||'—')}</span>${expiryBadge(r)}</div>
+      <div class="card-badges">${badge(r.DocType||'—',DT_CLASS[r.DocType]||'b-other')}${badge(r.SigningStatus||'—',r.SigningStatus==='Signed'?'b-signed':'b-unsigned')}${r.ContractLocation==='01 Active Contracts'?badge('Active','b-active'):badge('Unsigned','b-unsigned')}</div>
+      <div class="card-fn">${fileIcon(r.Extension)}<span>${e(trunc)}</span></div>
+      <div class="card-footer">
+        <span class="card-date">${(r.EffectiveDate||'').slice(0,10)||'—'}</span>
+        <div style="display:flex;gap:4px">
+          <a href="${url}" target="_blank" rel="noopener" class="open-btn" onclick="addRecent(JSON.parse(decodeURIComponent('${rj}')))">Open</a>
+          <button class="copy-btn" onclick="copyLink('${url}',this)" title="Copy link"><svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path stroke-linecap="round" stroke-linejoin="round" d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg><span class="tooltip">Copy link</span></button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── Export CSV ──
+function exportCSV(){
+  const cols=['CounterpartyName','DocType','SigningStatus','ContractLocation','Filename','EffectiveDate','ExpirationDate','Notes'];
+  const rows=[cols.join(','),...filtered.map(r=>cols.map(c=>`"${(r[c]||'').replace(/"/g,'""')}"`).join(','))];
+  const a=document.createElement('a');
+  a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(rows.join('\n'));
+  a.download='contracts-filtered-'+new Date().toISOString().slice(0,10)+'.csv';
+  a.click();
+}
+
+// ── Suggestions ──
+function getSuggestions(q){
+  if(!q||q.length<2)return{types:[],names:[]};
+  const ql=q.toLowerCase();
+  const types=[];
+  for(const[k,v]of Object.entries(SUGGEST_MAP)){if(ql.includes(k))v.forEach(t=>{if(!types.includes(t))types.push(t)})}
+  return{types,names:[]};
+}
+
+// ── EXPIRING TAB ──
+function renderExpiring(){
+  const expired=DATA.filter(r=>{const d=daysTo(r.ExpirationDate);return d!==null&&d<=0});
+  const d30=DATA.filter(r=>{const d=daysTo(r.ExpirationDate);return d!==null&&d>0&&d<=30});
+  const d90=DATA.filter(r=>{const d=daysTo(r.ExpirationDate);return d!==null&&d>30&&d<=90});
+  const hasAny=expired.length||d30.length||d90.length;
+
+  if(!hasAny){
+    document.getElementById('exp-content').innerHTML=`<div class="panel"><div style="text-align:center;padding:40px;color:var(--text4)"><div style="font-size:40px;margin-bottom:12px">📅</div><h3 style="font-size:15px;font-weight:500;color:var(--text3);margin-bottom:8px">No expiration data yet</h3><p style="font-size:13px">Populate the ExpirationDate column in your CSV and regenerate to see expiring contracts here.</p></div></div>`;
+    return;
+  }
+
+  function expTable(rows,cls){
+    if(!rows.length)return'<p style="font-size:13px;color:var(--text4);padding:8px 0">None</p>';
+    return`<div style="overflow-x:auto"><table class="cov-table">
+      <thead><tr><th>Counterparty</th><th>Type</th><th>Filename</th><th>Expires</th><th></th></tr></thead>
+      <tbody>${rows.map(r=>`<tr>
+        <td>${e(r.CounterpartyName||'—')}</td>
+        <td>${badge(r.DocType||'—',DT_CLASS[r.DocType]||'b-other')}</td>
+        <td style="font-family:monospace;font-size:11px;color:var(--text3)" title="${e(r.Filename)}">${e((r.Filename||'').slice(0,40))}</td>
+        <td><span class="exp-badge ${cls}">${r.ExpirationDate||'—'}</span></td>
+        <td><a href="${spUrl(r)}" target="_blank" rel="noopener" class="open-btn">Open</a></td>
+      </tr>`).join('')}</tbody>
+    </table></div>`;
+  }
+
+  document.getElementById('exp-content').innerHTML=`
+    <div class="panel"><div class="exp-group"><div class="exp-group-title" style="color:var(--red)">Expired <span class="exp-count red">${expired.length}</span></div>${expTable(expired,'exp-red-b')}</div></div>
+    <div class="panel"><div class="exp-group"><div class="exp-group-title" style="color:var(--red)">Expiring within 30 days <span class="exp-count red">${d30.length}</span></div>${expTable(d30,'exp-red-b')}</div></div>
+    <div class="panel"><div class="exp-group"><div class="exp-group-title" style="color:var(--amber)">Expiring within 90 days <span class="exp-count amber">${d90.length}</span></div>${expTable(d90,'exp-amber-b')}</div></div>`;
+}
+
+// ── PORTFOLIO TAB ──
+function renderPortfolio(){
+  const byType={};const byStatus={};const byLoc={};
+  DATA.forEach(r=>{
+    byType[r.DocType]=(byType[r.DocType]||0)+1;
+    byStatus[r.SigningStatus]=(byStatus[r.SigningStatus]||0)+1;
+    byLoc[r.ContractLocation]=(byLoc[r.ContractLocation]||0)+1;
+  });
+  const maxT=Math.max(...Object.values(byType));
+  const maxV=DATA.length;
+
+  function portList(obj,max,colorFn){
+    return Object.entries(obj).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`
+      <li class="port-item">
+        <span style="min-width:90px;font-size:12px">${e(k)}</span>
+        <div class="port-bar-wrap"><div class="port-bar" style="width:${Math.round(v/max*100)}%;background:${colorFn?colorFn(k):'var(--blue)'}"></div></div>
+        <span class="port-num">${v.toLocaleString()}</span>
+      </li>`).join('');
+  }
+
+  const signed=byStatus['Signed']||0;
+  const unsigned=byStatus['Unsigned']||0;
+
+  document.getElementById('portfolio-content').innerHTML=`
+    <div class="stats-row" style="margin-bottom:16px">
+      <div class="stat-card"><div class="stat-label">Total Contracts</div><div class="stat-value">${DATA.length.toLocaleString()}</div></div>
+      <div class="stat-card"><div class="stat-label">Signed</div><div class="stat-value green">${signed.toLocaleString()}</div></div>
+      <div class="stat-card"><div class="stat-label">Unsigned</div><div class="stat-value amber">${unsigned.toLocaleString()}</div></div>
+      <div class="stat-card"><div class="stat-label">Counterparties</div><div class="stat-value">${new Set(DATA.map(r=>r.CounterpartyName).filter(Boolean)).size.toLocaleString()}</div></div>
+    </div>
+    <div class="port-grid">
+      <div class="panel"><div class="panel-title">By Document Type</div><ul class="port-list">${portList(byType,maxT,k=>DT_CLASS[k]?'var(--blue)':'var(--blue)')}</ul></div>
+      <div class="panel"><div class="panel-title">By Folder</div><ul class="port-list">${portList(byLoc,maxV,k=>k==='01 Active Contracts'?'var(--green)':'var(--amber)')}</ul></div>
+    </div>`;
+}
+
+// ── COVERAGE TAB ──
+function renderCoverage(){
+  const cp={};
+  DATA.forEach(r=>{
+    const n=r.CounterpartyName;if(!n)return;
+    if(!cp[n])cp[n]={ndaTypes:new Set(),msaTypes:new Set(),projectTypes:new Set(),all:new Set()};
+    cp[n].all.add(r.DocType);
+    if(['NDA','MNDA','CDA'].includes(r.DocType))cp[n].ndaTypes.add(r.DocType);
+    if(['MSA','IPA'].includes(r.DocType))cp[n].msaTypes.add(r.DocType);
+    if(['SOW','PSA','Subcontract'].includes(r.DocType))cp[n].projectTypes.add(r.DocType);
+  });
+
+  let filter='gaps';
+  function render(f){
+    filter=f;
+    const rows=Object.entries(cp).filter(([n,v])=>{
+      if(f==='all')return true;
+      if(f==='gaps')return v.msaTypes.size>0&&v.ndaTypes.size===0||v.ndaTypes.size>0&&v.msaTypes.size===0;
+      if(f==='no-msa')return v.ndaTypes.size>0&&v.msaTypes.size===0;
+      if(f==='no-nda')return v.msaTypes.size>0&&v.ndaTypes.size===0;
+      return true;
+    }).sort((a,b)=>a[0].localeCompare(b[0]));
+
+    const tbody=rows.map(([n,v])=>`<tr>
+      <td title="${e(n)}" style="max-width:180px;overflow:hidden;text-overflow:ellipsis">${e(n)}</td>
+      <td style="text-align:center">${v.ndaTypes.size>0?'<span class="cov-check">✓</span>':'<span class="cov-x">✗</span>'}</td>
+      <td style="text-align:center">${v.msaTypes.size>0?'<span class="cov-check">✓</span>':'<span class="cov-x">✗</span>'}</td>
+      <td style="text-align:center">${v.projectTypes.size>0?'<span class="cov-check">✓</span>':'<span class="cov-x">✗</span>'}</td>
+      <td style="font-size:11px;color:var(--text3)">${[...v.all].sort().join(', ')}</td>
+    </tr>`).join('');
+
+    document.getElementById('cov-body').innerHTML=tbody||`<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--text4)">No counterparties match this filter</td></tr>`;
+    document.getElementById('cov-count').textContent=rows.length.toLocaleString()+' counterparties';
+    document.querySelectorAll('.cov-chip').forEach(b=>b.classList.toggle('active',b.dataset.f===filter));
+  }
+
+  document.getElementById('coverage-content').innerHTML=`
+    <div class="panel">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+        <div class="panel-title" style="margin-bottom:0">Counterparty Coverage</div>
+        <span id="cov-count" style="font-size:12px;color:var(--text3)"></span>
+      </div>
+      <div class="cov-filter">
+        <button class="chip cov-chip active" data-f="gaps" onclick="renderCovGap('gaps')">Gaps only</button>
+        <button class="chip cov-chip" data-f="no-msa" onclick="renderCovGap('no-msa')">Has NDA, no MSA</button>
+        <button class="chip cov-chip" data-f="no-nda" onclick="renderCovGap('no-nda')">Has MSA, no NDA</button>
+        <button class="chip cov-chip" data-f="all" onclick="renderCovGap('all')">All counterparties</button>
+      </div>
+      <div style="overflow-x:auto">
+        <table class="cov-table">
+          <thead><tr><th>Counterparty</th><th style="text-align:center">NDA/MNDA/CDA</th><th style="text-align:center">MSA/IPA</th><th style="text-align:center">SOW/PSA/Sub</th><th>Doc Types</th></tr></thead>
+          <tbody id="cov-body"></tbody>
+        </table>
+      </div>
+    </div>`;
+
+  window._covData=cp;
+  window.renderCovGap=render;
+  render('gaps');
+}
+
+// ── ACTIVITY TAB ──
+function renderActivity(){
+  const byMonth={};
+  DATA.forEach(r=>{
+    const d=(r.FileCreatedDate||'').slice(0,7);
+    if(d&&d.length===7)byMonth[d]=(byMonth[d]||0)+1;
+  });
+  const months=Object.keys(byMonth).sort();
+  if(!months.length){document.getElementById('activity-content').innerHTML='<div class="panel"><p style="text-align:center;padding:40px;color:var(--text4)">No date data available</p></div>';return}
+  const max=Math.max(...Object.values(byMonth));
+  const bars=months.map(m=>{
+    const v=byMonth[m];
+    const h=Math.max(4,Math.round(v/max*120));
+    const label=m.slice(0,7);
+    return`<div class="bar-col" title="${m}: ${v}">
+      <span class="bar-val">${v}</span>
+      <div class="bar" style="height:${h}px;width:100%"></div>
+      <span class="bar-label">${m.slice(5,7)}/${m.slice(2,4)}</span>
+    </div>`;
+  }).join('');
+
+  // By type breakdown
+  const byType={};
+  DATA.forEach(r=>{byType[r.DocType]=(byType[r.DocType]||0)+1});
+  const typeRows=Object.entries(byType).sort((a,b)=>b[1]-a[1]).map(([t,v])=>`
+    <div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border2)">
+      <span style="min-width:80px;font-size:12px">${badge(t,DT_CLASS[t]||'b-other')}</span>
+      <div style="flex:1;height:6px;background:var(--border);border-radius:3px"><div style="height:100%;width:${Math.round(v/DATA.length*100)}%;background:var(--blue);border-radius:3px"></div></div>
+      <span style="font-size:12px;color:var(--text3);min-width:40px;text-align:right">${v.toLocaleString()} (${Math.round(v/DATA.length*100)}%)</span>
+    </div>`).join('');
+
+  document.getElementById('activity-content').innerHTML=`
+    <div class="panel">
+      <div class="panel-title">Contracts Added by Month</div>
+      <div class="chart-wrap"><div class="bar-chart">${bars}</div></div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">Distribution by Doc Type</div>
+      ${typeRows}
+    </div>`;
+}
+
+// ── Keyboard shortcuts ──
+document.addEventListener('keydown',ev=>{
+  if(ev.key==='/'&&document.activeElement!==document.getElementById('q')){ev.preventDefault();document.getElementById('q').focus()}
+  if(ev.key==='Escape'&&document.activeElement===document.getElementById('q')){clearSearch();document.getElementById('q').blur()}
+});
+
+// ── Owner Tab ──
+let ownerFiltered=[], ownerAf={types:new Set(),status:'All',loc:'All'};
+
+function goOwner(){
+  const q=(document.getElementById('own-q').value||'').trim().toLowerCase();
+  const cb=document.getElementById('own-clear-btn');
+  if(cb)cb.className='clear-btn'+(q?' show':'');
+  ownerFiltered=DATA.filter(r=>{
+    if(ownerAf.types.size>0&&!ownerAf.types.has(r.DocType))return false;
+    if(ownerAf.status!=='All'&&r.SigningStatus!==ownerAf.status)return false;
+    if(ownerAf.loc!=='All'&&r.ContractLocation!==ownerAf.loc)return false;
+    if(q){const n=(r.CounterpartyName||'').toLowerCase(),fn=(r.Filename||'').toLowerCase();if(!n.includes(q)&&!fn.includes(q))return false;}
+    return true;
+  });
+  ownerFiltered.sort((a,b)=>{const av=(a.CounterpartyName||'').toLowerCase(),bv=(b.CounterpartyName||'').toLowerCase();return av<bv?-1:av>bv?1:0;});
+  renderOwnerThead();
+  renderOwnerTable();
+  buildOwnerFilters();
+}
+
+function clearOwnerSearch(){
+  document.getElementById('own-q').value='';
+  goOwner();
+}
+
+function buildOwnerFilters(){
+  const types=[...new Set(DATA.map(r=>r.DocType).filter(Boolean))].sort();
+  const locs=['All','01 Active Contracts','02 Unsigned Contracts','03 Archived Contracts'];
+  const statuses=['All','Signed','Unsigned'];
+  const locChips=locs.map(l=>'<button class="chip'+(ownerAf.loc===l?' active':'')+'" onclick="setOwnerF(\'loc\',\''+l+'\')">'+(l==='All'?'All':l.replace(/^\d+ /,''))+'</button>').join('');
+  const stChips=statuses.map(s=>'<button class="chip'+(ownerAf.status===s?' active':'')+'" onclick="setOwnerF(\'status\',\''+s+'\')">'+s+'</button>').join('');
+  const tChips=types.map(t=>'<button class="chip'+(ownerAf.types.has(t)?' active':'')+'" onclick="toggleOwnerType(\''+t+'\')">'+t+'</button>').join('');
+  document.getElementById('own-filter-bar').innerHTML=
+    '<div class="filter-group"><span class="filter-label">Location</span>'+locChips+'</div>'+
+    '<div class="filter-group"><span class="filter-label">Status</span>'+stChips+'</div>'+
+    '<div class="filter-group"><span class="filter-label">Type</span>'+tChips+'</div>';
+}
+
+function setOwnerF(k,v){ownerAf[k]=v;goOwner();}
+function toggleOwnerType(t){ownerAf.types.has(t)?ownerAf.types.delete(t):ownerAf.types.add(t);goOwner();}
+
+function renderOwnerThead(){
+  document.getElementById('own-thead-row').innerHTML=
+    '<th style="width:18%">Counterparty</th>'+
+    '<th style="width:7%">Type</th>'+
+    '<th style="width:8%">Status</th>'+
+    '<th style="width:10%">Location</th>'+
+    '<th style="width:25%">Filename</th>'+
+    '<th style="width:8%">Date</th>'+
+    '<th style="width:24%" class="no-sort">Actions</th>';
+}
+
+function renderOwnerTable(){
+  const tbody=document.getElementById('own-tbody');
+  const empty=document.getElementById('own-empty');
+  const meta=document.getElementById('own-meta');
+  const LIMIT=500;
+  meta.textContent='Showing '+Math.min(ownerFiltered.length,LIMIT).toLocaleString()+' of '+ownerFiltered.length.toLocaleString()+' \xb7 '+DATA.length.toLocaleString()+' total';
+  if(!ownerFiltered.length){tbody.innerHTML='';empty.style.display='block';return;}
+  empty.style.display='none';
+  tbody.innerHTML=ownerFiltered.slice(0,LIMIT).map(function(r,i){
+    const idx=DATA.indexOf(r);
+    const dtc=DT_CLASS[r.DocType]||'b-other';
+    const stc=r.SigningStatus==='Signed'?'b-signed':'b-unsigned';
+    const loc=r.ContractLocation;
+    const locB=loc==='01 Active Contracts'?badge('Active','b-active'):loc==='02 Unsigned Contracts'?badge('Unsigned','b-unsigned'):badge('Archived','b-pending');
+    const fn=r.Filename||'';
+    const trunc=fn.length>40?fn.slice(0,37)+'…':fn;
+    const date=(r.EffectiveDate||'').slice(0,10)||'—';
+    const isActive=loc==='01 Active Contracts';
+    const isUnsigned=loc==='02 Unsigned Contracts';
+    const isArchived=loc==='03 Archived Contracts';
+      const url=spUrl(r);
+      const rj=encodeURIComponent(JSON.stringify(r));
+      const actBtns=
+        '<a href="'+url+'" target="_blank" rel="noopener" class="own-btn" onclick="addRecent(JSON.parse(decodeURIComponent(\''+rj+'\')))">Open</a>'+
+        '<button class="own-btn own-blue" onclick="ownerAction('+idx+',\'manage\')">Manage</button>'+
+        (!isArchived?'<button class="own-btn own-gray" onclick="ownerAction('+idx+',\'archive\')">Archive</button>':'');
+    return '<tr class="'+expiryClass(r)+'">'
+      +'<td title="'+e(r.CounterpartyName)+'">'+e(r.CounterpartyName||'—')+'</td>'
+      +'<td>'+badge(r.DocType||'—',dtc)+'</td>'
+      +'<td>'+badge(r.SigningStatus||'—',stc)+'</td>'
+      +'<td>'+locB+'</td>'
+      +'<td title="'+e(fn)+'" style="font-family:monospace;font-size:11px;color:var(--text3)"><div class="fn-cell">'+fileIcon(r.Extension)+e(trunc)+'</div></td>'
+      +'<td style="font-size:12px;color:var(--text3)">'+date+'</td>'
+      +'<td><div class="own-action-cell">'+actBtns+'</div></td>'
+      +'</tr>';
+  }).join('');
+}
+
+// ── Owner Drawer ──
+let ownerActionRecord=null, ownerActionType=null;
+
+function ownerAction(idx,action){
+  ownerActionRecord=DATA[idx];
+  ownerActionType=action;
+  const r=ownerActionRecord;
+  document.getElementById('drawer-output').style.display='none';
+  document.getElementById('drawer-copy-btn').style.display='none';
+    const titles={scan:'Scan Document',reclassify:'Reclassify Document Type',rename:'Rename File',move:'Move Contract',manage:'Manage Contract',archive:'Archive Contract'};
+  document.getElementById('drawer-title').textContent=titles[action]||action;
+  document.getElementById('drawer-contract-info').innerHTML=
+    '<strong>'+e(r.CounterpartyName)+'</strong> <span class="badge '+(DT_CLASS[r.DocType]||'b-other')+'">'+e(r.DocType)+'</span>'+
+    '<div style="margin-top:3px;color:var(--text2);font-size:11px;font-family:monospace">'+e(r.Filename)+'</div>'+
+    '<div style="margin-top:2px;color:var(--text3);font-size:11px">'+e(r.ContractLocation)+' \xb7 '+e(r.SigningStatus)+'</div>';
+  const form=document.getElementById('drawer-form');
+  if(action==='manage'){
+    const types=[...new Set(DATA.map(function(d){return d.DocType;}).filter(Boolean))].sort();
+    const allLocs=[['01 Active Contracts','→ Active'],['02 Unsigned Contracts','→ Unsigned'],['03 Archived Contracts','→ Archived']];
+    form.innerHTML=
+      '<div style="display:flex;flex-direction:column;gap:14px">'+
+      '<label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" id="m-scan" checked style="width:14px;height:14px;flex-shrink:0"> Scan document &mdash; check signatures, type &amp; filename</label>'+
+      '<div><label style="display:block;font-size:12px;color:var(--text3);margin-bottom:4px;font-weight:500">Reclassify DocType</label><input list="m-type-list" id="m-type" value="'+e(r.DocType)+'" style="width:200px"/><datalist id="m-type-list">'+types.map(function(t){return'<option value="'+t+'">';}).join('')+'</datalist></div>'+
+      '<div><label style="display:block;font-size:12px;color:var(--text3);margin-bottom:4px;font-weight:500">Rename filename</label><input type="text" id="m-name" value="'+e(r.Filename)+'" style="width:100%;max-width:500px"/></div>'+
+      '<div><label style="display:block;font-size:12px;color:var(--text3);margin-bottom:4px;font-weight:500">Move to</label><select id="m-loc"><option value="">Keep current location</option>'+allLocs.filter(function(l){return l[0]!==r.ContractLocation;}).map(function(l){return'<option value="'+l[0]+'">'+l[1]+'</option>';}).join('')+'</select></div>'+
+      '</div>';
+  } else if(action==='reclassify'){
+    const types=['NDA','MNDA','MSA','SOW','EULA','IPA','PSA','Subcontract','Amendment','Other'];
+    form.innerHTML='<label>New document type</label><select id="drawer-reclassify-val">'+types.map(t=>'<option value="'+t+'"'+(t===r.DocType?' selected':'')+'>'+t+'</option>').join('')+'</select>';
+  } else if(action==='rename'){
+    form.innerHTML='<label>New filename</label><input type="text" id="drawer-rename-val" value="'+e(r.Filename)+'" style="width:100%;max-width:500px"/>';
+    } else if(action==='move'){
+    const locs=[['01 Active Contracts','→ Active'],['02 Unsigned Contracts','→ Unsigned'],['03 Archived Contracts','→ Archived']].filter(function(l){return l[0]!==r.ContractLocation;});
+    form.innerHTML='<label>Destination</label><select id="drawer-move-val">'+locs.map(function(l){return'<option value="'+l[0]+'">'+l[1]+'</option>';}).join('')+'</select>';
+    } else if(action==='archive'){
+    form.innerHTML='';
+    document.getElementById('owner-drawer').classList.add('show');
+    buildOwnerReq();
+    return;
+    } else {
+    form.innerHTML='';
+    }
+  document.getElementById('owner-drawer').classList.add('show');
+}
+
+function closeOwnerDrawer(){
+  document.getElementById('owner-drawer').classList.remove('show');
+  ownerActionRecord=null;ownerActionType=null;
+}
+
+function buildOwnerReq(){
+  const r=ownerActionRecord;
+  if(!r)return;
+  const action=ownerActionType;
+  let instruction='';
+    if(action==='archive'){
+    instruction='Move this contract from "'+r.ContractLocation+'" to "03 Archived Contracts". Move the file on disk and update contract-catalog.csv: ContractLocation → "03 Archived Contracts", SigningStatus → "'+r.SigningStatus+'".';
+    } else if(action==='manage'){
+    const scanEl=document.getElementById('m-scan');
+    const typeEl=document.getElementById('m-type');
+    const nameEl=document.getElementById('m-name');
+    const locEl=document.getElementById('m-loc');
+    const doScan=scanEl&&scanEl.checked;
+    const newType=typeEl?typeEl.value:r.DocType;
+    const newName=(nameEl?(nameEl.value||'').trim():'')||r.Filename;
+    const dest=locEl?locEl.value:'';
+    const steps=[];
+    if(doScan)steps.push('Scan this contract file and report: (a) Is it signed? (b) What is the document type? (c) Does the filename accurately reflect the document?\nFile path: '+r.ContractLocation+'\\'+r.FilePath);
+    if(newType&&newType!==r.DocType)steps.push('Reclassify DocType from "'+r.DocType+'" to "'+newType+'". Update contract-catalog.csv: DocType → "'+newType+'".');
+    if(newName!==r.Filename)steps.push('Rename file from "'+r.Filename+'" to "'+newName+'". Update contract-catalog.csv (Filename + FilePath) and rename the file on disk at: '+r.ContractLocation+'\\'+r.FilePath+'.');
+    if(dest){const destStatus=dest==='01 Active Contracts'?'Signed':dest==='02 Unsigned Contracts'?'Unsigned':r.SigningStatus;steps.push('Move from "'+r.ContractLocation+'" to "'+dest+'". Move the file on disk and update contract-catalog.csv: ContractLocation → "'+dest+'", SigningStatus → "'+destStatus+'".');}
+    instruction=steps.length?steps.map(function(s,i){return(i+1)+'. '+s;}).join('\n\n'):'No actions selected.';
+    } else if(action==='scan'){
+    instruction='Please read this contract file and report:\n1. Is it signed? (look for signatures, DocuSign envelope IDs, executed keywords)\n2. What is the document type? (NDA, MNDA, MSA, SOW, EULA, etc.)\n3. Does the filename accurately reflect the document name and counterparty?\n\nFile path: '+r.ContractLocation+'\\\\'+r.FilePath;
+    } else if(action==='move'){
+    const dest=document.getElementById('drawer-move-val')?document.getElementById('drawer-move-val').value:'';
+    const destStatus=dest==='01 Active Contracts'?'Signed':dest==='02 Unsigned Contracts'?'Unsigned':r.SigningStatus;
+    instruction='Move this contract from "'+r.ContractLocation+'" to "'+dest+'".\nUpdate CSV: ContractLocation → "'+dest+'", SigningStatus → "'+destStatus+'".\nMove the file on disk to: '+dest+'\\'+r.VendorFolder+'\\'+r.Filename;
+    } else if(action==='reclassify'){
+    const el=document.getElementById('drawer-reclassify-val');
+    const newType=el?el.value:'';
+    instruction='Reclassify this contract\'s DocType from "'+r.DocType+'" to "'+newType+'".\nUpdate CSV: DocType → "'+newType+'".';
+  } else if(action==='rename'){
+    const el=document.getElementById('drawer-rename-val');
+    const newName=el?(el.value||'').trim():'';
+    instruction='Rename this contract file from "'+r.Filename+'" to "'+newName+'".\nUpdate CSV: Filename and FilePath fields accordingly.\nRename the actual file on disk at: '+r.ContractLocation+'\\'+r.FilePath;
+  }
+  const fields=['ContractLocation','VendorFolder','Filename','FilePath','DocType','SigningStatus','EffectiveDate','ExpirationDate','Notes'];
+  const details=fields.map(function(k){return r[k]?'  '+k+': '+r[k]:null;}).filter(Boolean).join('\n');
+  const text='Contract:\n'+details+'\n\nRequested action:\n'+instruction;
+  const out=document.getElementById('drawer-output');
+  out.textContent=text;out.style.display='block';
+  document.getElementById('drawer-copy-btn').style.display='inline-flex';
+}
+
+function copyOwnerReq(){
+  navigator.clipboard.writeText(document.getElementById('drawer-output').textContent).then(function(){
+    const btn=document.getElementById('drawer-copy-btn');
+    btn.textContent='Copied!';setTimeout(function(){btn.textContent='Copy to Clipboard';},1500);
+  });
+}
+
+// ── Init ──
+function init(){
+  document.getElementById('hdr-count').textContent = DATA.length.toLocaleString() + ' contracts';
+  buildStats();
+  buildFilters();
+  go();
+}
+var csvUrl = new URL('contract-catalog.csv', window.location.href).href;
+fetch(csvUrl)
+  .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.text(); })
+  .then(function(text){ DATA = parseCSV(text); init(); })
+  .catch(function(err){
+    console.error('CSV load error:', err, 'URL:', csvUrl);
+    document.getElementById('hdr-count').textContent = 'Load error';
+    var isLocal = window.location.protocol === 'file:';
+    document.getElementById('stats').innerHTML =
+      '<div style="grid-column:1/-1;padding:20px;background:#fee2e2;border:1px solid #fca5a5;border-radius:8px;color:#991b1b;font-size:13px;line-height:1.6">' +
+      (isLocal
+        ? '⚠ Cannot load CSV from a local file. Open this page via your <strong>SharePoint URL</strong>, or use <strong>Admin → Import CSV</strong> to load data manually.'
+        : '⚠ Failed to load data.<br><strong>Attempted URL:</strong> ' + csvUrl + '<br>Verify that <code>contract-catalog.csv</code> is in the same SharePoint folder as this HTML file.') +
+      '</div>';
+  });
+</script>
+
+<div id="admin-overlay">
+  <div class="admin-modal">
+    <h3>🔒 Owner Access</h3>
+    <p>Enter the owner password to manage the catalog.</p>
+    <input type="password" id="admin-pwd" placeholder="Password" onkeydown="if(event.key==='Enter')adminLogin()"/>
+    <div class="err" id="admin-err">Incorrect password.</div>
+    <div class="btn-row">
+      <button class="btn btn-cancel" onclick="closeAdminLogin()">Cancel</button>
+      <button class="btn btn-primary" onclick="adminLogin()">Unlock</button>
+    </div>
+  </div>
+</div>
+<div id="tab-admin">
+  <!-- Owner catalog view -->
+  <div class="search-bar" style="margin-bottom:12px">
+    <div class="search-row">
+      <div class="search-wrap">
+        <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path stroke-linecap="round" d="M21 21l-4.35-4.35"/></svg>
+        <input type="text" id="own-q" placeholder="Search counterparty or filename&hellip;" oninput="goOwner()" aria-label="Owner search"/>
+        <button class="clear-btn" id="own-clear-btn" onclick="clearOwnerSearch()" title="Clear">&times;</button>
+      </div>
+    </div>
+    <div class="filters" id="own-filter-bar"></div>
+  </div>
+
+  <div class="table-wrap">
+    <div class="table-meta">
+      <span id="own-meta"></span>
+    </div>
+    <div style="overflow-x:auto">
+      <table>
+        <thead><tr id="own-thead-row"></tr></thead>
+        <tbody id="own-tbody"></tbody>
+      </table>
+    </div>
+    <div id="own-empty" class="empty" style="display:none">
+      <h3>No contracts found</h3>
+      <p style="font-size:13px;color:var(--text4)">Try a different search term.</p>
+    </div>
+  </div>
+
+  <!-- Admin tools (collapsible) -->
+  <details style="margin-top:20px">
+    <summary style="cursor:pointer;font-size:13px;font-weight:600;color:var(--text2);padding:10px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-lg);list-style:none;display:flex;align-items:center;gap:6px">&#9881; Admin Tools</summary>
+    <div style="padding-top:12px;display:flex;flex-direction:column;gap:12px">
+      <div class="admin-section">
+        <h3>&#128202; Catalog Status</h3>
+        <p>Current snapshot loaded in this session.</p>
+        <div id="admin-stats-row"></div>
+      </div>
+      <div class="admin-section">
+        <h3>&#128194; Import Updated CSV</h3>
+        <p>Drop a new <code>contract-catalog.csv</code> to reload instantly.</p>
+        <div class="drop-zone" id="drop-zone" onclick="document.getElementById('csv-file-input').click()" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="handleDrop(event)">
+          <div class="icon">&#128196;</div>
+          <p>Click or drag &amp; drop CSV here</p>
+        </div>
+        <input type="file" id="csv-file-input" accept=".csv" style="display:none" onchange="handleFileSelect(event)"/>
+        <div class="upload-status" id="upload-status"></div>
+        <div id="csv-preview" style="overflow-x:auto;max-height:200px;overflow-y:auto;margin-top:8px"></div>
+      </div>
+      <div class="admin-section">
+        <h3>&#128190; Export</h3>
+        <p>Download to replace in your <code>Tools\</code> folder.</p>
+        <div class="admin-export-row">
+          <button class="btn btn-primary" onclick="exportHTML()">&#8595; Download index.html</button>
+          <button class="btn btn-secondary" onclick="exportCSVAdmin()">&#8595; Download CSV</button>
+        </div>
+      </div>
+      <div class="admin-section" style="border-color:rgba(239,68,68,.3)">
+        <h3 style="color:#ef4444">&#128275; Session</h3>
+        <div class="admin-export-row">
+          <button class="btn btn-danger" onclick="adminLock()">Lock &amp; Exit</button>
+        </div>
+      </div>
+    </div>
+  </details>
+</div>
+<div id="owner-drawer">
+  <div class="drawer-header">
+    <span class="drawer-title" id="drawer-title">Owner Action</span>
+    <button class="drawer-close" onclick="closeOwnerDrawer()">&times;</button>
+  </div>
+  <div class="drawer-contract-info" id="drawer-contract-info"></div>
+  <div class="drawer-form" id="drawer-form"></div>
+  <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:12px">
+    <button class="btn" style="background:var(--blue);color:#fff;border:none;padding:7px 16px" onclick="buildOwnerReq()">Build Request</button>
+    <button class="btn btn-secondary" id="drawer-copy-btn" onclick="copyOwnerReq()" style="display:none">Copy to Clipboard</button>
+    <button class="btn" onclick="closeOwnerDrawer()">Close</button>
+  </div>
+  <div id="drawer-output" class="drawer-output" style="display:none"></div>
+</div>
+<button class="lock-btn" id="lock-btn" onclick="adminLock()">🔒 Lock Owner</button>
+<script>
+const OWNER_HASH='049282c64821fee3faa9f7247396798f6282acbf14d19ceb9e655c316ab81962';
+let adminUnlocked=false;
+async function sha256(msg){const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(msg));return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');}
+function showAdminLogin(){if(adminUnlocked){switchTab('admin');return;}document.getElementById('admin-overlay').classList.add('show');setTimeout(()=>document.getElementById('admin-pwd').focus(),100);}
+function closeAdminLogin(){document.getElementById('admin-overlay').classList.remove('show');document.getElementById('admin-pwd').value='';document.getElementById('admin-err').style.display='none';}
+async function adminLogin(){
+  const hash=await sha256(document.getElementById('admin-pwd').value);
+  if(hash===OWNER_HASH){adminUnlocked=true;closeAdminLogin();document.getElementById('admin-tab').classList.add('unlocked');document.getElementById('admin-tab').textContent='🔓 Owner';document.getElementById('lock-btn').classList.add('show');switchTab('admin');renderAdminStats();}
+  else{document.getElementById('admin-err').style.display='block';document.getElementById('admin-pwd').value='';document.getElementById('admin-pwd').focus();}
+}
+function adminLock(){adminUnlocked=false;document.getElementById('admin-tab').classList.remove('unlocked');document.getElementById('admin-tab').textContent='🔒 Owner';document.getElementById('lock-btn').classList.remove('show');document.getElementById('tab-admin').classList.remove('visible');switchTab('catalog');}
+const _origSwitchTab=switchTab;
+switchTab=function(tab){
+  if(tab==='admin'){if(!adminUnlocked){showAdminLogin();return;}document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.tab==='admin'));['catalog','expiring','portfolio','coverage','activity'].forEach(t=>{const el=document.getElementById('tab-'+t);if(el)el.style.display='none';});document.getElementById('tab-admin').classList.add('visible');goOwner();return;}
+  document.getElementById('tab-admin').classList.remove('visible');_origSwitchTab(tab);
+};
+function renderAdminStats(){const signed=DATA.filter(r=>r.SigningStatus==='Signed').length;const active=DATA.filter(r=>r.ContractLocation==='01 Active Contracts').length;const types=[...new Set(DATA.map(r=>r.DocType))].length;document.getElementById('admin-stats-row').innerHTML=`<div class="admin-stat"><strong>${DATA.length}</strong>Total</div><div class="admin-stat"><strong>${signed}</strong>Signed</div><div class="admin-stat"><strong>${active}</strong>Active</div><div class="admin-stat"><strong>${types}</strong>Doc Types</div>`;}
+function handleDrop(e){e.preventDefault();document.getElementById('drop-zone').classList.remove('drag');const file=e.dataTransfer.files[0];if(file)processCSV(file);}
+function handleFileSelect(e){const file=e.target.files[0];if(file)processCSV(file);e.target.value='';}
+function processCSV(file){
+  const status=document.getElementById('upload-status');const preview=document.getElementById('csv-preview');
+  if(!file.name.endsWith('.csv')){status.className='upload-status err';status.textContent='⚠ Must be a .csv';return;}
+  const reader=new FileReader();
+  reader.onload=function(e){try{const rows=parseCSV(e.target.result);if(!rows.length)throw new Error('No data rows');DATA.length=0;rows.forEach(r=>DATA.push(r));status.className='upload-status ok';status.textContent=`✅ Loaded ${rows.length} records`;const cols=['ContractLocation','VendorFolder','Filename','DocType','SigningStatus'];preview.innerHTML=`<table class="preview-table"><thead><tr>${cols.map(c=>`<th>${c}</th>`).join('')}</tr></thead><tbody>${rows.slice(0,5).map(r=>`<tr>${cols.map(c=>`<td>${e_(r[c]||'')}</td>`).join('')}</tr>`).join('')}</tbody></table>`;renderAdminStats();buildStats();buildFilters();go();}catch(err){status.className='upload-status err';status.textContent='⚠ '+err.message;}};
+  reader.readAsText(file);
+}
+function e_(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function parseCSV(text){const lines=text.split(/\r?\n/);if(!lines.length)return[];const headers=parseCSVRow(lines[0]);const rows=[];for(let i=1;i<lines.length;i++){const line=lines[i].trim();if(!line)continue;const vals=parseCSVRow(line);const obj={};headers.forEach((h,j)=>obj[h]=vals[j]||'');rows.push(obj);}return rows;}
+function parseCSVRow(line){const result=[];let cur='';let inQ=false;for(let i=0;i<line.length;i++){const c=line[i];if(c==='"'){if(inQ&&line[i+1]==='"'){cur+='"';i++;}else{inQ=!inQ;}}else if(c===','&&!inQ){result.push(cur);cur='';}else cur+=c;}result.push(cur);return result;}
+function exportHTML(){const dataJS='const DATA = '+JSON.stringify(DATA)+';';const src=document.documentElement.outerHTML;const updated=src.replace(/const DATA = \[.*?\];/s,dataJS);const blob=new Blob([updated],{type:'text/html'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='index.html';a.click();}
+function exportCSVAdmin(){if(!DATA.length)return;const cols=Object.keys(DATA[0]);const rows=[cols.join(','),...DATA.map(r=>cols.map(v=>{const s=String(r[v]||'');return s.includes(',')||s.includes('"')?'"'+s.replace(/"/g,'""')+'"':s;}).join(','))];const blob=new Blob([rows.join('\n')],{type:'text/csv'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='contract-catalog-fixed.csv';a.click();}
+</script>
+
+</body>
+</html>

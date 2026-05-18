@@ -1011,7 +1011,7 @@ function ownerAction(idx,action){
     form.innerHTML='<label>New filename</label><input type="text" id="drawer-rename-val" value="'+e(r.Filename)+'" style="width:100%;max-width:500px"/>';
     } else if(action==='move'){
     const locs=[['01 Active Contracts','→ Active'],['02 Unsigned Contracts','→ Unsigned'],['03 Archived Contracts','→ Archived']].filter(function(l){return l[0]!==r.ContractLocation;});
-    form.innerHTML='<label>Destination</label><select id="drawer-move-val">'+locs.map(function(l){return'<option value="'+l[0]+'">''+l[1]+'</option>';}).join('')+'</select>';
+    form.innerHTML='<label>Destination</label><select id="drawer-move-val">'+locs.map(function(l){return'<option value="'+l[0]+'">'+l[1]+'</option>';}).join('')+'</select>';
     } else {
     form.innerHTML='';
     }

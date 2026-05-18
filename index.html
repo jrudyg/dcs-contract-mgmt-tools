@@ -968,12 +968,14 @@ function renderOwnerTable(){
     const isActive=loc==='01 Active Contracts';
     const isUnsigned=loc==='02 Unsigned Contracts';
     const isArchived=loc==='03 Archived Contracts';
-    const actBtns=
-      (!isActive?'<button class="own-btn own-green" onclick="ownerAction('+idx+',\'active\')">→ Active</button>':'')+
-      (!isUnsigned?'<button class="own-btn own-amber" onclick="ownerAction('+idx+',\'unsigned\')">→ Unsigned</button>':'')+
-      (!isArchived?'<button class="own-btn own-gray" onclick="ownerAction('+idx+',\'archived\')">→ Archived</button>':'')+
-      '<button class="own-btn own-blue" onclick="ownerAction('+idx+',\'reclassify\')">Reclassify</button>'+
-      '<button class="own-btn" onclick="ownerAction('+idx+',\'rename\')">Rename</button>';
+      const url=spUrl(r);
+      const rj=encodeURIComponent(JSON.stringify(r));
+      const actBtns=
+        '<a href="'+url+'" target="_blank" rel="noopener" class="own-btn" onclick="addRecent(JSON.parse(decodeURIComponent(\''+rj+'\')))">Open</a>'+
+        '<button class="own-btn own-blue" onclick="ownerAction('+idx+',\'scan\')">Scan</button>'+
+        '<button class="own-btn" onclick="ownerAction('+idx+',\'reclassify\')">Reclassify</button>'+
+        '<button class="own-btn" onclick="ownerAction('+idx+',\'rename\')">Rename</button>'+
+        '<button class="own-btn own-amber" onclick="ownerAction('+idx+',\'move\')">Move</button>';
     return '<tr class="'+expiryClass(r)+'">'
       +'<td title="'+e(r.CounterpartyName)+'">'+e(r.CounterpartyName||'—')+'</td>'
       +'<td>'+badge(r.DocType||'—',dtc)+'</td>'
@@ -995,7 +997,7 @@ function ownerAction(idx,action){
   const r=ownerActionRecord;
   document.getElementById('drawer-output').style.display='none';
   document.getElementById('drawer-copy-btn').style.display='none';
-  const titles={active:'Move to Active Contracts',unsigned:'Move to Unsigned Contracts',archived:'Move to Archived Contracts',reclassify:'Reclassify Document Type',rename:'Rename File'};
+    const titles={scan:'Scan Document',reclassify:'Reclassify Document Type',rename:'Rename File',move:'Move Contract'};
   document.getElementById('drawer-title').textContent=titles[action]||action;
   document.getElementById('drawer-contract-info').innerHTML=
     '<strong>'+e(r.CounterpartyName)+'</strong> <span class="badge '+(DT_CLASS[r.DocType]||'b-other')+'">'+e(r.DocType)+'</span>'+
@@ -1007,9 +1009,12 @@ function ownerAction(idx,action){
     form.innerHTML='<label>New document type</label><select id="drawer-reclassify-val">'+types.map(t=>'<option value="'+t+'"'+(t===r.DocType?' selected':'')+'>'+t+'</option>').join('')+'</select>';
   } else if(action==='rename'){
     form.innerHTML='<label>New filename</label><input type="text" id="drawer-rename-val" value="'+e(r.Filename)+'" style="width:100%;max-width:500px"/>';
-  } else {
+    } else if(action==='move'){
+    const locs=[['01 Active Contracts','→ Active'],['02 Unsigned Contracts','→ Unsigned'],['03 Archived Contracts','→ Archived']].filter(function(l){return l[0]!==r.ContractLocation;});
+    form.innerHTML='<label>Destination</label><select id="drawer-move-val">'+locs.map(function(l){return'<option value="'+l[0]+'">''+l[1]+'</option>';}).join('')+'</select>';
+    } else {
     form.innerHTML='';
-  }
+    }
   document.getElementById('owner-drawer').classList.add('show');
 }
 
@@ -1023,13 +1028,13 @@ function buildOwnerReq(){
   if(!r)return;
   const action=ownerActionType;
   let instruction='';
-  if(action==='active'){
-    instruction='Move this contract from "'+r.ContractLocation+'" to "01 Active Contracts".\nUpdate CSV: ContractLocation → "01 Active Contracts", SigningStatus → "Signed".\nMove the file on disk from the current location to the 01 Active Contracts\\'+r.VendorFolder+'\\ folder.';
-  } else if(action==='unsigned'){
-    instruction='Move this contract from "'+r.ContractLocation+'" to "02 Unsigned Contracts".\nUpdate CSV: ContractLocation → "02 Unsigned Contracts", SigningStatus → "Unsigned".\nMove the file on disk from the current location to the 02 Unsigned Contracts\\'+r.VendorFolder+'\\ folder.';
-  } else if(action==='archived'){
-    instruction='Move this contract from "'+r.ContractLocation+'" to "03 Archived Contracts".\nUpdate CSV: ContractLocation → "03 Archived Contracts".\nMove the file on disk from the current location to the 03 Archived Contracts\\'+r.VendorFolder+'\\ folder.';
-  } else if(action==='reclassify'){
+    if(action==='scan'){
+    instruction='Please read this contract file and report:\n1. Is it signed? (look for signatures, DocuSign envelope IDs, executed keywords)\n2. What is the document type? (NDA, MNDA, MSA, SOW, EULA, etc.)\n3. Does the filename accurately reflect the document name and counterparty?\n\nFile path: '+r.ContractLocation+'\\\\'+r.FilePath;
+    } else if(action==='move'){
+    const dest=document.getElementById('drawer-move-val')?document.getElementById('drawer-move-val').value:'';
+    const destStatus=dest==='01 Active Contracts'?'Signed':dest==='02 Unsigned Contracts'?'Unsigned':r.SigningStatus;
+    instruction='Move this contract from "'+r.ContractLocation+'" to "'+dest+'".\nUpdate CSV: ContractLocation → "'+dest+'", SigningStatus → "'+destStatus+'".\nMove the file on disk to: '+dest+'\\'+r.VendorFolder+'\\'+r.Filename;
+    } else if(action==='reclassify'){
     const el=document.getElementById('drawer-reclassify-val');
     const newType=el?el.value:'';
     instruction='Reclassify this contract\'s DocType from "'+r.DocType+'" to "'+newType+'".\nUpdate CSV: DocType → "'+newType+'".';

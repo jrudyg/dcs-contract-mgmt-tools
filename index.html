@@ -878,6 +878,54 @@ document.addEventListener('keydown',ev=>{
   if(ev.key==='Escape'&&document.activeElement===document.getElementById('q')){clearSearch();document.getElementById('q').blur()}
 });
 
+// ── Request Builder ──
+let reqRecord = null;
+function reqFilter(){
+  const q=(document.getElementById('req-search').value||'').trim().toLowerCase();
+  const box=document.getElementById('req-results');
+  if(!q){box.style.display='none';return;}
+  const hits=DATA.filter(r=>(r.CounterpartyName||'').toLowerCase().includes(q)||(r.Filename||'').toLowerCase().includes(q)).slice(0,12);
+  if(!hits.length){box.style.display='none';return;}
+    box.innerHTML=hits.map(r=>`<div class="req-result-item" onclick="reqSelect(${DATA.indexOf(r)})"><span class="req-name">${e(r.CounterpartyName)}</span><span class="req-file">${e(r.Filename)}</span><span class="req-loc">${e(r.ContractLocation)}</span></div>`).join('');
+  box.style.display='block';
+}
+function reqSelect(idx){
+  reqRecord=DATA[idx];
+  document.getElementById('req-results').style.display='none';
+  document.getElementById('req-search').value=reqRecord.CounterpartyName+' — '+reqRecord.Filename;
+  const sel=document.getElementById('req-selected');
+  sel.style.display='block';
+    sel.innerHTML=`<div class="req-selected-card"><strong>${e(reqRecord.CounterpartyName)}</strong> &nbsp;<span class="badge ${DT_CLASS[reqRecord.DocType]||'b-other'}">${e(reqRecord.DocType)}</span><div style="margin-top:4px;color:var(--text2)">${e(reqRecord.Filename)}</div><div style="margin-top:2px;color:var(--text3);font-size:11px">${e(reqRecord.ContractLocation)} &nbsp;&middot;&nbsp; ${e(reqRecord.SigningStatus)}</div></div>`;
+}
+function buildClaudeReq(){
+  if(!reqRecord){alert('Please select a contract first.');return;}
+  const instr=(document.getElementById('req-instruction').value||'').trim();
+  if(!instr){alert('Please describe what you would like to do.');return;}
+  const f=['ContractLocation','VendorFolder','Filename','FilePath','DocType','SigningStatus','EffectiveDate','ExpirationDate','Notes'];
+  const details=f.map(k=>reqRecord[k]?`  ${k}: ${reqRecord[k]}`:null).filter(Boolean).join('\n');
+  const text=`Contract:\n${details}\n\nRequested action:\n${instr}`;
+  const out=document.getElementById('req-output');
+  out.textContent=text;out.style.display='block';
+  document.getElementById('copy-req-btn').style.display='inline-flex';
+  document.getElementById('clear-req-btn').style.display='inline-flex';
+}
+function copyClaudeReq(){
+  navigator.clipboard.writeText(document.getElementById('req-output').textContent).then(()=>{
+    const btn=document.getElementById('copy-req-btn');
+    btn.textContent='Copied!';setTimeout(()=>{btn.textContent='Copy to Clipboard';},1500);
+  });
+}
+function clearClaudeReq(){
+  reqRecord=null;
+  document.getElementById('req-search').value='';
+  document.getElementById('req-results').style.display='none';
+  document.getElementById('req-selected').style.display='none';
+  document.getElementById('req-instruction').value='';
+  document.getElementById('req-output').style.display='none';
+  document.getElementById('copy-req-btn').style.display='none';
+  document.getElementById('clear-req-btn').style.display='none';
+}
+
 // ── Init ──
 function init(){
   document.getElementById('hdr-count').textContent = DATA.length.toLocaleString() + ' contracts';
@@ -941,6 +989,26 @@ fetch(csvUrl)
       <button class="btn btn-primary" onclick="exportHTML()">⬇ Download index.html</button>
       <button class="btn btn-secondary" onclick="exportCSVAdmin()">⬇ Download CSV</button>
     </div>
+  </div>
+  <div class="admin-section">
+    <h3>🤖 Request a Change</h3>
+    <p>Select a contract, describe what you want done, then copy the formatted request into Claude Code.</p>
+    <div style="margin-bottom:14px">
+      <label style="font-size:12px;color:var(--text3);display:block;margin-bottom:5px;font-weight:500">Search contract</label>
+      <input type="text" id="req-search" placeholder="Type counterparty or filename…" oninput="reqFilter()" autocomplete="off" style="width:100%"/>
+      <div id="req-results" class="req-results" style="display:none"></div>
+      <div id="req-selected" style="display:none"></div>
+    </div>
+    <div style="margin-bottom:14px">
+      <label style="font-size:12px;color:var(--text3);display:block;margin-bottom:5px;font-weight:500">What would you like to do?</label>
+      <textarea id="req-instruction" placeholder="e.g. Move to Unsigned, relabel as MNDA, update effective date to 2026-06-01…" rows="3" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;color:var(--text);background:var(--surface);outline:none;resize:vertical;font-family:inherit;line-height:1.5"></textarea>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <button class="btn btn-primary" onclick="buildClaudeReq()" style="background:var(--blue);color:#fff;border:none">Build Request</button>
+      <button class="btn btn-secondary" id="copy-req-btn" onclick="copyClaudeReq()" style="display:none">Copy to Clipboard</button>
+      <button class="btn" id="clear-req-btn" onclick="clearClaudeReq()" style="display:none">Clear</button>
+    </div>
+    <div id="req-output" class="req-output" style="display:none"></div>
   </div>
   <div class="admin-section" style="border-color:rgba(239,68,68,.3)">
     <h3 style="color:#ef4444">🔓 Session</h3>

@@ -885,18 +885,19 @@ function init(){
   buildFilters();
   go();
 }
-fetch('contract-catalog.csv')
+var csvUrl = new URL('contract-catalog.csv', window.location.href).href;
+fetch(csvUrl)
   .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.text(); })
   .then(function(text){ DATA = parseCSV(text); init(); })
   .catch(function(err){
-    console.error('CSV load error:', err);
+    console.error('CSV load error:', err, 'URL:', csvUrl);
     document.getElementById('hdr-count').textContent = 'Load error';
     var isLocal = window.location.protocol === 'file:';
     document.getElementById('stats').innerHTML =
-      '<div style="grid-column:1/-1;padding:20px;background:#fee2e2;border:1px solid #fca5a5;border-radius:8px;color:#991b1b;font-size:13px">' +
+      '<div style="grid-column:1/-1;padding:20px;background:#fee2e2;border:1px solid #fca5a5;border-radius:8px;color:#991b1b;font-size:13px;line-height:1.6">' +
       (isLocal
         ? '⚠ Cannot load CSV from a local file. Open this page via your <strong>SharePoint URL</strong>, or use <strong>Admin → Import CSV</strong> to load data manually.'
-        : '⚠ Failed to load contract-catalog.csv — ' + err.message + '. Ensure both files are in the same SharePoint folder.') +
+        : '⚠ Failed to load data.<br><strong>Attempted URL:</strong> ' + csvUrl + '<br>Verify that <code>contract-catalog.csv</code> is in the same SharePoint folder as this HTML file.') +
       '</div>';
   });
 </script>

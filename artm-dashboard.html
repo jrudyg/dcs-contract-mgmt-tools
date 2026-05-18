@@ -295,6 +295,8 @@ body.dark .s-changes{background:#450a0a;color:#fca5a5}.dark .s-processed{backgro
 let DATA = [];
 
 // ── Constants ──
+const JIRA_BASE='https://designedconveyor.atlassian.net/browse/';
+function jiraUrl(key){return JIRA_BASE+key;}
 const STATUS_ORDER=['New','Initiate','Discovery','Intake Approval','Negotiate','Negotiation','Changes Requested','Sent','Processed For Signatures','Processed for Approval/Signature','Completed'];
 const OPEN_STATUSES=new Set(STATUS_ORDER.filter(s=>s!=='Completed'));
 const TYPE_CLASS={MNDA:'b-mnda',NDA:'b-nda',MSA:'b-msa',MPA:'b-mnda',SOW:'b-sow',Subcontract:'b-sub','Change Order':'b-co','Non-Compete':'b-nc',Other:'b-other'};
@@ -377,7 +379,7 @@ function renderQueue(){
         const age=daysSince(r.created);
         const breach=r.firstResponseHrs!==null&&r.firstResponseHrs<0;
         return`<div class="pcard" style="border-left:3px solid ${breach?'var(--red)':'var(--border)'}">
-          <div class="pcard-key">${e(r.key)}</div>
+          <div class="pcard-key"><a href="${jiraUrl(r.key)}" target="_blank" rel="noopener" style="color:var(--blue)">${e(r.key)}</a></div>
           <div class="pcard-sum" title="${e(r.summary)}">${e(r.summary)}</div>
           <div class="pcard-meta">${typeBadge(r.type)}<span style="font-size:10px;color:var(--text4);margin-left:auto">${age!==null?age+'d':''}</span></div>
         </div>`;
@@ -429,7 +431,7 @@ function renderPerformance(){
   document.getElementById('p-sla-table').innerHTML=`<div style="overflow-x:auto"><table>
     <thead><tr><th class="no-sort">Ticket</th><th class="no-sort">Summary</th><th class="no-sort">Assignee</th><th class="no-sort">Status</th><th class="no-sort">Type</th><th class="no-sort">Overdue</th><th class="no-sort">Created</th></tr></thead>
     <tbody>${sorted.slice(0,50).map(r=>`<tr>
-      <td style="color:var(--blue);font-weight:500">${e(r.key)}</td>
+      <td style="font-weight:500"><a href="${jiraUrl(r.key)}" target="_blank" rel="noopener" style="color:var(--blue)">${e(r.key)}</a></td>
       <td style="max-width:280px;overflow:hidden;text-overflow:ellipsis" title="${e(r.summary)}">${e(r.summary)}</td>
       <td>${e(r.assignee)}</td>
       <td>${statusBadge(r.status)}</td>
@@ -558,7 +560,7 @@ function goTickets(){
   document.getElementById('t-tbody').innerHTML=tFiltered.slice(0,500).map(r=>{
     const slaCls=r.firstResponseHrs===null?'':r.firstResponseHrs<0?'sla-breach':r.firstResponseHrs<4?'sla-warn':'sla-ok';
     return`<tr>
-      <td style="color:var(--blue);font-weight:500">${e(r.key)}</td>
+      <td style="font-weight:500"><a href="${jiraUrl(r.key)}" target="_blank" rel="noopener" style="color:var(--blue)">${e(r.key)}</a></td>
       <td title="${e(r.summary)}">${e(r.summary)}</td>
       <td>${e(r.assignee)}</td>
       <td style="color:var(--text3)">${e(r.reporter)}</td>

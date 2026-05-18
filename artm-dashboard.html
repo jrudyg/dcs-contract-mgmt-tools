@@ -697,8 +697,8 @@ function exportCSV(){
 function csvRow(r){return['key','summary','assignee','reporter','priority','status','resolution','created','updated','type','firstResponseHrs','resolutionHrs'].map(k=>{const v=String(r[k]===null||r[k]===undefined?'':r[k]);return v.includes(',')||v.includes('"')?'"'+v.replace(/"/g,'""')+'"':v;}).join(',');}
 
 // ── Init ──
-const CSV_FILENAME='ARTM-tickets-05.18.26.csv';
-fetch(CSV_FILENAME)
+var csvUrl=new URL('ARTM-tickets-05.18.26.csv',window.location.href).href;
+fetch(csvUrl)
   .then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.text();})
   .then(function(text){
     const mapped=parseCSV(text).map(mapRow).filter(Boolean);
@@ -708,7 +708,14 @@ fetch(CSV_FILENAME)
     renderQueue();
   })
   .catch(function(err){
-    document.getElementById('hdr-count').textContent='No data';
-    document.getElementById('q-stats').innerHTML='<div style="color:var(--red);padding:16px">Could not load '+CSV_FILENAME+': '+err.message+'</div>';
+    console.error('CSV load error:',err,'URL:',csvUrl);
+    document.getElementById('hdr-count').textContent='Load error';
+    var isLocal=window.location.protocol==='file:';
+    document.getElementById('q-stats').innerHTML=
+      '<div style="grid-column:1/-1;padding:20px;background:#fee2e2;border:1px solid #fca5a5;border-radius:8px;color:#991b1b;font-size:13px;line-height:1.6">'+
+      (isLocal
+        ?'⚠ Cannot load CSV from a local file. Open this page via your <strong>SharePoint URL</strong>, or use <strong>Admin → Import CSV</strong> to load data manually.'
+        :'⚠ Failed to load data.<br><strong>Attempted URL:</strong> '+csvUrl+'<br>Verify that <code>ARTM-tickets-05.18.26.csv</code> is in the same folder as this HTML file.')+
+      '</div>';
   });
 </script></body></html>

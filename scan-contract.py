@@ -442,6 +442,7 @@ def build_target_indices(
     positional: list[str],
     vendor: str | None,
     location: str | None,
+    doc_type: str | None,
     all_rows: bool,
 ) -> list[int]:
     indices: set[int] = set()
@@ -471,7 +472,14 @@ def build_target_indices(
             print(f"  [WARN] No rows matched --location: \"{location}\"")
         indices.update(loc_idx)
 
-    if all_rows and not positional and not vendor and not location:
+    if doc_type and not positional and not vendor and not location:
+        mask = df["DocType"].str.contains(doc_type, case=False, na=False)
+        type_idx = set(df.index[mask].tolist())
+        if not type_idx:
+            print(f"  [WARN] No rows matched --type: \"{doc_type}\"")
+        indices.update(type_idx)
+
+    if all_rows and not positional and not vendor and not location and not doc_type:
         indices.update(df.index.tolist())
 
     return sorted(indices)
@@ -554,6 +562,7 @@ def main():
     )
     parser.add_argument("--vendor",   metavar="NAME",   help="Scan all rows matching VendorFolder (partial, case-insensitive)")
     parser.add_argument("--location", metavar="FOLDER", help="Scan all rows in ContractLocation")
+    parser.add_argument("--type",     metavar="TYPE",   help="Scan all rows matching DocType (partial, case-insensitive)")
     parser.add_argument("--all",      action="store_true", help="Scan entire catalog")
     parser.add_argument("--dry-run",  action="store_true", help="Print changes without writing CSV")
     parser.add_argument("--csv",      metavar="PATH",   default=str(DEFAULT_CSV), help="Path to contract-catalog.csv")
@@ -582,6 +591,7 @@ def main():
         positional=args.files,
         vendor=args.vendor,
         location=args.location,
+        doc_type=args.type,
         all_rows=args.all,
     )
 

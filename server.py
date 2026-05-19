@@ -115,6 +115,7 @@ td{padding:7px 10px;vertical-align:middle}
     <label><input type="radio" name="mode" value="files" checked onchange="modeChange()"> Files</label>
     <label><input type="radio" name="mode" value="vendor" onchange="modeChange()"> By Vendor</label>
     <label><input type="radio" name="mode" value="location" onchange="modeChange()"> By Location</label>
+    <label><input type="radio" name="mode" value="type" onchange="modeChange()"> By Type</label>
     <label><input type="radio" name="mode" value="all" onchange="modeChange()"> All Contracts</label>
   </div>
 
@@ -134,6 +135,10 @@ td{padding:7px 10px;vertical-align:middle}
       <option>02 Unsigned Contracts</option>
       <option>03 Archived Contracts</option>
     </select>
+  </div>
+  <div id="in-type" style="display:none">
+    <label>Document type <span class="hint">(partial match OK)</span></label>
+    <select id="type-val"><option value="">— select —</option></select>
   </div>
   <div id="in-all" style="display:none">
     <p style="font-size:13px;color:#d97706;background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:10px 14px">
@@ -212,7 +217,7 @@ function normPaths(raw){
 // ── Mode toggle ──────────────────────────────────────────────────────────
 function modeChange(){
   const m=document.querySelector('input[name=mode]:checked').value;
-  ['files','vendor','location','all'].forEach(k=>
+  ['files','vendor','location','type','all'].forEach(k=>
     document.getElementById('in-'+k).style.display=k===m?'block':'none');
 }
 
@@ -236,6 +241,10 @@ function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
 fetch('/api/contracts').then(r=>r.json()).then(data=>{
   CATALOG=data;
   renderCatalog();
+  // Populate type dropdown from unique DocType values
+  const types=[...new Set(data.map(r=>r.doctype).filter(Boolean))].sort();
+  const sel=document.getElementById('type-val');
+  types.forEach(t=>{const o=document.createElement('option');o.value=t;o.textContent=t;sel.appendChild(o);});
 }).catch(()=>{
   document.getElementById('cat-count').textContent='Could not load catalog';
 });
@@ -366,6 +375,10 @@ function doScan(){
     body.vendor=v;
   } else if(mode==='location'){
     body.location=document.getElementById('location-val').value;
+  } else if(mode==='type'){
+    const t=document.getElementById('type-val').value;
+    if(!t){alert('Select a document type.');return;}
+    body.doc_type=t;
   }
 
   const log=document.getElementById('log');
@@ -463,6 +476,7 @@ def scan():
     files    = body.get("files", [])
     vendor   = body.get("vendor", "")
     location = body.get("location", "")
+    doc_type = body.get("doc_type", "")
     dry_run  = body.get("dry_run", False)
 
     args = [sys.executable, str(SCAN_SCRIPT)]
@@ -472,6 +486,8 @@ def scan():
         args += ["--vendor", vendor]
     elif mode == "location" and location:
         args += ["--location", location]
+    elif mode == "type" and doc_type:
+        args += ["--type", doc_type]
     elif mode == "files" and files:
         args += [_norm_path(f) for f in files]
     else:

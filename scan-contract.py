@@ -61,32 +61,32 @@ DOC_TYPE_PATTERNS = [
 
 # ── Signature patterns ────────────────────────────────────────────────────────
 
-SIGNED_KW_RE = re.compile(
-    r"/s/"
-    r"|DocuSign\s+Envelope\s+ID"
-    r"|\belectronically\s+signed\b"
-    r"|\bfully\s+executed\b"
-    r"|\bexecuted\s+by\b",
+# Electronic signature platform detection
+DOCUSIGN_DOC_RE = re.compile(
+    r"DocuSign\s+Envelope\s+(?:ID|Id)\b"
+    r"|Certificate\s+Of\s+Completion\b",
+    re.IGNORECASE,
+)
+ADOBE_DOC_RE = re.compile(
+    r"Adobe\s*(?:Acrobat\s*)?Sign\b",
     re.IGNORECASE,
 )
 
-BY_LINE_RE = re.compile(r"By:\s*\n(.{1,120})", re.IGNORECASE)
+# Electronic signature marker: /s/ Name
+SLASH_S_RE = re.compile(r"/s/\s*.{2,80}?(?:\n|$)")
+
+# Filled By: block — real name on the line immediately after "By:"
+FILLED_BY_RE = re.compile(r"\bBy:\s*\n(.{2,80})", re.IGNORECASE)
 
 PLACEHOLDER_RE = re.compile(
-    r"^[\s_\-]*$"
+    r"^[\s_\-\*]*$"
     r"|^NAME$"
     r"|\(VENDOR"
-    r"|_{3,}",
+    r"|_{3,}"
+    r"|^\[",
     re.IGNORECASE,
 )
 
-DATE_FILLED_RE = re.compile(
-    r"Date(?:\s+Signed)?:\s*"
-    r"(?:\d{1,2}[/\-\.]\d{1,2}[/\-\.]\d{2,4}"
-    r"|\w+ \d{1,2},?\s*\d{4}"
-    r"|[A-Z][a-z]+ \d{1,2},?\s*\d{4})",
-    re.IGNORECASE,
-)
 
 # ── Date patterns ─────────────────────────────────────────────────────────────
 
@@ -102,6 +102,12 @@ DATE_PAT = (
     r"|\d{1,2}/\d{1,2}/\d{2,4}"                   # 10/1/2024
     r"|\d{1,2}\.\d{1,2}\.\d{4}"                   # 10.1.2024
     r")"
+)
+
+# Date label in a signature block — used as EffectiveDate fallback
+SIG_DATE_RE = re.compile(
+    r"(?:Date(?:\s+Signed)?|Dated?)\s*[:\s]\s*(" + DATE_PAT + r")",
+    re.IGNORECASE,
 )
 
 EFFECTIVE_DATE_RE = re.compile(
@@ -257,16 +263,53 @@ def detect_doc_type(text: str) -> str | None:
     return None
 
 
-def detect_signing(text: str) -> tuple[str, str]:
-    """Returns (has_signed_keyword_str, signing_status_str)."""
-    has_kw = bool(SIGNED_KW_RE.search(text))
-    filled_blocks = sum(
-        1 for m in BY_LINE_RE.finditer(text)
-        if m.group(1).strip() and not PLACEHOLDER_RE.search(m.group(1).strip())
-    )
-    date_filled = bool(DATE_FILLED_RE.search(text))
-    is_signed = has_kw or (filled_blocks >= 1 and date_filled)
-    return ("True" if has_kw else "False", "Signed" if is_signed else "Unsigned")
+def _sig_context(text: str, pos: int, chars: int = 300) -> str:
+    """Return up to `chars` characters after `pos` — used for party attribution."""
+    return text[pos : min(len(text), pos + chars)]
+
+
+def detect_signatures(text: str, is_scanned: bool) -> tuple[str, str]:
+    """
+    Returns (has_evidence_str, signing_status_str).
+    signing_status: 'Signed', 'Unsigned', or 'Review'
+
+    Signed   = >=1 DCS signature block + >=1 counterparty block confirmed
+    Unsigned = document readable but attributed pair not found
+    Review   = scanned / image-only document
+    """
+    if is_scanned or not text.strip():
+        return ("False", "Review")
+
+    dcs_sigs = 0
+    cp_sigs  = 0
+    evidence  = False
+
+    is_esig = bool(DOCUSIGN_DOC_RE.search(text) or ADOBE_DOC_RE.search(text))
+
+    if is_esig:
+        evidence = True
+        for m in SLASH_S_RE.finditer(text):
+            ctx = _sig_context(text, m.end())
+            if DCS_RE.search(ctx):
+                dcs_sigs += 1
+            else:
+                cp_sigs += 1
+
+    # Text-based By: blocks (applies to all documents, including non-DocuSign)
+    for m in FILLED_BY_RE.finditer(text):
+        name = m.group(1).strip()
+        if not name or PLACEHOLDER_RE.search(name):
+            continue
+        evidence = True
+        ctx = _sig_context(text, m.end())
+        if DCS_RE.search(ctx):
+            dcs_sigs += 1
+        else:
+            cp_sigs += 1
+
+    if dcs_sigs >= 1 and cp_sigs >= 1:
+        return ("True", "Signed")
+    return ("True" if evidence else "False", "Unsigned")
 
 
 def _normalize_date(raw: str) -> str | None:
@@ -289,7 +332,7 @@ def _trim_to_entity_name(raw: str) -> str:
         r"Delaware|Florida|Tennessee|California|Nevada|New York|Indiana|Ohio|Georgia|Texas|"
         r"Colorado|Illinois|Michigan|Virginia|Pennsylvania|Maryland|New Jersey|North Carolina)|"
         r",\s*an?\s+[\w\s]+?\s+(?:company|corp|corporation|partnership|liability|limited|ltd\.?)|"
-        r",\s*located\s+at|,\s*having\s+|with\s+its\s+principal\s+place|with\s+offices\s+at)",
+        r",\s*located\s+at|,\s*of\s+\d|,\s*having\s+|with\s+its\s+principal\s+place|with\s+offices\s+at)",
         raw, re.IGNORECASE,
     )
     if m and len(m.group(1).strip()) >= 3:
@@ -462,6 +505,20 @@ def extract_effective_date(text: str) -> str | None:
     return None
 
 
+def extract_signature_dates(text: str) -> list[str]:
+    """Find dates in signature blocks (latter half of doc) — EffectiveDate fallback."""
+    date_re = re.compile(DATE_PAT, re.IGNORECASE)
+    zone = text[len(text) // 2:]
+    dates = []
+    for m in SIG_DATE_RE.finditer(zone):
+        raw = date_re.search(m.group(0))
+        if raw:
+            normalized = _normalize_date(raw.group(0))
+            if normalized:
+                dates.append(normalized)
+    return sorted(set(dates))
+
+
 def detect_at_will_termination(text: str) -> bool:
     return bool(AT_WILL_RE.search(text))
 
@@ -597,18 +654,23 @@ def scan_file(
         result["note"]   = skip_reason
         return result
 
+    # Signature detection must run before text is cleared for scanned PDFs
+    has_kw, signing_status = detect_signatures(text, is_scanned)
+
     if is_scanned:
         result["status"] = "scanned_pdf"
         result["note"]   = "image-only PDF, no text extracted"
-        # Still apply VendorFolder fallback for CounterpartyName
-        text = ""
+        text = ""  # clear so other extractors skip cleanly
 
-    # Run extractors
-    doc_type   = detect_doc_type(text) if text else None
-    has_kw, signing_status = detect_signing(text) if text else ("False", "Unsigned")
+    # Run remaining extractors
+    doc_type     = detect_doc_type(text) if text else None
     counterparty = extract_counterparty(text, vendor_folder)
     eff_date     = extract_effective_date(text) if text else None
-    exp_date     = extract_expiration_date(text, eff_date) if text else None
+    if eff_date is None and text:
+        sig_dates = extract_signature_dates(text)
+        if sig_dates:
+            eff_date = sig_dates[0]  # oldest date in signature blocks
+    exp_date = extract_expiration_date(text, eff_date) if text else None
     if exp_date is None and text and detect_at_will_termination(text):
         exp_date = "upon written notice"
 
@@ -630,10 +692,9 @@ def scan_file(
             if old == value:
                 continue
 
-            # Never downgrade SigningStatus from Signed to Unsigned — scanner
-            # can't detect ink/handwritten signatures, so absence of keyword
-            # is not evidence of unsigned status.
-            if field == 'SigningStatus' and old == 'Signed' and value == 'Unsigned':
+            # Signed and Unsigned are permanent — scanner never overwrites them.
+            # Review is temporary and can be resolved to Signed or Unsigned.
+            if field == 'SigningStatus' and old in ('Signed', 'Unsigned') and old != value:
                 continue
 
             # DocType update rules: preserve specific types; allow NDA→MNDA upgrade.

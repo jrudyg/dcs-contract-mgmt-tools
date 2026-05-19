@@ -118,8 +118,8 @@ _AS_OF_THE_RE = re.compile(
 )
 _DAY_OF_RE = re.compile(
     r"_*(\d{1,2})_*\s+day\s+of\s+_*("
-    + _MONTH.rstrip(")")
-    + r")_*[_,\s]+_*(\d{4})",
+    + _MONTH[3:]          # strip leading "(?:" → becomes capturing group (Month|...)
+    + r"_*[_,\s]+_*(\d{4})",
     re.IGNORECASE,
 )
 
@@ -671,7 +671,7 @@ def main():
         print(f"Scanning [{i}/{len(file_groups)}]: {fp_key}")
 
         if abs_path is None:
-            print(f"  [NOT FOUND] File does not exist on disk — skipped")
+            print(f"  [NOT FOUND] File does not exist on disk - skipped")
             n_missing += 1
             continue
 
@@ -696,12 +696,12 @@ def main():
     # Write CSV
     if not args.dry_run and n_changed > 0:
         write_csv(df, csv_path, dry_run=False)
-        print(f"\nCSV written → {csv_path}")
-        print(f"Backup      → {csv_path.with_suffix('.csv.bak')}")
+        print(f"\nCSV written -> {csv_path}")
+        print(f"Backup      -> {csv_path.with_suffix('.csv.bak')}")
     elif args.dry_run:
         print("\n[DRY RUN] CSV not written.")
     else:
-        print("\nNo changes — CSV unchanged.")
+        print("\nNo changes - CSV unchanged.")
 
     elapsed_total = time.time() - t_start
     print("\n" + "=" * 54)

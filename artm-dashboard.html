@@ -367,7 +367,11 @@ body.dark .s-changes{background:#450a0a;color:#fca5a5}body.dark .s-processed{bac
       <h3>🔍 Contract Scanner</h3>
       <p>Scans contract files and updates <code>contract-catalog.csv</code> with signing status, document type, parties, and dates.</p>
       <div style="margin-top:16px">
-        <button class="btn btn-primary" onclick="window.open('http://localhost:5000','_blank','noopener')">Open Scan Tool ↗</button>
+        <label style="font-size:12px;color:var(--text3);display:block;margin-bottom:6px">Optional: paste a file path first (Windows path or relative path both work)</label>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+          <input type="text" id="scan-path-input" style="flex:1;min-width:260px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;font-size:12px;font-family:monospace;color:var(--text)" placeholder='C:\Users\...\Disney\Disney-PSA-11.14.2025.pdf  — or leave blank to browse'>
+          <button class="btn btn-primary" onclick="openScanTool()">Open Scan Tool ↗</button>
+        </div>
       </div>
     </div>
   </div>
@@ -855,6 +859,11 @@ function exportCSV(){if(!DATA.length)return;const src=tFiltered.length&&currentT
 
 // ── Scan tab ──
 function renderScan(){}
+function openScanTool(){
+  const raw=(document.getElementById('scan-path-input').value||'').trim();
+  const url=raw?'http://localhost:5000?file='+encodeURIComponent(raw):'http://localhost:5000';
+  window.open(url,'_blank','noopener');
+}
 
 // ── Init ──
 document.getElementById('hdr-count').textContent=DATA.length+' tickets';

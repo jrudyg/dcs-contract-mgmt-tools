@@ -8,6 +8,7 @@ import socket
 import sys
 import json
 import csv
+import re
 import subprocess
 from pathlib import Path
 from flask import Flask, Response, request
@@ -25,6 +26,16 @@ TOOLS      = Path(__file__).resolve().parent
 SHAREPOINT = TOOLS.parent
 SCAN_SCRIPT = TOOLS / "scan-contract.py"
 CSV_PATH    = TOOLS / "contract-catalog.csv"
+
+_SP_PREFIX  = re.compile(r'^[A-Za-z]:[/\\].*?Contract Management - SharePoint[/\\]', re.IGNORECASE)
+_LOC_PREFIX = re.compile(r'^0[1-3] (?:Active|Unsigned|Archived) Contracts[/\\]', re.IGNORECASE)
+
+def _norm_path(p):
+    p = p.strip().strip('"\'')
+    p = p.replace('\\', '/')
+    p = _SP_PREFIX.sub('', p)
+    p = _LOC_PREFIX.sub('', p)
+    return p
 
 app = Flask(__name__)
 
@@ -84,8 +95,8 @@ button.ghost:hover{background:#f3f4f6}
   </div>
 
   <div id="in-files">
-    <label>File paths <span class="hint">(one per line, relative to SharePoint root)</span></label>
-    <textarea id="files-val" placeholder="Disney/Disney-PSA-11.14.2025.pdf&#10;6sense/6sense-dcs-MNDA-10.31.2024.pdf"></textarea>
+    <label>File paths <span class="hint">(Windows path or relative path, one per line)</span></label>
+    <textarea id="files-val" onpaste="setTimeout(()=>this.value=normPaths(this.value),0)" placeholder="C:\\Users\\...\\Disney\\Disney-PSA-11.14.2025.pdf&#10;— or — Disney/Disney-PSA-11.14.2025.pdf"></textarea>
   </div>
 
   <div id="in-vendor" style="display:none">
@@ -123,12 +134,28 @@ button.ghost:hover{background:#f3f4f6}
 </div>
 
 <script>
+function normPaths(raw){
+  const SP=/^[A-Za-z]:[/\\\\].*?Contract Management - SharePoint[/\\\\]/i;
+  const LOC=/^0[1-3] (?:Active|Unsigned|Archived) Contracts[/\\\\]/i;
+  return raw.split(/\\r?\\n/).map(s=>{
+    s=s.trim().replace(/^["']+|["']+$/g,'');
+    s=s.replace(SP,'').replace(LOC,'').replace(/\\\\/g,'/');
+    return s;
+  }).filter(Boolean).join('\\n');
+}
+
 function modeChange(){
   const m=document.querySelector('input[name=mode]:checked').value;
   ['files','vendor','location','all'].forEach(k=>{
     document.getElementById('in-'+k).style.display=k===m?'block':'none';
   });
 }
+
+// Pre-fill from ?file= URL param
+(function(){
+  const p=new URLSearchParams(window.location.search).get('file');
+  if(p){document.getElementById('files-val').value=normPaths(p);}
+})();
 
 // Load vendor list
 fetch('/api/vendors').then(r=>r.json()).then(vs=>{
@@ -151,7 +178,7 @@ function scan(){
   if(mode==='files'){
     const raw=document.getElementById('files-val').value.trim();
     if(!raw){alert('Enter at least one file path.');return;}
-    body.files=raw.split(/\\r?\\n/).map(s=>s.trim()).filter(Boolean);
+    body.files=normPaths(raw).split(/\\n/).filter(Boolean);
   } else if(mode==='vendor'){
     const v=document.getElementById('vendor-val').value.trim();
     if(!v){alert('Enter a vendor name.');return;}
@@ -259,7 +286,7 @@ def scan():
     elif mode == "location" and location:
         args += ["--location", location]
     elif mode == "files" and files:
-        args += files
+        args += [_norm_path(f) for f in files]
     else:
         def _err():
             yield f"data: {json.dumps('[ERROR] No valid scan target.')}\n\n"

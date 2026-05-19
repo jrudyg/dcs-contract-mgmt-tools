@@ -61,22 +61,51 @@ DOC_TYPE_PATTERNS = [
 
 # ── Signature patterns ────────────────────────────────────────────────────────
 
-# Electronic signature platform detection
+# DocuSign: Envelope ID in contract body OR Certificate Of Completion page
 DOCUSIGN_DOC_RE = re.compile(
     r"DocuSign\s+Envelope\s+(?:ID|Id)\b"
     r"|Certificate\s+Of\s+Completion\b",
     re.IGNORECASE,
 )
-ADOBE_DOC_RE = re.compile(
-    r"Adobe\s*(?:Acrobat\s*)?Sign\b",
+
+# DocuSign signer timestamp rendered at end of doc: "10/31/2024 | 10:52 AM PDT"
+DOCUSIGN_TIMESTAMP_RE = re.compile(
+    r"\d{1,2}/\d{1,2}/\d{4}\s*\|\s*\d{1,2}:\d{2}\s*(?:AM|PM)",
+    re.IGNORECASE,
+)
+
+# E-signature platform audit trail indicators
+ADOBE_AUDIT_RE = re.compile(
+    r"Transaction\s+ID[:\s]"                   # Adobe Sign audit field
+    r"|Document\s+e-signed\s+by\b"             # Adobe Sign event
+    r"|E-SIGNED\s+by\b"                         # USPS / custom e-sign
+    r"|Agreement\s+completed\."                 # Adobe Sign completion
+    r"|Adobe\s*(?:Acrobat\s*)?Sign\b"           # Adobe Sign branding
+    r"|Signed\s+with\s+PandaDoc\b"              # PandaDoc
+    r"|Signer\s+ID:",                           # PandaDoc audit field
+    re.IGNORECASE,
+)
+
+# E-signature completion signals
+ADOBE_COMPLETED_RE = re.compile(
+    r"Agreement\s+completed\."
+    r"|Status[:\s]+\n?Signed\b"
+    r"|Signed\s+with\s+PandaDoc\b",            # PandaDoc completion marker
+    re.IGNORECASE,
+)
+
+# Any "e-signed by" variant (with or without "Document" prefix)
+ESIGNED_BY_RE = re.compile(r"(?:Document\s+)?[Ee]-[Ss]igned\s+by\b", re.IGNORECASE)
+
+# Adobe Sign / PandaDoc certificate: "Name (Month D, YYYY HH:MM TZ)"
+ESIG_CERT_RE = re.compile(
+    r"[A-Z][a-zA-Z\-']+(?:\s+[A-Z][a-zA-Z\-']+)+\s*"
+    r"\([A-Za-z]{3}\w*\s+\d{1,2},?\s+\d{4}\s+\d{1,2}:\d{2}",
     re.IGNORECASE,
 )
 
 # Electronic signature marker: /s/ Name
 SLASH_S_RE = re.compile(r"/s/\s*.{2,80}?(?:\n|$)")
-
-# Filled By: block — real name on the line immediately after "By:"
-FILLED_BY_RE = re.compile(r"\bBy:\s*\n(.{2,80})", re.IGNORECASE)
 
 PLACEHOLDER_RE = re.compile(
     r"^[\s_\-\*]*$"
@@ -84,6 +113,18 @@ PLACEHOLDER_RE = re.compile(
     r"|\(VENDOR"
     r"|_{3,}"
     r"|^\[",
+    re.IGNORECASE,
+)
+
+# DocuSign template field placeholders: \s1\, \fullname1\, $docusign:SignHere::, etc.
+DOCUSIGN_FIELD_RE = re.compile(r"\\[a-zA-Z]\w*\\|\$docusign:[^\s]+")
+
+# Broad date pattern for DocuSign tail: handles DD-Mon-YYYY, M/D/YYYY, Month D YYYY, etc.
+_MON3 = r"Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec"
+DATE_ANY_RE = re.compile(
+    r"\b\d{1,2}[-/](?:\d{1,2}|" + _MON3 + r")[-/]\d{2,4}\b"
+    r"|\b(?:" + _MON3 + r")[a-z]*\s+\d{1,2},?\s+\d{4}\b"
+    r"|\b\d{1,2}\s+(?:" + _MON3 + r")[a-z]*\s+\d{4}\b",
     re.IGNORECASE,
 )
 
@@ -263,52 +304,101 @@ def detect_doc_type(text: str) -> str | None:
     return None
 
 
-def _sig_context(text: str, pos: int, chars: int = 300) -> str:
-    """Return up to `chars` characters after `pos` — used for party attribution."""
-    return text[pos : min(len(text), pos + chars)]
+def _count_filled_by_blocks(text: str) -> int:
+    """
+    Count By: signature blocks where a real name appears within 400 chars.
+    Handles names on the same line, next line, or several blank lines below.
+    Skips placeholders, DocuSign field tags, form labels, and contract body text.
+    """
+    count = 0
+    skip_labels = re.compile(
+        r"^(?:Date|Name|Title|Email|Signature|Print|Company|Organization|Witness|Notary)\b",
+        re.IGNORECASE,
+    )
+    body_text = re.compile(
+        r"\b(?:agree|shall|each|party|parties|herein|pursuant|effective|"
+        r"this\s+agreement|whereas|now\s+therefore)\b",
+        re.IGNORECASE,
+    )
+    for m in re.finditer(r"\bBy\s*:|\bSignature\s*:|\bPrint\s+Name\s*:", text, re.IGNORECASE):
+        window = text[m.end(): m.end() + 400]
+        for line in window.split("\n"):
+            stripped = line.strip()
+            if not stripped:
+                continue
+            if PLACEHOLDER_RE.search(stripped):
+                continue
+            if DOCUSIGN_FIELD_RE.search(stripped):
+                continue
+            if skip_labels.match(stripped):
+                continue
+            if re.match(r"^_{2,}", stripped):
+                continue
+            if len(stripped) > 80:
+                continue
+            if body_text.search(stripped):
+                continue
+            count += 1
+            break
+    return count
 
 
 def detect_signatures(text: str, is_scanned: bool) -> tuple[str, str]:
     """
     Returns (has_evidence_str, signing_status_str).
-    signing_status: 'Signed', 'Unsigned', or 'Review'
 
-    Signed   = >=1 DCS signature block + >=1 counterparty block confirmed
-    Unsigned = document readable but attributed pair not found
-    Review   = scanned / image-only document
+    Signed   = strong confirmation: DocuSign timestamps, Adobe completed, or 2+ text blocks
+    Review   = electronic platform detected but signing not confirmed from text
+    Unsigned = readable doc, no signature evidence found
     """
     if is_scanned or not text.strip():
         return ("False", "Review")
 
-    dcs_sigs = 0
-    cp_sigs  = 0
-    evidence  = False
+    # ── DocuSign ──────────────────────────────────────────────────────────────
+    if DOCUSIGN_DOC_RE.search(text):
+        # Strategy 1: signer timestamps embedded at doc end
+        if len(DOCUSIGN_TIMESTAMP_RE.findall(text)) >= 2:
+            return ("True", "Signed")
+        # Strategy 2: /s/ markers (some DocuSign configurations)
+        if len(SLASH_S_RE.findall(text)) >= 2:
+            return ("True", "Signed")
+        # Strategy 3: text-based names in By: blocks (within 400-char window)
+        if _count_filled_by_blocks(text) >= 2:
+            return ("True", "Signed")
+        # Strategy 4: dates clustered immediately after last Envelope ID
+        # (some DocuSign configurations embed signer dates in locale formats, e.g. 20-Mar-2025)
+        env_positions = [m.end() for m in DOCUSIGN_DOC_RE.finditer(text)]
+        if env_positions:
+            tail = text[env_positions[-1]: env_positions[-1] + 300]
+            if len(DATE_ANY_RE.findall(tail)) >= 2:
+                return ("True", "Signed")
+        # DocuSign detected but signatures are graphic overlays — cannot verify from text
+        return ("True", "Review")
 
-    is_esig = bool(DOCUSIGN_DOC_RE.search(text) or ADOBE_DOC_RE.search(text))
+    # ── Adobe Sign / PandaDoc / E-SIGNED platforms ────────────────────────────
+    if ADOBE_AUDIT_RE.search(text):
+        # Definitive completion signal
+        if ADOBE_COMPLETED_RE.search(text):
+            return ("True", "Signed")
+        # 2+ e-signed events
+        if len(ESIGNED_BY_RE.findall(text)) >= 2:
+            return ("True", "Signed")
+        # Certificate-style entries: "Name (Month D, YYYY HH:MM TZ)" — 2+ = Signed
+        if len(ESIG_CERT_RE.findall(text)) >= 2:
+            return ("True", "Signed")
+        # Platform detected but completion not confirmed
+        return ("True", "Review")
 
-    if is_esig:
-        evidence = True
-        for m in SLASH_S_RE.finditer(text):
-            ctx = _sig_context(text, m.end())
-            if DCS_RE.search(ctx):
-                dcs_sigs += 1
-            else:
-                cp_sigs += 1
-
-    # Text-based By: blocks (applies to all documents, including non-DocuSign)
-    for m in FILLED_BY_RE.finditer(text):
-        name = m.group(1).strip()
-        if not name or PLACEHOLDER_RE.search(name):
-            continue
-        evidence = True
-        ctx = _sig_context(text, m.end())
-        if DCS_RE.search(ctx):
-            dcs_sigs += 1
-        else:
-            cp_sigs += 1
-
-    if dcs_sigs >= 1 and cp_sigs >= 1:
+    # ── Non-electronic signatures ─────────────────────────────────────────────
+    slash_count = len(SLASH_S_RE.findall(text))
+    if slash_count >= 2:
         return ("True", "Signed")
+
+    by_count = _count_filled_by_blocks(text)
+    if by_count >= 2:
+        return ("True", "Signed")
+
+    evidence = slash_count >= 1 or by_count >= 1
     return ("True" if evidence else "False", "Unsigned")
 
 
@@ -637,6 +727,7 @@ def scan_file(
     abs_path: Path,
     vendor_folder: str,
     dry_run: bool,
+    recheck_signing: bool = False,
 ) -> dict:
     """Scan one file, update df rows in-place. Returns result dict."""
     result = {
@@ -654,8 +745,12 @@ def scan_file(
         result["note"]   = skip_reason
         return result
 
-    # Signature detection must run before text is cleared for scanned PDFs
-    has_kw, signing_status = detect_signatures(text, is_scanned)
+    # Only PDFs can be signed — Word docs are always treated as Unsigned
+    if abs_path.suffix.lower() in (".docx", ".doc"):
+        has_kw, signing_status = "False", "Unsigned"
+    else:
+        # Signature detection must run before text is cleared for scanned PDFs
+        has_kw, signing_status = detect_signatures(text, is_scanned)
 
     if is_scanned:
         result["status"] = "scanned_pdf"
@@ -694,8 +789,10 @@ def scan_file(
 
             # Signed and Unsigned are permanent — scanner never overwrites them.
             # Review is temporary and can be resolved to Signed or Unsigned.
-            if field == 'SigningStatus' and old in ('Signed', 'Unsigned') and old != value:
-                continue
+            # --recheck-signing bypasses this for a one-time migration run.
+            if field == 'SigningStatus' and not recheck_signing:
+                if old in ('Signed', 'Unsigned') and old != value:
+                    continue
 
             # DocType update rules: preserve specific types; allow NDA→MNDA upgrade.
             if field == 'DocType' and old:
@@ -737,6 +834,8 @@ def main():
     parser.add_argument("--type",     metavar="TYPE",   help="Scan all rows matching DocType (partial, case-insensitive)")
     parser.add_argument("--all",      action="store_true", help="Scan entire catalog")
     parser.add_argument("--dry-run",  action="store_true", help="Print changes without writing CSV")
+    parser.add_argument("--recheck-signing", action="store_true",
+                        help="Re-evaluate SigningStatus even for already-Signed/Unsigned rows (one-time migration)")
     parser.add_argument("--csv",      metavar="PATH",   default=str(DEFAULT_CSV), help="Path to contract-catalog.csv")
 
     args = parser.parse_args()
@@ -801,7 +900,8 @@ def main():
             n_missing += 1
             continue
 
-        result = scan_file(df, row_indices, abs_path, vendor_folder, args.dry_run)
+        result = scan_file(df, row_indices, abs_path, vendor_folder, args.dry_run,
+                           recheck_signing=args.recheck_signing)
 
         if result["status"] == "skipped":
             print(f"  [SKIPPED] {result['note']}")

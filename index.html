@@ -251,6 +251,10 @@ body.dark .contract-card.exp-amber{background:#2d2010}
 /* Footer */
 .footer-note{font-size:11px;color:var(--text4);text-align:right;margin-top:8px}
 
+/* Row checkboxes */
+.row-cb{width:14px;height:14px;cursor:pointer;accent-color:var(--blue)}
+th input[type=checkbox]{width:14px;height:14px;cursor:pointer;accent-color:var(--blue)}
+
 /* ── Admin Panel ── */
 .tab-admin{margin-left:auto;opacity:.5;font-size:12px}
 .tab-admin.unlocked{opacity:1;color:var(--amber)}
@@ -449,6 +453,7 @@ const SUGGEST_MAP={nda:['MNDA','CDA'],confidential:['NDA','CDA','MNDA'],master:[
 let sf='CounterpartyName',sd=1,filtered=[],recentlyViewed=[];
 let af={types:new Set(),status:'All',loc:'01 Active Contracts'};
 let currentTab='catalog';
+let catalogSelected=new Set(),ownerSelected=new Set();
 const today=new Date();today.setHours(0,0,0,0);
 
 // ── Helpers ──
@@ -545,7 +550,9 @@ function sortBy(f){sf===f?sd*=-1:(sf=f,sd=1);renderThead();go()}
 function renderThead(){
   const cols=getColumns();
   document.getElementById('thead-row').innerHTML=cols.map(c=>
-    `<th style="width:${c.w}" class="${c.sort?'':'no-sort'}" ${c.sort?`onclick="sortBy('${c.field}')"`:''}>${c.label}${c.sort?`<span id="si-${c.field}" class="sort-icon ${sf===c.field?'active':''}">${sf===c.field?(sd===1?'▲':'▼'):'↕'}</span>`:''}</th>`
+    c.isCheck
+      ?`<th style="width:32px;text-align:center" class="no-sort"><input type="checkbox" id="catalog-sel-all" onchange="selectAllCatalog(this)" title="Select / deselect all visible"></th>`
+      :`<th style="width:${c.w}" class="${c.sort?'':'no-sort'}" ${c.sort?`onclick="sortBy('${c.field}')"`:''}>${c.label}${c.sort?`<span id="si-${c.field}" class="sort-icon ${sf===c.field?'active':''}">${sf===c.field?(sd===1?'▲':'▼'):'↕'}</span>`:''}</th>`
   ).join('');
 }
 function getColumns(){
@@ -553,6 +560,7 @@ function getColumns(){
   const showVer=document.getElementById('col-version')?.checked;
   const showAmend=document.getElementById('col-amendment')?.checked;
   const cols=[
+    {label:'',field:'',w:'32px',sort:false,isCheck:true},
     {label:'Counterparty',field:'CounterpartyName',w:'20%',sort:true},
     {label:'Type',field:'DocType',w:'8%',sort:false},
     {label:'Status',field:'',w:'8%',sort:false},
@@ -627,7 +635,7 @@ function renderTable(q){
   const showVer=document.getElementById('col-version')?.checked;
   const showAmend=document.getElementById('col-amendment')?.checked;
 
-  meta.textContent=`Showing ${Math.min(filtered.length,LIMIT).toLocaleString()} of ${filtered.length.toLocaleString()} · ${DATA.length.toLocaleString()} total`;
+  renderCatalogMeta();
 
   if(!filtered.length){
     tbody.innerHTML='';cardList.innerHTML='';empty.style.display='block';
@@ -650,11 +658,13 @@ function renderTable(q){
     const date=(r.EffectiveDate||'').slice(0,10)||'—';
     const url=spUrl(r);
     const rj=encodeURIComponent(JSON.stringify(r));
+    const fp=r.FilePath||r.Filename;
     let extra='';
     if(showAmend)extra+=`<td style="font-size:12px;color:var(--text3)">${e(r.AmendmentNumber)||'—'}</td>`;
     if(showVer)extra+=`<td style="font-size:12px;color:var(--text3)">${e(r.VersionLabel)||'—'}</td>`;
     if(showNotes)extra+=`<td style="font-size:12px;color:var(--text3)" title="${e(r.Notes)}">${e((r.Notes||'').slice(0,40))||'—'}</td>`;
     return`<tr class="${ec}">
+      <td style="text-align:center;padding:4px 6px"><input type="checkbox" class="row-cb" data-fp="${e(fp)}" ${catalogSelected.has(fp)?'checked':''} onchange="toggleCatalogRow(this)"></td>
       <td title="${e(r.CounterpartyName)}">${e(r.CounterpartyName||'—')}</td>
       <td>${badge(r.DocType||'—',dtc)}</td>
       <td>${badge(r.SigningStatus||'—',stc)}</td>
@@ -677,7 +687,7 @@ function renderTable(q){
         </div>
       </td>
     </tr>`;
-  }).join('')+(filtered.length>LIMIT?`<tr><td colspan="20" style="text-align:center;padding:10px;font-size:12px;color:var(--text4)">Showing first ${LIMIT} of ${filtered.length.toLocaleString()} — refine search to see more</td></tr>`:'');
+  }).join('')+(filtered.length>LIMIT?`<tr><td colspan="21" style="text-align:center;padding:10px;font-size:12px;color:var(--text4)">Showing first ${LIMIT} of ${filtered.length.toLocaleString()} — refine search to see more</td></tr>`:'');
 
   // Mobile cards
   cardList.innerHTML=slice.map(r=>{
@@ -699,7 +709,21 @@ function renderTable(q){
       </div>
     </div>`;
   }).join('');
+  syncCatalogSelUI();
 }
+
+// ── Catalog selection ──
+function toggleCatalogRow(cb){if(cb.checked)catalogSelected.add(cb.dataset.fp);else catalogSelected.delete(cb.dataset.fp);syncCatalogSelUI();}
+function selectAllCatalog(cb){if(cb.checked)filtered.forEach(r=>catalogSelected.add(r.FilePath||r.Filename));else filtered.forEach(r=>catalogSelected.delete(r.FilePath||r.Filename));document.querySelectorAll('#tbody .row-cb').forEach(c=>c.checked=cb.checked);syncCatalogSelUI();}
+function syncCatalogSelUI(){const cbs=[...document.querySelectorAll('#tbody .row-cb')];const hdr=document.getElementById('catalog-sel-all');if(hdr){const n=cbs.filter(c=>c.checked).length;hdr.checked=cbs.length>0&&n===cbs.length;hdr.indeterminate=n>0&&n<cbs.length;}renderCatalogMeta();}
+function renderCatalogMeta(){const n=Math.min(filtered.length,500);let txt='Showing '+n.toLocaleString()+' of '+filtered.length.toLocaleString()+' \xb7 '+DATA.length.toLocaleString()+' total';if(catalogSelected.size)txt+=' &nbsp;<span style="color:var(--blue);font-weight:600">'+catalogSelected.size+' selected</span> <button onclick="clearCatalogSel()" style="font-size:11px;border:none;background:none;color:var(--text3);cursor:pointer;padding:0 2px">\xd7 clear</button>';document.getElementById('meta').innerHTML=txt;}
+function clearCatalogSel(){catalogSelected.clear();document.querySelectorAll('#tbody .row-cb').forEach(c=>c.checked=false);const hdr=document.getElementById('catalog-sel-all');if(hdr){hdr.checked=false;hdr.indeterminate=false;}renderCatalogMeta();}
+// ── Owner selection ──
+function toggleOwnerRow(cb){if(cb.checked)ownerSelected.add(cb.dataset.fp);else ownerSelected.delete(cb.dataset.fp);syncOwnerSelUI();}
+function selectAllOwner(cb){if(cb.checked)ownerFiltered.forEach(r=>ownerSelected.add(r.FilePath||r.Filename));else ownerFiltered.forEach(r=>ownerSelected.delete(r.FilePath||r.Filename));document.querySelectorAll('#own-tbody .row-cb').forEach(c=>c.checked=cb.checked);syncOwnerSelUI();}
+function syncOwnerSelUI(){const cbs=[...document.querySelectorAll('#own-tbody .row-cb')];const hdr=document.getElementById('owner-sel-all');if(hdr){const n=cbs.filter(c=>c.checked).length;hdr.checked=cbs.length>0&&n===cbs.length;hdr.indeterminate=n>0&&n<cbs.length;}renderOwnerMeta();}
+function renderOwnerMeta(){const n=Math.min(ownerFiltered.length,500);let txt='Showing '+n.toLocaleString()+' of '+ownerFiltered.length.toLocaleString()+' \xb7 '+DATA.length.toLocaleString()+' total';if(ownerSelected.size)txt+=' &nbsp;<span style="color:var(--blue);font-weight:600">'+ownerSelected.size+' selected</span> <button onclick="clearOwnerSel()" style="font-size:11px;border:none;background:none;color:var(--text3);cursor:pointer;padding:0 2px">\xd7 clear</button>';document.getElementById('own-meta').innerHTML=txt;}
+function clearOwnerSel(){ownerSelected.clear();document.querySelectorAll('#own-tbody .row-cb').forEach(c=>c.checked=false);const hdr=document.getElementById('owner-sel-all');if(hdr){hdr.checked=false;hdr.indeterminate=false;}renderOwnerMeta();}
 
 // ── Export CSV ──
 function exportCSV(){
@@ -940,6 +964,7 @@ function toggleOwnerType(t){ownerAf.types.has(t)?ownerAf.types.delete(t):ownerAf
 
 function renderOwnerThead(){
   document.getElementById('own-thead-row').innerHTML=
+    '<th style="width:32px;text-align:center" class="no-sort"><input type="checkbox" id="owner-sel-all" onchange="selectAllOwner(this)" title="Select / deselect all visible"></th>'+
     '<th style="width:18%">Counterparty</th>'+
     '<th style="width:7%">Type</th>'+
     '<th style="width:8%">Status</th>'+
@@ -954,7 +979,7 @@ function renderOwnerTable(){
   const empty=document.getElementById('own-empty');
   const meta=document.getElementById('own-meta');
   const LIMIT=500;
-  meta.textContent='Showing '+Math.min(ownerFiltered.length,LIMIT).toLocaleString()+' of '+ownerFiltered.length.toLocaleString()+' \xb7 '+DATA.length.toLocaleString()+' total';
+  renderOwnerMeta();
   if(!ownerFiltered.length){tbody.innerHTML='';empty.style.display='block';return;}
   empty.style.display='none';
   tbody.innerHTML=ownerFiltered.slice(0,LIMIT).map(function(r,i){
@@ -975,7 +1000,9 @@ function renderOwnerTable(){
         '<a href="'+url+'" target="_blank" rel="noopener" class="own-btn" onclick="addRecent(JSON.parse(decodeURIComponent(\''+rj+'\')))">Open</a>'+
         '<button class="own-btn own-blue" onclick="ownerAction('+idx+',\'manage\')">Manage</button>'+
         (isArchived?'<button class="own-btn own-green" onclick="ownerAction('+idx+',\'restore\')">Restore</button>':'<button class="own-btn own-gray" onclick="ownerAction('+idx+',\'archive\')">Archive</button>');
+    const fp=r.FilePath||r.Filename;
     return '<tr class="'+expiryClass(r)+'">'
+      +'<td style="text-align:center;padding:4px 6px"><input type="checkbox" class="row-cb" data-fp="'+e(fp)+'" '+(ownerSelected.has(fp)?'checked':'')+' onchange="toggleOwnerRow(this)"></td>'
       +'<td title="'+e(r.CounterpartyName)+'">'+e(r.CounterpartyName||'—')+'</td>'
       +'<td>'+badge(r.DocType||'—',dtc)+'</td>'
       +'<td>'+badge(r.SigningStatus||'—',stc)+'</td>'
@@ -985,6 +1012,7 @@ function renderOwnerTable(){
       +'<td><div class="own-action-cell">'+actBtns+'</div></td>'
       +'</tr>';
   }).join('');
+  syncOwnerSelUI();
 }
 
 // ── Owner Drawer ──

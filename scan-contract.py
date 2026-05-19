@@ -111,6 +111,27 @@ EFFECTIVE_DATE_RE = re.compile(
     re.IGNORECASE,
 )
 
+# Handles fill-in-blank templates: "made as of the _30_ day of _April_____, 2020"
+_AS_OF_THE_RE = re.compile(
+    r"(?:effective|dated|made)\s+as\s+of\s+the\s+|as\s+of\s+the\s+",
+    re.IGNORECASE,
+)
+_DAY_OF_RE = re.compile(
+    r"_*(\d{1,2})_*\s+day\s+of\s+_*("
+    + _MONTH.rstrip(")")
+    + r")_*[_,\s]+_*(\d{4})",
+    re.IGNORECASE,
+)
+
+# At-will / written-notice termination (no fixed expiration date)
+AT_WILL_RE = re.compile(
+    r"either\s+party\s+may\s+terminat"
+    r"|terminat\s+this\s+agreement\s+at\s+any\s+time"
+    r"|upon\s+(?:thirty|sixty|ninety|\d+)\s+days?\s+(?:written\s+)?notice"
+    r"|upon\s+written\s+notice\s+to\s+the\s+other",
+    re.IGNORECASE,
+)
+
 EXPIRATION_TRIGGER_RE = re.compile(
     r"(?:expir(?:es?|ation)|terminat(?:es?|ion\s+date)|through|until|ending\s+on)"
     r"\s+(?:on\s+)?"
@@ -369,13 +390,36 @@ def extract_counterparty(text: str, vendor_folder: str = "") -> str | None:
 def extract_effective_date(text: str) -> str | None:
     zone = text[:2000]
     date_re = re.compile(DATE_PAT, re.IGNORECASE)
+
+    # Primary: standard date immediately after trigger keyword
     for m in EFFECTIVE_DATE_RE.finditer(zone):
         raw = date_re.search(m.group(0))
         if raw:
             result = _normalize_date(raw.group(0))
             if result:
                 return result
+
+    # Fallback: "made as of the _30_ day of _April_____, 2020" template style
+    for m in _AS_OF_THE_RE.finditer(zone):
+        window = zone[m.end(): m.end() + 80]
+        dm = _DAY_OF_RE.search(window)
+        if dm:
+            raw_date = f"{dm.group(1)} {dm.group(2).strip('_ ')} {dm.group(3)}"
+            result = _normalize_date(raw_date)
+            if result:
+                return result
+        # Also try a standard date in the window (e.g. "as of the April 30, 2020")
+        raw = date_re.search(window)
+        if raw:
+            result = _normalize_date(raw.group(0))
+            if result:
+                return result
+
     return None
+
+
+def detect_at_will_termination(text: str) -> bool:
+    return bool(AT_WILL_RE.search(text))
 
 
 def extract_expiration_date(text: str, effective_iso: str | None) -> str | None:
@@ -521,6 +565,8 @@ def scan_file(
     counterparty = extract_counterparty(text, vendor_folder)
     eff_date     = extract_effective_date(text) if text else None
     exp_date     = extract_expiration_date(text, eff_date) if text else None
+    if exp_date is None and text and detect_at_will_termination(text):
+        exp_date = "upon written notice"
 
     extracted = {
         "DocType":          doc_type,

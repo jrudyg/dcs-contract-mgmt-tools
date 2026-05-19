@@ -171,6 +171,9 @@ td{padding:7px 10px;vertical-align:middle}
       <option>02 Unsigned Contracts</option>
       <option>03 Archived Contracts</option>
     </select>
+    <select id="cat-type" onchange="renderCatalog()">
+      <option value="">All Types</option>
+    </select>
     <select id="cat-status" onchange="renderCatalog()">
       <option value="">All Statuses</option>
       <option>Signed</option>
@@ -241,10 +244,11 @@ function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
 fetch('/api/contracts').then(r=>r.json()).then(data=>{
   CATALOG=data;
   renderCatalog();
-  // Populate type dropdown from unique DocType values
+  // Populate type dropdowns from unique DocType values
   const types=[...new Set(data.map(r=>r.doctype).filter(Boolean))].sort();
-  const sel=document.getElementById('type-val');
-  types.forEach(t=>{const o=document.createElement('option');o.value=t;o.textContent=t;sel.appendChild(o);});
+  [document.getElementById('type-val'), document.getElementById('cat-type')].forEach(sel=>{
+    types.forEach(t=>{const o=document.createElement('option');o.value=t;o.textContent=t;sel.appendChild(o);});
+  });
 }).catch(()=>{
   document.getElementById('cat-count').textContent='Could not load catalog';
 });
@@ -252,9 +256,11 @@ fetch('/api/contracts').then(r=>r.json()).then(data=>{
 function renderCatalog(){
   const q=(document.getElementById('cat-q').value||'').toLowerCase();
   const loc=document.getElementById('cat-loc').value;
+  const type=document.getElementById('cat-type').value;
   const status=document.getElementById('cat-status').value;
   const rows=CATALOG.filter(r=>{
     if(loc&&r.location!==loc) return false;
+    if(type&&r.doctype!==type) return false;
     if(status&&r.signed!==status) return false;
     if(q&&!((r.vendor||'').toLowerCase().includes(q)||(r.filename||'').toLowerCase().includes(q)||(r.doctype||'').toLowerCase().includes(q))) return false;
     return true;

@@ -281,18 +281,21 @@ def _normalize_date(raw: str) -> str | None:
 
 
 def _trim_to_entity_name(raw: str) -> str:
-    """Trim a party description (possibly with address) down to just the entity name."""
+    """Trim a party description (possibly with address/state) down to just the entity name."""
     raw = _clean_entity_name(raw)
-    if len(raw) <= 80:
-        return raw
-    # Cut at description markers that follow the entity name
+    # Always try to strip state/type description suffixes, not just when >80 chars
     m = re.match(
-        r"(.{5,}?)(?:,\s*a\s+(?:division|corporation|company|limited|partnership|Delaware|Florida|Tennessee|California|Nevada|New York)|"
-        r",\s*located\s+at|,\s*having\s+|,\s*an?\s+\w+\s+(?:company|corp|partnership))",
+        r"(.{5,}?)(?:,\s*a\s+(?:division|corporation|company|limited|partnership|"
+        r"Delaware|Florida|Tennessee|California|Nevada|New York|Indiana|Ohio|Georgia|Texas|"
+        r"Colorado|Illinois|Michigan|Virginia|Pennsylvania|Maryland|New Jersey|North Carolina)|"
+        r",\s*an?\s+[\w\s]+?\s+(?:company|corp|corporation|partnership|liability|limited|ltd\.?)|"
+        r",\s*located\s+at|,\s*having\s+|with\s+its\s+principal\s+place|with\s+offices\s+at)",
         raw, re.IGNORECASE,
     )
     if m and len(m.group(1).strip()) >= 3:
         return m.group(1).strip(" ,.")
+    if len(raw) <= 80:
+        return raw
     # Fallback: stop at first comma
     first = raw.split(",")[0].strip()
     if len(first) >= 3:
@@ -300,17 +303,58 @@ def _trim_to_entity_name(raw: str) -> str:
     return raw[:80].strip()
 
 
+_BY_AND_BETWEEN_RE = re.compile(r'^.*?by\s+and\s+between\s+', re.IGNORECASE)
+_BETWEEN_RE        = re.compile(r'^.*?\bbetween\s+the\s+undersigned[,\s]+', re.IGNORECASE)
+_PREAMBLE_RE       = re.compile(r'^(?:Page\s+\d+\s+of\s+\d+\s+)?(?:MUTUAL\s+)?(?:NON.?DISCLOSURE|CONFIDENTIALITY)\s+AGREEMENT\s+', re.IGNORECASE)
+
+_GARBAGE_CANDIDATE_RE = re.compile(
+    r'\bon\s+the\s+(one|other)\s+hand\b'
+    r'|enter\s+into\s+this'
+    r'|mutual\s+non.?disclosure'
+    r'|non.?disclosure\s+agreement'
+    r'|confidentiality\s+agreement'
+    r'|this\s+agreement\b'
+    r'|page\s+\d+\s+of'
+    r'|between\s+the\s+undersigned'
+    r'|^its\s+\w'               # "its Affiliates", "its parent", etc. — relative pronoun, not an entity
+    r'|^the\s+(?:counterparty|party)\s+identified'  # template placeholder phrases
+    r'|collectively.*parties'                        # "collectively, the 'Parties'" boilerplate
+    r'|�',                  # Unicode replacement character — PDF encoding artifact
+    re.IGNORECASE,
+)
+
+
 def _clean_entity_name(raw: str) -> str:
+    # Strip leading boilerplate before entity name
+    raw = _BY_AND_BETWEEN_RE.sub('', raw)
+    raw = _BETWEEN_RE.sub('', raw)
+    raw = _PREAMBLE_RE.sub('', raw)
+    # Strip leading punctuation/parens that aren't part of the name
+    raw = re.sub(r'^[\s\("\'（,\.]+', '', raw)
+    # Strip alias parens, collective/affiliate suffixes
     raw = re.sub(r'\s*[\("\'（][^)"\'）]{1,60}[\)"\'）]', "", raw)
-    raw = re.sub(r"\s+and\s+its\s+Affiliates.*$", "", raw, flags=re.IGNORECASE)
+    raw = re.sub(r"\s+and\s+its\s+(?:Affiliates|Subsidiaries|Related\s+Companies).*$", "", raw, flags=re.IGNORECASE)
+    raw = re.sub(r"\s+its\s+(?:employees|officers|directors|representatives|affiliates|subsidiaries).*$", "", raw, flags=re.IGNORECASE)
     raw = re.sub(r"\s+together\s+with.*$", "", raw, flags=re.IGNORECASE)
     raw = re.sub(r"\s+\(collectively.*$", "", raw, flags=re.IGNORECASE)
-    return raw.strip(" ,.")
+    return raw.strip(" ,.()")
 
 
 def extract_counterparty(text: str, vendor_folder: str = "") -> str | None:
     # Normalize line breaks for PDF text-flow artifacts before regex matching
     zone = re.sub(r"\s+", " ", text[:2000])
+
+    def _valid_candidate(c: str) -> bool:
+        """Return False if candidate is a garbage extraction or refers to DCS."""
+        if not c or len(c) < 5:
+            return False
+        if re.match(r'^[_\s\-]+$', c):
+            return False
+        if 'DCS' in c or 'Designed Conveyor' in c or DCS_RE.search(c):  # catches all DCS variants
+            return False
+        if _GARBAGE_CANDIDATE_RE.search(c):
+            return False
+        return True
 
     # Strategy 0: DCS collective definition closure → "(collectively, "DCS")" then next ", and [PARTY]"
     # Handles: DCS...(collectively, "DCS") [address], and 6Sense Insights, Inc., together...
@@ -324,22 +368,22 @@ def extract_counterparty(text: str, vendor_folder: str = "") -> str | None:
             re.IGNORECASE | re.DOTALL,
         )
         if m_party:
-            candidate = _clean_entity_name(m_party.group(1))
-            if 3 <= len(candidate) <= 80 and not DCS_RE.search(candidate):
+            candidate = _trim_to_entity_name(m_party.group(1))
+            if _valid_candidate(candidate) and len(candidate) <= 80:
                 return candidate
 
     # Strategy 1: DCS boilerplate "..., on the one hand, and [COUNTERPARTY]"
     m = DCS_ONE_HAND_RE.search(zone)
     if m:
-        candidate = _clean_entity_name(m.group(1))
-        if 3 <= len(candidate) <= 80:
+        candidate = _trim_to_entity_name(m.group(1))
+        if _valid_candidate(candidate) and len(candidate) <= 80:
             return candidate
 
     # Strategy 2: "and [ENTITY], on the other hand"
     m = OTHER_HAND_RE.search(zone)
     if m:
-        candidate = _clean_entity_name(m.group(1))
-        if 3 <= len(candidate) <= 80 and not DCS_RE.search(candidate):
+        candidate = _trim_to_entity_name(m.group(1))
+        if _valid_candidate(candidate) and len(candidate) <= 80:
             return candidate
 
     # Strategy 3a: "between X, and Y" with comma separator (handles names containing "and")
@@ -347,11 +391,11 @@ def extract_counterparty(text: str, vendor_folder: str = "") -> str | None:
         p1, p2 = m.group(1).strip(), m.group(2).strip()
         if DCS_RE.search(p1) and not DCS_RE.search(p2):
             candidate = _trim_to_entity_name(p2)
-            if 3 <= len(candidate) <= 100:
+            if _valid_candidate(candidate) and len(candidate) <= 100:
                 return candidate
         if DCS_RE.search(p2) and not DCS_RE.search(p1):
             candidate = _trim_to_entity_name(p1)
-            if 3 <= len(candidate) <= 100:
+            if _valid_candidate(candidate) and len(candidate) <= 100:
                 return candidate
 
     # Strategy 3b: generic "by and between X and Y"
@@ -359,25 +403,25 @@ def extract_counterparty(text: str, vendor_folder: str = "") -> str | None:
         p1, p2 = m.group(1).strip(), m.group(2).strip()
         if DCS_RE.search(p1) and not DCS_RE.search(p2):
             candidate = _trim_to_entity_name(p2)
-            if 3 <= len(candidate) <= 100:
+            if _valid_candidate(candidate) and len(candidate) <= 100:
                 return candidate
         if DCS_RE.search(p2) and not DCS_RE.search(p1):
             candidate = _trim_to_entity_name(p1)
-            if 3 <= len(candidate) <= 100:
+            if _valid_candidate(candidate) and len(candidate) <= 100:
                 return candidate
 
     # Strategy 4: entity-suffix scan (non-DCS entity near top of doc)
     for em in ENTITY_SUFFIX_RE.finditer(zone):
         start = max(0, em.start() - 60)
         window = zone[start : em.end()]
+        # Require actual uppercase start (no re.IGNORECASE on [A-Z] to avoid matching "by and between")
         nm = re.search(
             r"([A-Z][A-Za-z0-9\s,\.&\-']+?" + ENTITY_SUFFIX_RE.pattern + r")",
             window,
-            re.IGNORECASE,
         )
         if nm:
-            candidate = _clean_entity_name(nm.group(0))
-            if 3 <= len(candidate) <= 80 and not DCS_RE.search(candidate):
+            candidate = _trim_to_entity_name(nm.group(0))
+            if _valid_candidate(candidate) and len(candidate) <= 80:
                 return candidate
 
     # Strategy 5: VendorFolder fallback
@@ -583,19 +627,40 @@ def scan_file(
             if value is None:
                 continue
             old = df.at[idx, field]
-            if old != value:
-                if not dry_run:
-                    df.at[idx, field] = value
-                tag = "[DRY RUN] " if dry_run else ""
-                result["changes"].append(
-                    f"    {tag}Row {idx} [{field}]: \"{old}\" -> \"{value}\""
-                )
+            if old == value:
+                continue
+
+            # Never downgrade SigningStatus from Signed to Unsigned — scanner
+            # can't detect ink/handwritten signatures, so absence of keyword
+            # is not evidence of unsigned status.
+            if field == 'SigningStatus' and old == 'Signed' and value == 'Unsigned':
+                continue
+
+            # DocType update rules: preserve specific types; allow NDA→MNDA upgrade.
+            if field == 'DocType' and old:
+                if old == 'Other':
+                    pass  # Other is a catch-all; allow replacement
+                elif old == 'NDA' and value == 'MNDA':
+                    pass  # NDA→MNDA is an upgrade (mutual is more specific)
+                else:
+                    continue  # preserve all other existing DocTypes
+
+            if not dry_run:
+                df.at[idx, field] = value
+            tag = "[DRY RUN] " if dry_run else ""
+            result["changes"].append(
+                f"    {tag}Row {idx} [{field}]: \"{old}\" -> \"{value}\""
+            )
 
     return result
 
 # ── Main ──────────────────────────────────────────────────────────────────────
 
 def main():
+    # Ensure stdout can handle non-ASCII characters from PDF text (Windows cp1252 compat)
+    if hasattr(sys.stdout, 'reconfigure'):
+        sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+
     parser = argparse.ArgumentParser(
         description="Scan contract files and update contract-catalog.csv",
         formatter_class=argparse.RawDescriptionHelpFormatter,

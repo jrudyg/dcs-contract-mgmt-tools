@@ -282,6 +282,13 @@ th input[type=checkbox]{width:14px;height:14px;cursor:pointer;accent-color:var(-
 .upload-status{margin-top:12px;font-size:13px;display:none}
 .upload-status.ok{color:var(--green);display:block}
 .upload-status.err{color:var(--red);display:block}
+.deploy-btn{padding:9px 20px;border-radius:var(--radius);border:none;font-size:13px;font-weight:600;cursor:pointer;background:var(--green,#16a34a);color:#fff;white-space:nowrap}
+.deploy-btn:disabled{opacity:.5;cursor:not-allowed}
+.deploy-status{margin-top:10px;font-size:12px;line-height:1.6;padding:10px 12px;border-radius:var(--radius);display:none}
+.deploy-status.show{display:block}
+.deploy-status.ok{background:#dcfce7;color:#166534}
+.deploy-status.err{background:#fee2e2;color:#991b1b}
+.deploy-status.pending{background:#eff6ff;color:#1e40af}
 .admin-export-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:4px}
 .admin-export-row .btn{padding:9px 18px;border-radius:var(--radius);border:none;font-size:13px;font-weight:500;cursor:pointer}
 .admin-export-row .btn-primary{background:var(--blue);color:#fff}
@@ -1238,6 +1245,12 @@ fetch(csvUrl, {cache:'no-store'})
         <div id="csv-preview" style="overflow-x:auto;max-height:200px;overflow-y:auto;margin-top:8px"></div>
       </div>
       <div class="admin-section">
+        <h3>&#128640; Save &amp; Deploy</h3>
+        <p>Saves the current catalog to disk and pushes to GitHub. Azure updates in ~1 minute. Requires the local scanner server to be running.</p>
+        <button class="deploy-btn" id="deploy-btn" onclick="saveDeploy()">&#128640; Save &amp; Deploy to Azure</button>
+        <div class="deploy-status" id="deploy-status"></div>
+      </div>
+      <div class="admin-section">
         <h3>&#128190; Export</h3>
         <p>Download to replace in your <code>Tools\</code> folder.</p>
         <div class="admin-export-row">
@@ -1299,6 +1312,40 @@ function processCSV(file){
 function e_(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function parseCSV(text){const lines=text.split(/\r?\n/);if(!lines.length)return[];const headers=parseCSVRow(lines[0]);const rows=[];for(let i=1;i<lines.length;i++){const line=lines[i].trim();if(!line)continue;const vals=parseCSVRow(line);const obj={};headers.forEach((h,j)=>obj[h]=vals[j]||'');rows.push(obj);}return rows;}
 function parseCSVRow(line){const result=[];let cur='';let inQ=false;for(let i=0;i<line.length;i++){const c=line[i];if(c==='"'){if(inQ&&line[i+1]==='"'){cur+='"';i++;}else{inQ=!inQ;}}else if(c===','&&!inQ){result.push(cur);cur='';}else cur+=c;}result.push(cur);return result;}
+function saveDeploy(){
+  if(!DATA.length)return;
+  const btn=document.getElementById('deploy-btn');
+  const status=document.getElementById('deploy-status');
+  btn.disabled=true;
+  status.className='deploy-status show pending';
+  status.textContent='Saving to local server...';
+  // Serialize DATA as QUOTE_ALL CSV
+  const cols=Object.keys(DATA[0]);
+  const quote=s=>'"'+String(s==null?'':s).replace(/"/g,'""')+'"';
+  const lines=[cols.map(quote).join(','),...DATA.map(r=>cols.map(c=>quote(r[c]||'')).join(','))];
+  const csvText=lines.join('\r\n')+'\r\n';
+  fetch('http://localhost:5000/api/save-catalog',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({csv:csvText})
+  })
+  .then(function(r){return r.json().then(function(d){return{ok:r.ok&&d.ok,output:d.output};});})
+  .then(function(d){
+    btn.disabled=false;
+    if(d.ok){
+      status.className='deploy-status show ok';
+      status.textContent='✅ Pushed to GitHub. Azure will update in ~1 minute.\n'+d.output;
+    } else {
+      status.className='deploy-status show '+(d.output&&d.output.includes('up to date')?'ok':'err');
+      status.textContent=(d.output&&d.output.includes('up to date')?'✅ ':'⚠ ')+d.output;
+    }
+  })
+  .catch(function(err){
+    btn.disabled=false;
+    status.className='deploy-status show err';
+    status.textContent='⚠ Could not reach local server (http://localhost:5000). Make sure the scanner server is running.';
+  });
+}
 function exportHTML(){const dataJS='const DATA = '+JSON.stringify(DATA)+';';const src=document.documentElement.outerHTML;const updated=src.replace(/const DATA = \[.*?\];/s,dataJS);const blob=new Blob([updated],{type:'text/html'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='index.html';a.click();}
 function exportCSVAdmin(){if(!DATA.length)return;const cols=Object.keys(DATA[0]);const rows=[cols.join(','),...DATA.map(r=>cols.map(v=>{const s=String(r[v]||'');return s.includes(',')||s.includes('"')?'"'+s.replace(/"/g,'""')+'"':s;}).join(','))];const blob=new Blob([rows.join('\n')],{type:'text/csv'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='contract-catalog-fixed.csv';a.click();}
 </script>

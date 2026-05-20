@@ -9,7 +9,9 @@ import sys
 import json
 import csv
 import re
+import shutil
 import subprocess
+from datetime import datetime
 from pathlib import Path
 from flask import Flask, Response, request
 
@@ -525,6 +527,49 @@ def scan():
 
     return Response(generate(), mimetype="text/event-stream",
                     headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
+
+
+@app.route("/api/save-catalog", methods=["POST", "OPTIONS"])
+def save_catalog():
+    if request.method == "OPTIONS":
+        return "", 204
+
+    body     = request.get_json(force=True) or {}
+    csv_text = body.get("csv", "")
+    msg      = body.get("message") or f"Dashboard catalog update {datetime.now().strftime('%Y-%m-%d %H:%M')}"
+
+    if not csv_text.strip():
+        return json.dumps({"ok": False, "output": "No CSV data received."}), 400, {"Content-Type": "application/json"}
+
+    try:
+        # Backup then overwrite
+        if CSV_PATH.exists():
+            shutil.copy2(str(CSV_PATH), str(CSV_PATH.with_suffix(".csv.bak")))
+        CSV_PATH.write_text(csv_text, encoding="utf-8", newline="")
+
+        # Stage
+        r = subprocess.run(["git", "add", "contract-catalog.csv"],
+                           cwd=str(TOOLS), capture_output=True, text=True)
+        if r.returncode != 0:
+            return json.dumps({"ok": False, "output": r.stderr}), 500, {"Content-Type": "application/json"}
+
+        # Commit
+        r = subprocess.run(["git", "commit", "-m", msg],
+                           cwd=str(TOOLS), capture_output=True, text=True)
+        if r.returncode != 0:
+            nothing = "nothing to commit" in (r.stdout + r.stderr).lower()
+            return json.dumps({"ok": nothing, "output": "No changes — catalog already up to date." if nothing else r.stderr}), \
+                   200 if nothing else 500, {"Content-Type": "application/json"}
+
+        # Push
+        r = subprocess.run(["git", "push", "origin", "main"],
+                           cwd=str(TOOLS), capture_output=True, text=True)
+        ok = r.returncode == 0
+        return json.dumps({"ok": ok, "output": (r.stdout + r.stderr).strip()}), \
+               200 if ok else 500, {"Content-Type": "application/json"}
+
+    except Exception as exc:
+        return json.dumps({"ok": False, "output": str(exc)}), 500, {"Content-Type": "application/json"}
 
 
 if __name__ == "__main__":

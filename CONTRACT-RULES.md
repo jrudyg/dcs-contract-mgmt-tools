@@ -84,6 +84,20 @@ The sort tool (`sort-contracts.py`) moves files based on SigningStatus and expir
 
 ---
 
+## Catalog Maintenance — Orphan Pruning
+
+The scanner does not automatically remove catalog rows when a file is missing from disk (it may be a cloud-only OneDrive file not yet synced). To explicitly clean up rows whose files no longer exist on disk, run:
+
+```
+python Tools/scan-contract.py --prune
+```
+
+`--prune` can be combined with `--all` to scan and prune in a single pass, and with `--dry-run` to preview removals before committing them.
+
+**Rule:** Run `--prune` any time contracts are deleted, moved out of the managed folders, or after a batch reorganisation. The catalog must only contain rows whose file exists at the recorded `ContractLocation/FilePath`.
+
+---
+
 ## Deferred / Future Enhancements
 
 - **DocType-based sorting** — Exhibits, Amendments, SOWs may need different rules (e.g., stay with parent contract). Not yet implemented.
@@ -92,4 +106,4 @@ The sort tool (`sort-contracts.py`) moves files based on SigningStatus and expir
 
 ---
 
-*Last updated: 2026-05-19*
+*Last updated: 2026-05-20*

@@ -1159,8 +1159,8 @@ function init(){
   buildFilters();
   go();
 }
-var csvUrl = new URL('contract-catalog.csv', window.location.href).href;
-fetch(csvUrl)
+var csvUrl = new URL('contract-catalog.csv?t=' + Date.now(), window.location.href).href;
+fetch(csvUrl, {cache:'no-store'})
   .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.text(); })
   .then(function(text){ DATA = parseCSV(text); init(); })
   .catch(function(err){

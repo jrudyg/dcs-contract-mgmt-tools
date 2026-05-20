@@ -44,20 +44,31 @@ DCS_RE = re.compile(
 # ── Doc-type patterns (order matters; checked against first 500 chars) ────────
 
 DOC_TYPE_PATTERNS = [
-    (re.compile(r"MUTUAL\s+NON.?DISCLOSURE",                    re.I), "MNDA"),
+    (re.compile(r"MUTUAL\s+NON.?DISCLOSURE",                         re.I), "MNDA"),
     (re.compile(r"MUTUAL\s+CONFIDENTIALITY\s+AND\s+NON.?DISCLOSURE", re.I), "MNDA"),
-    (re.compile(r"NON.?DISCLOSURE",                              re.I), "NDA"),
-    (re.compile(r"MASTER\s+SERVICES?\s+AGREEMENT",              re.I), "MSA"),
-    (re.compile(r"MASTER\s+PURCHASING\s+AGREEMENT",             re.I), "MPA"),
-    (re.compile(r"STATEMENT\s+OF\s+WORK",                       re.I), "SOW"),
-    (re.compile(r"SUBCONTRACT(?!OR)",                           re.I), "Subcontract"),
-    (re.compile(r"CHANGE\s+ORDER",                              re.I), "Change Order"),
-    (re.compile(r"NON.?COMPETE|NONCOMPETE",                     re.I), "Non-Compete"),
-    (re.compile(r"\bLICENSE\s+AGREEMENT\b",                     re.I), "License"),
-    (re.compile(r"\bEXHIBIT\b",                                 re.I), "Exhibit"),
-    (re.compile(r"\bAMENDMENT\b",                               re.I), "Amendment"),
-    (re.compile(r"\bRETAINER\b",                                re.I), "Retainer"),
+    (re.compile(r"NON.?DISCLOSURE",                                   re.I), "NDA"),
+    (re.compile(r"MASTER\s+SERVICES?\s+AGREEMENT",                   re.I), "MSA"),
+    (re.compile(r"PROFESSIONAL\s+SERVICES?\s+AGREEMENT",             re.I), "PSA"),
+    (re.compile(r"MASTER\s+PURCHASING\s+AGREEMENT",                  re.I), "MPA"),
+    (re.compile(r"INTEGRATOR\s+AGREEMENT|PARTNER\s+AGREEMENT"
+                r"|DISTRIBUTOR\s+AGREEMENT",                          re.I), "IPA"),
+    (re.compile(r"STATEMENT\s+OF\s+WORK",                            re.I), "SOW"),
+    (re.compile(r"\bPURCHASE\s+ORDER\b|\bPROCUREMENT\s+ORDER\b"
+                r"|\bCONTRACT\s+AWARD\b|\bDELIVERY\s+ORDER\b",       re.I), "PO"),
+    (re.compile(r"SUBCONTRACT(?!OR)",                                 re.I), "Subcontract"),
+    (re.compile(r"CHANGE\s+ORDER",                                    re.I), "Change Order"),
+    (re.compile(r"NON.?COMPETE|NONCOMPETE",                          re.I), "Non-Compete"),
+    (re.compile(r"\bEND.USER\s+LICENSE\s+AGREEMENT\b|\bEULA\b",      re.I), "EULA"),
+    (re.compile(r"\bLICENSE\s+AGREEMENT\b",                          re.I), "License"),
+    (re.compile(r"\bEXHIBIT\b",                                      re.I), "Exhibit"),
+    (re.compile(r"\bAMENDMENT\b",                                    re.I), "Amendment"),
+    (re.compile(r"\bRETAINER\b",                                     re.I), "Retainer"),
+    (re.compile(r"\bFORM\s+W-?9\b|\bW-9\b"
+                r"|REQUEST\s+FOR\s+TAXPAYER\s+IDENTIFICATION",        re.I), "Tax-Form"),
 ]
+
+# DocTypes that are not bilateral contracts — skip signing detection for these
+_NON_CONTRACT_TYPES = {"Tax-Form", "Exhibit"}
 
 # ── Signature patterns ────────────────────────────────────────────────────────
 
@@ -272,6 +283,8 @@ def _extract_docx(path: Path) -> tuple[str, bool]:
 
 def extract_text(path: Path) -> tuple[str, bool, str | None]:
     """Returns (text, is_scanned, skip_reason)."""
+    if path.name.startswith("~$"):
+        return ("", False, "Word temp file (~$) — excluded")
     ext = path.suffix.lower()
     if ext == ".pdf":
         try:
@@ -745,8 +758,11 @@ def scan_file(
         result["note"]   = skip_reason
         return result
 
-    # Only PDFs can be signed — Word docs are always treated as Unsigned
-    if abs_path.suffix.lower() in (".docx", ".doc"):
+    # Detect DocType first — needed to suppress signing detection for non-contracts
+    doc_type = detect_doc_type(text) if text else None
+
+    # Word docs and non-contract DocTypes (Tax-Form, Exhibit, etc.) are always Unsigned
+    if abs_path.suffix.lower() in (".docx", ".doc") or doc_type in _NON_CONTRACT_TYPES:
         has_kw, signing_status = "False", "Unsigned"
     else:
         # Signature detection must run before text is cleared for scanned PDFs
@@ -757,8 +773,7 @@ def scan_file(
         result["note"]   = "image-only PDF, no text extracted"
         text = ""  # clear so other extractors skip cleanly
 
-    # Run remaining extractors
-    doc_type     = detect_doc_type(text) if text else None
+    # Run remaining extractors (doc_type already detected above)
     counterparty = extract_counterparty(text, vendor_folder)
     eff_date     = extract_effective_date(text) if text else None
     if eff_date is None and text:
@@ -794,12 +809,14 @@ def scan_file(
                 if old in ('Signed', 'Unsigned') and old != value:
                     continue
 
-            # DocType update rules: preserve specific types; allow NDA→MNDA upgrade.
+            # DocType update rules: preserve specific types; allow narrowing upgrades.
             if field == 'DocType' and old:
                 if old == 'Other':
                     pass  # Other is a catch-all; allow replacement
                 elif old == 'NDA' and value == 'MNDA':
-                    pass  # NDA→MNDA is an upgrade (mutual is more specific)
+                    pass  # NDA→MNDA upgrade (mutual is more specific)
+                elif old == 'License' and value == 'EULA':
+                    pass  # License→EULA upgrade (end-user is more specific)
                 else:
                     continue  # preserve all other existing DocTypes
 
@@ -833,6 +850,7 @@ def main():
     parser.add_argument("--location", metavar="FOLDER", help="Scan all rows in ContractLocation")
     parser.add_argument("--type",     metavar="TYPE",   help="Scan all rows matching DocType (partial, case-insensitive)")
     parser.add_argument("--all",      action="store_true", help="Scan entire catalog")
+    parser.add_argument("--prune",    action="store_true", help="Remove catalog rows whose file no longer exists on disk")
     parser.add_argument("--dry-run",  action="store_true", help="Print changes without writing CSV")
     parser.add_argument("--recheck-signing", action="store_true",
                         help="Re-evaluate SigningStatus even for already-Signed/Unsigned rows (one-time migration)")
@@ -866,7 +884,7 @@ def main():
         all_rows=args.all,
     )
 
-    if not target_indices:
+    if not target_indices and not args.prune:
         sys.exit("No target rows resolved. Check your arguments.")
 
     # Deduplicate by FilePath so the same physical file isn't scanned twice
@@ -879,7 +897,8 @@ def main():
             group_indices = rows_for_filepath(df, key)
             file_groups.append((key, group_indices))
 
-    print(f"Scanning {len(file_groups)} file(s) across {len(target_indices)} row(s).\n")
+    if file_groups:
+        print(f"Scanning {len(file_groups)} file(s) across {len(target_indices)} row(s).\n")
 
     t_start = time.time()
     n_ok = n_skipped = n_scanned = n_missing = n_changed = 0
@@ -896,7 +915,7 @@ def main():
         print(f"Scanning [{i}/{len(file_groups)}]: {fp_key}")
 
         if abs_path is None:
-            print(f"  [NOT FOUND] File does not exist on disk - skipped")
+            print(f"  [NOT FOUND] File not on local disk (may be cloud-only / not synced via OneDrive) - skipped")
             n_missing += 1
             continue
 
@@ -919,6 +938,27 @@ def main():
         else:
             print("  (no changes)")
 
+    # Prune orphaned rows (catalog entries with no matching file on disk)
+    n_pruned = 0
+    if args.prune:
+        print("\n" + "=" * 54)
+        print("Pruning orphaned catalog rows...")
+        orphan_indices = []
+        for idx in df.index:
+            if resolve_abs_path(df, idx, root) is None:
+                loc = df.at[idx, "ContractLocation"]
+                fp  = df.at[idx, "FilePath"]
+                print(f"  [ORPHAN] [{loc}] {fp}")
+                orphan_indices.append(idx)
+        n_pruned = len(orphan_indices)
+        if n_pruned:
+            if not args.dry_run:
+                df = df.drop(index=orphan_indices).reset_index(drop=True)
+                n_changed += n_pruned
+            print(f"  {n_pruned} orphaned row(s) {'would be ' if args.dry_run else ''}removed.")
+        else:
+            print("  No orphaned rows found.")
+
     # Write CSV
     if not args.dry_run and n_changed > 0:
         write_csv(df, csv_path, dry_run=False)
@@ -931,12 +971,13 @@ def main():
 
     elapsed_total = time.time() - t_start
     print("\n" + "=" * 54)
-    print(f"Summary: {len(file_groups)} files scanned in {elapsed_total:.1f}s")
+    print(f"Summary: {len(file_groups)} file(s) scanned in {elapsed_total:.1f}s")
     print(f"  OK:          {n_ok}")
     print(f"  Skipped:     {n_skipped}")
     print(f"  Scanned PDF: {n_scanned}")
     print(f"  Not found:   {n_missing}")
     print(f"  Field changes: {n_changed}")
+    print(f"  Pruned rows: {n_pruned}")
     if args.dry_run:
         print("  [DRY RUN - CSV not written]")
 

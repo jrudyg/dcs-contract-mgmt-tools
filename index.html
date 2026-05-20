@@ -373,6 +373,7 @@ th input[type=checkbox]{width:14px;height:14px;cursor:pointer;accent-color:var(-
             Columns
           </button>
           <div class="col-toggle-panel" id="col-panel" style="display:none">
+            <label><input type="checkbox" id="col-expires" onchange="go()" checked> Expires</label>
             <label><input type="checkbox" id="col-notes" onchange="go()"> Notes</label>
             <label><input type="checkbox" id="col-version" onchange="go()"> Version</label>
             <label><input type="checkbox" id="col-amendment" onchange="go()"> Amendment #</label>
@@ -566,16 +567,18 @@ function getColumns(){
   const showNotes=document.getElementById('col-notes')?.checked;
   const showVer=document.getElementById('col-version')?.checked;
   const showAmend=document.getElementById('col-amendment')?.checked;
+  const showExpires=document.getElementById('col-expires')?.checked!==false;
   const cols=[
     {label:'',field:'',w:'32px',sort:false,isCheck:true},
-    {label:'Counterparty',field:'CounterpartyName',w:'20%',sort:true},
-    {label:'Type',field:'DocType',w:'8%',sort:false},
-    {label:'Status',field:'',w:'8%',sort:false},
-    {label:'Folder',field:'',w:'8%',sort:false},
-    {label:'Filename',field:'Filename',w:'28%',sort:true},
-    {label:'Date',field:'EffectiveDate',w:'8%',sort:true},
-    {label:'',field:'',w:'12%',sort:false},
+    {label:'Counterparty',field:'CounterpartyName',w:'18%',sort:true},
+    {label:'Type',field:'DocType',w:'7%',sort:false},
+    {label:'Status',field:'',w:'7%',sort:false},
+    {label:'Folder',field:'',w:'7%',sort:false},
+    {label:'Filename',field:'Filename',w:'22%',sort:true},
+    {label:'Effective',field:'EffectiveDate',w:'8%',sort:true},
+    {label:'',field:'',w:'10%',sort:false},
   ];
+  if(showExpires)cols.splice(7,0,{label:'Expires',field:'ExpirationDate',w:'9%',sort:true});
   if(showNotes)cols.splice(6,0,{label:'Notes',field:'Notes',w:'12%',sort:false});
   if(showVer)cols.splice(6,0,{label:'Ver',field:'VersionLabel',w:'6%',sort:false});
   if(showAmend)cols.splice(6,0,{label:'Amend #',field:'AmendmentNumber',w:'7%',sort:false});
@@ -641,6 +644,7 @@ function renderTable(q){
   const showNotes=document.getElementById('col-notes')?.checked;
   const showVer=document.getElementById('col-version')?.checked;
   const showAmend=document.getElementById('col-amendment')?.checked;
+  const showExpires=document.getElementById('col-expires')?.checked!==false;
 
   renderCatalogMeta();
 
@@ -670,6 +674,11 @@ function renderTable(q){
     if(showAmend)extra+=`<td style="font-size:12px;color:var(--text3)">${e(r.AmendmentNumber)||'—'}</td>`;
     if(showVer)extra+=`<td style="font-size:12px;color:var(--text3)">${e(r.VersionLabel)||'—'}</td>`;
     if(showNotes)extra+=`<td style="font-size:12px;color:var(--text3)" title="${e(r.Notes)}">${e((r.Notes||'').slice(0,40))||'—'}</td>`;
+    const exp=r.ExpirationDate||'';
+    const expStyle=exp&&exp.match(/^\d{4}-\d{2}-\d{2}$/)&&exp<new Date().toISOString().slice(0,10)?'color:#dc2626;font-weight:600':'color:var(--text3)';
+    const expDisplay=exp.match(/^\d{4}-\d{2}-\d{2}$/)?exp.slice(0,10):exp||'—';
+    const expiresCell=showExpires?`<td style="font-size:12px;${expStyle}">${e(expDisplay)}</td>`:'';
+    extra=expiresCell+extra;
     return`<tr class="${ec}">
       <td style="text-align:center;padding:4px 6px"><input type="checkbox" class="row-cb" data-fp="${e(fp)}" ${catalogSelected.has(fp)?'checked':''} onchange="toggleCatalogRow(this)"></td>
       <td title="${e(r.CounterpartyName)}">${e(r.CounterpartyName||'—')}</td>

@@ -1259,6 +1259,22 @@ fetch(csvUrl, {cache:'no-store'})
         <div class="deploy-status" id="deploy-status"></div>
       </div>
       <div class="admin-section">
+        <h3>&#128260; Sync from Salesforce SoR</h3>
+        <p>Copies new or updated files from the Salesforce system of record into <code>01 Active Contracts</code>. Never moves or deletes. Run the scanner afterward to update the catalog.</p>
+        <div style="font-size:12px;color:var(--text3);background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:8px 12px;margin-bottom:12px;line-height:1.7">
+          <strong>Source:</strong> diakoniagroupllc.sharepoint.com/sites/SalesforceContracts/Active Contracts<br>
+          <strong>Dest:</strong> 01 Active Contracts\ (local OneDrive sync)
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:10px">
+          <button class="deploy-btn" id="sync-btn" onclick="runSync(false)">&#128260; Run Sync</button>
+          <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer">
+            <input type="checkbox" id="sync-dry" style="accent-color:var(--blue);width:14px;height:14px"> Dry run (preview only)
+          </label>
+        </div>
+        <div class="deploy-status" id="sync-status"></div>
+        <div id="sync-log" style="display:none;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:10px 12px;font-family:monospace;font-size:11px;white-space:pre-wrap;max-height:300px;overflow-y:auto;line-height:1.6;color:var(--text2);margin-top:10px"></div>
+      </div>
+      <div class="admin-section">
         <h3>&#128190; Export</h3>
         <p>Download to replace in your <code>Tools\</code> folder.</p>
         <div class="admin-export-row">
@@ -1355,6 +1371,64 @@ function saveDeploy(){
   });
 }
 function exportHTML(){const dataJS='const DATA = '+JSON.stringify(DATA)+';';const src=document.documentElement.outerHTML;const updated=src.replace(/const DATA = \[.*?\];/s,dataJS);const blob=new Blob([updated],{type:'text/html'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='index.html';a.click();}
+function runSync(forceDry){
+  const dry = forceDry || document.getElementById('sync-dry').checked;
+  const btn = document.getElementById('sync-btn');
+  const status = document.getElementById('sync-status');
+  const logEl = document.getElementById('sync-log');
+  btn.disabled = true;
+  btn.textContent = '⏳ Syncing…';
+  status.className = 'deploy-status show pending';
+  status.textContent = 'Connecting to Salesforce SoR…';
+  logEl.textContent = '';
+  logEl.style.display = 'block';
+  fetch('http://localhost:5000/api/sync-sor', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({dry_run: dry})
+  }).then(function(resp){
+    const reader = resp.body.getReader();
+    const dec = new TextDecoder();
+    let buf = '';
+    function read(){return reader.read().then(function(chunk){
+      if(chunk.done){
+        btn.disabled = false; btn.textContent = '🔄 Run Sync';
+        return;
+      }
+      buf += dec.decode(chunk.value, {stream:true});
+      const parts = buf.split('\n\n'); buf = parts.pop();
+      for(const part of parts){
+        if(!part.startsWith('data: ')) continue;
+        const pay = part.slice(6);
+        try{
+          const obj = JSON.parse(pay);
+          if(obj && obj.__done__ !== undefined){
+            btn.disabled = false; btn.textContent = '🔄 Run Sync';
+            if(obj.rc === 0){
+              status.className = 'deploy-status show ok';
+              status.textContent = '✅ Sync complete.';
+            } else {
+              status.className = 'deploy-status show err';
+              status.textContent = '⚠ Sync ended with errors — see log above.';
+            }
+            return;
+          }
+          const line = typeof obj === 'string' ? obj : JSON.stringify(obj);
+          logEl.textContent += line + '\n';
+          // Update status with last non-empty line
+          if(line.trim()) status.textContent = line.trim();
+        }catch(e){ logEl.textContent += pay + '\n'; }
+        logEl.scrollTop = logEl.scrollHeight;
+      }
+      return read();
+    });}
+    return read();
+  }).catch(function(){
+    btn.disabled = false; btn.textContent = '🔄 Run Sync';
+    status.className = 'deploy-status show err';
+    status.textContent = '⚠ Could not reach local server (http://localhost:5000). Make sure the scanner server is running.';
+  });
+}
 function exportCSVAdmin(){if(!DATA.length)return;const cols=Object.keys(DATA[0]);const rows=[cols.join(','),...DATA.map(r=>cols.map(v=>{const s=String(r[v]||'');return s.includes(',')||s.includes('"')?'"'+s.replace(/"/g,'""')+'"':s;}).join(','))];const blob=new Blob([rows.join('\n')],{type:'text/csv'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='contract-catalog-fixed.csv';a.click();}
 </script>
 

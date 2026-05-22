@@ -27,6 +27,7 @@ _s.close()
 TOOLS       = Path(__file__).resolve().parent
 SHAREPOINT  = TOOLS.parent
 SCAN_SCRIPT = TOOLS / "scan-contract.py"
+SYNC_SCRIPT = TOOLS / "sync-sor.py"
 CSV_PATH    = TOOLS / "contract-catalog.csv"
 
 _SP_PREFIX  = re.compile(r'^[A-Za-z]:[/\\].*?Contract Management - SharePoint[/\\]', re.IGNORECASE)
@@ -516,6 +517,40 @@ def scan():
                 stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT,
                 text=True, encoding="utf-8", errors="replace",
+            )
+            for line in proc.stdout:
+                yield f"data: {json.dumps(line.rstrip())}\n\n"
+            proc.wait()
+            yield f"data: {json.dumps({'__done__': True, 'rc': proc.returncode})}\n\n"
+        except Exception as exc:
+            yield f"data: {json.dumps(f'[ERROR] {exc}')}\n\n"
+            yield f"data: {json.dumps({'__done__': True, 'rc': 1})}\n\n"
+
+    return Response(generate(), mimetype="text/event-stream",
+                    headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
+
+
+@app.route("/api/sync-sor", methods=["POST", "OPTIONS"])
+def sync_sor():
+    if request.method == "OPTIONS":
+        return "", 204
+
+    body     = request.get_json(force=True) or {}
+    dry_run  = body.get("dry_run", False)
+
+    args = [sys.executable, str(SYNC_SCRIPT)]
+    if dry_run:
+        args.append("--dry-run")
+
+    def generate():
+        try:
+            proc = subprocess.Popen(
+                args,
+                cwd=str(SHAREPOINT),
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                text=True, encoding="utf-8", errors="replace",
+                bufsize=1,
             )
             for line in proc.stdout:
                 yield f"data: {json.dumps(line.rstrip())}\n\n"

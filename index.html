@@ -536,7 +536,7 @@ function buildFilters(){
   h+=allTypes.map(t=>`<button class="chip${af.types.has(t)?' active':''}" onclick="toggleType('${e(t)}')">${e(t)}</button>`).join('');
   h+='</div>';
   h+=`<div class="filter-group"><span class="filter-label">Folder</span>`;
-  h+=[['All','All'],['01 Active Contracts','01 Active Contracts'],['02 Unsigned Contracts','02 Unsigned Contracts'],['03 Archived Contracts','03 Archived Contracts']].map(([v,l])=>`<button class="chip${af.loc===v?' active':''}" onclick="setF('loc','${e(v)}')">${l}</button>`).join('');
+  h+=[['All','All'],['01 Active Contracts','01 Active Contracts'],['02 Unsigned Contracts','02 Unsigned Contracts'],['03 Archived Contracts','03 Archived Contracts'],['04 Expired Contracts','04 Expired Contracts']].map(([v,l])=>`<button class="chip${af.loc===v?' active':''}" onclick="setF('loc','${e(v)}')">${l}</button>`).join('');
   h+='</div>';
   document.getElementById('filter-bar').innerHTML=h;
 }
@@ -963,7 +963,7 @@ function clearOwnerSearch(){
 
 function buildOwnerFilters(){
   const types=[...new Set(DATA.map(r=>r.DocType).filter(Boolean))].sort();
-  const locs=['All','01 Active Contracts','02 Unsigned Contracts','03 Archived Contracts'];
+  const locs=['All','01 Active Contracts','02 Unsigned Contracts','03 Archived Contracts','04 Expired Contracts'];
   const statuses=['All','Signed','Unsigned'];
   const locChips=locs.map(l=>'<button class="chip'+(ownerAf.loc===l?' active':'')+'" onclick="setOwnerF(\'loc\',\''+l+'\')">'+(l==='All'?'All':l.replace(/^\d+ /,''))+'</button>').join('');
   const stChips=statuses.map(s=>'<button class="chip'+(ownerAf.status===s?' active':'')+'" onclick="setOwnerF(\'status\',\''+s+'\')">'+s+'</button>').join('');

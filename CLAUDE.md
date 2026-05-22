@@ -69,7 +69,9 @@ audit-catalog.py  ← reconciles disk vs CSV; run after any manual reorganizatio
 
 ### contract-catalog.csv
 
-The CSV is the system's only database. Written with `QUOTE_ALL` quoting. Every write creates a `.bak` backup first. Columns: `ContractLocation, VendorFolder, Filename, FilePath, Extension, FileCreatedDate, DocType, HasSignedKeyword, SigningStatus, IsAmendment, AmendmentNumber, VersionLabel, DateInFilename, CounterpartyName, EffectiveDate, ExpirationDate, Notes`.
+The CSV is the system's only database. Written with `QUOTE_ALL` quoting. Every write creates a `.bak` backup first. Columns: `ContractLocation, VendorFolder, Filename, FilePath, Extension, FileCreatedDate, DocType, HasSignedKeyword, SigningStatus, IsAmendment, AmendmentNumber, VersionLabel, DateInFilename, CounterpartyName, EffectiveDate, ExpirationDate, DaysUntilExpiration, Notes`.
+
+`DaysUntilExpiration` is a derived column (whole days from today to `ExpirationDate`; negative = expired, blank when `ExpirationDate` is not an ISO date). `scan-contract.py` recomputes it on every CSV write via `refresh_days_until_expiration()`, so it is current as of the last scan. The dashboard recomputes it live in the browser.
 
 `FilePath` is relative to the `ContractLocation` folder (e.g., `Terracon/Terracon_DCS MNDA 06.02.25 - signed.pdf`).
 

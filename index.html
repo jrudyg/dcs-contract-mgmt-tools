@@ -374,6 +374,7 @@ th input[type=checkbox]{width:14px;height:14px;cursor:pointer;accent-color:var(-
           </button>
           <div class="col-toggle-panel" id="col-panel" style="display:none">
             <label><input type="checkbox" id="col-expires" onchange="go()" checked> Expires</label>
+            <label><input type="checkbox" id="col-daysleft" onchange="go()" checked> Days Left</label>
             <label><input type="checkbox" id="col-notes" onchange="go()"> Notes</label>
             <label><input type="checkbox" id="col-version" onchange="go()"> Version</label>
             <label><input type="checkbox" id="col-amendment" onchange="go()"> Amendment #</label>
@@ -470,6 +471,7 @@ function badge(t,c){return`<span class="badge ${c}">${e(t)}</span>`}
 function daysTo(s){if(!s)return null;const d=new Date(s);if(isNaN(d))return null;return Math.round((d-today)/86400000)}
 function expiryClass(r){const d=daysTo(r.ExpirationDate);if(d===null)return'';if(d<=0)return'exp-red';if(d<=30)return'exp-red';if(d<=90)return'exp-amber';return''}
 function expiryBadge(r){const d=daysTo(r.ExpirationDate);if(d===null||d>90)return'';if(d<=0)return'<span class="exp-badge exp-red-b">Expired</span>';if(d<=30)return`<span class="exp-badge exp-red-b">⚠ ${d}d</span>`;return`<span class="exp-badge exp-amber-b">${d}d</span>`}
+function daysLeftCell(r){const d=daysTo(r.ExpirationDate);if(d===null)return'<td style="font-size:12px;color:var(--text3)">—</td>';let color='var(--text3)',weight='400',txt=d+'d';if(d<0){color='#dc2626';weight='600';txt=(-d)+'d ago';}else if(d===0){color='#dc2626';weight='600';txt='Today';}else if(d<=30){color='#dc2626';weight='600';}else if(d<=90){color='#d97706';weight='600';}return`<td style="font-size:12px;color:${color};font-weight:${weight}">${txt}</td>`}
 function fileIcon(ext){const x=(ext||'').toLowerCase();if(x==='.pdf')return'<span class="fi fi-pdf">PDF</span>';if(x==='.docx')return'<span class="fi fi-docx">DOC</span>';if(x==='.doc')return'<span class="fi fi-doc">DOC</span>';if(x==='.msg')return'<span class="fi fi-msg">MSG</span>';return'<span class="fi fi-other">—</span>'}
 function spUrl(r){
   const base=(document.getElementById('sp-base').value||'').replace(/\/$/,'');
@@ -567,6 +569,7 @@ function getColumns(){
   const showVer=document.getElementById('col-version')?.checked;
   const showAmend=document.getElementById('col-amendment')?.checked;
   const showExpires=document.getElementById('col-expires')?.checked!==false;
+  const showDaysLeft=document.getElementById('col-daysleft')?.checked!==false;
   const cols=[
     {label:'',field:'',w:'32px',sort:false,isCheck:true},
     {label:'Counterparty',field:'CounterpartyName',w:'18%',sort:true},
@@ -578,6 +581,7 @@ function getColumns(){
     {label:'',field:'',w:'10%',sort:false},
   ];
   if(showExpires)cols.splice(7,0,{label:'Expires',field:'ExpirationDate',w:'9%',sort:true});
+  if(showDaysLeft)cols.splice(showExpires?8:7,0,{label:'Days Left',field:'DaysUntilExpiration',w:'7%',sort:true});
   if(showNotes)cols.splice(6,0,{label:'Notes',field:'Notes',w:'12%',sort:false});
   if(showVer)cols.splice(6,0,{label:'Ver',field:'VersionLabel',w:'6%',sort:false});
   if(showAmend)cols.splice(6,0,{label:'Amend #',field:'AmendmentNumber',w:'7%',sort:false});
@@ -627,6 +631,13 @@ function go(){
     return true;
   });
   filtered.sort((a,b)=>{
+    if(sf==='DaysUntilExpiration'){
+      const an=daysTo(a.ExpirationDate),bn=daysTo(b.ExpirationDate);
+      if(an===bn)return 0;
+      if(an===null)return 1;   // non-date expirations always sort last
+      if(bn===null)return -1;
+      return (an-bn)*sd;
+    }
     const av=(a[sf]||'').toLowerCase(),bv=(b[sf]||'').toLowerCase();
     return av<bv?-sd:av>bv?sd:0;
   });
@@ -644,6 +655,7 @@ function renderTable(q){
   const showVer=document.getElementById('col-version')?.checked;
   const showAmend=document.getElementById('col-amendment')?.checked;
   const showExpires=document.getElementById('col-expires')?.checked!==false;
+  const showDaysLeft=document.getElementById('col-daysleft')?.checked!==false;
 
   renderCatalogMeta();
 
@@ -677,7 +689,7 @@ function renderTable(q){
     const expStyle=exp&&exp.match(/^\d{4}-\d{2}-\d{2}$/)&&exp<new Date().toISOString().slice(0,10)?'color:#dc2626;font-weight:600':'color:var(--text3)';
     const expDisplay=exp.match(/^\d{4}-\d{2}-\d{2}$/)?exp.slice(0,10):exp||'—';
     const expiresCell=showExpires?`<td style="font-size:12px;${expStyle}">${e(expDisplay)}</td>`:'';
-    extra=expiresCell+extra;
+    extra=expiresCell+(showDaysLeft?daysLeftCell(r):'')+extra;
     return`<tr class="${ec}">
       <td style="text-align:center;padding:4px 6px"><input type="checkbox" class="row-cb" data-fp="${e(fp)}" ${catalogSelected.has(fp)?'checked':''} onchange="toggleCatalogRow(this)"></td>
       <td title="${e(r.CounterpartyName)}">${e(r.CounterpartyName||'—')}</td>
@@ -742,7 +754,7 @@ function clearOwnerSel(){ownerSelected.clear();document.querySelectorAll('#own-t
 
 // ── Export CSV ──
 function exportCSV(){
-  const cols=['CounterpartyName','DocType','SigningStatus','ContractLocation','Filename','EffectiveDate','ExpirationDate','Notes'];
+  const cols=['CounterpartyName','DocType','SigningStatus','ContractLocation','Filename','EffectiveDate','ExpirationDate','DaysUntilExpiration','Notes'];
   const rows=[cols.join(','),...filtered.map(r=>cols.map(c=>`"${(r[c]||'').replace(/"/g,'""')}"`).join(','))];
   const a=document.createElement('a');
   a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(rows.join('\n'));
@@ -1168,7 +1180,11 @@ function copyOwnerReq(){
 }
 
 // ── Init ──
+function refreshDaysUntil(){
+  DATA.forEach(r=>{const d=daysTo(r.ExpirationDate);r.DaysUntilExpiration=d===null?'':String(d);});
+}
 function init(){
+  refreshDaysUntil();
   document.getElementById('hdr-count').textContent = DATA.length.toLocaleString() + ' contracts';
   buildStats();
   buildFilters();
@@ -1330,7 +1346,7 @@ function processCSV(file){
   const status=document.getElementById('upload-status');const preview=document.getElementById('csv-preview');
   if(!file.name.endsWith('.csv')){status.className='upload-status err';status.textContent='⚠ Must be a .csv';return;}
   const reader=new FileReader();
-  reader.onload=function(e){try{const rows=parseCSV(e.target.result);if(!rows.length)throw new Error('No data rows');DATA.length=0;rows.forEach(r=>DATA.push(r));status.className='upload-status ok';status.textContent=`✅ Loaded ${rows.length} records`;const cols=['ContractLocation','VendorFolder','Filename','DocType','SigningStatus'];preview.innerHTML=`<table class="preview-table"><thead><tr>${cols.map(c=>`<th>${c}</th>`).join('')}</tr></thead><tbody>${rows.slice(0,5).map(r=>`<tr>${cols.map(c=>`<td>${e_(r[c]||'')}</td>`).join('')}</tr>`).join('')}</tbody></table>`;renderAdminStats();buildStats();buildFilters();go();}catch(err){status.className='upload-status err';status.textContent='⚠ '+err.message;}};
+  reader.onload=function(e){try{const rows=parseCSV(e.target.result);if(!rows.length)throw new Error('No data rows');DATA.length=0;rows.forEach(r=>DATA.push(r));refreshDaysUntil();status.className='upload-status ok';status.textContent=`✅ Loaded ${rows.length} records`;const cols=['ContractLocation','VendorFolder','Filename','DocType','SigningStatus'];preview.innerHTML=`<table class="preview-table"><thead><tr>${cols.map(c=>`<th>${c}</th>`).join('')}</tr></thead><tbody>${rows.slice(0,5).map(r=>`<tr>${cols.map(c=>`<td>${e_(r[c]||'')}</td>`).join('')}</tr>`).join('')}</tbody></table>`;renderAdminStats();buildStats();buildFilters();go();}catch(err){status.className='upload-status err';status.textContent='⚠ '+err.message;}};
   reader.readAsText(file);
 }
 function e_(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}

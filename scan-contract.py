@@ -15,6 +15,7 @@ import re
 import shutil
 import sys
 import time
+from datetime import date
 from pathlib import Path, PurePosixPath
 
 import pandas as pd
@@ -657,9 +658,40 @@ def load_csv(csv_path: Path) -> pd.DataFrame:
     return pd.read_csv(str(csv_path), dtype=str, keep_default_na=False)
 
 
+ISO_DATE_RE = re.compile(r"\d{4}-\d{2}-\d{2}$")
+
+
+def refresh_days_until_expiration(df: pd.DataFrame) -> None:
+    """Recompute DaysUntilExpiration: whole days from today to ExpirationDate.
+
+    Positive = days remaining, 0 = expires today, negative = days since it
+    expired. Blank when ExpirationDate is not an ISO date (e.g. "on notice").
+    Creates the column right after ExpirationDate if it does not exist yet.
+    This is a derived value, so it is recomputed on every write.
+    """
+    today = date.today()
+
+    def _days(raw: str) -> str:
+        raw = (raw or "").strip()
+        if not ISO_DATE_RE.match(raw):
+            return ""
+        try:
+            return str((date.fromisoformat(raw) - today).days)
+        except ValueError:
+            return ""
+
+    values = df["ExpirationDate"].apply(_days)
+    if "DaysUntilExpiration" in df.columns:
+        df["DaysUntilExpiration"] = values
+    else:
+        df.insert(df.columns.get_loc("ExpirationDate") + 1,
+                  "DaysUntilExpiration", values)
+
+
 def write_csv(df: pd.DataFrame, csv_path: Path, dry_run: bool = False):
     if dry_run:
         return
+    refresh_days_until_expiration(df)
     tmp = csv_path.with_suffix(".csv.tmp")
     bak = csv_path.with_suffix(".csv.bak")
     df.to_csv(str(tmp), index=False, quoting=csv.QUOTE_ALL)

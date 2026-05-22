@@ -352,8 +352,8 @@ th input[type=checkbox]{width:14px;height:14px;cursor:pointer;accent-color:var(-
 <main>
   <div id="settings-panel" class="settings-panel">
     <label>SharePoint document library base URL</label>
-    <input type="text" id="sp-base" value="https://diakoniagroupllc.sharepoint.com/sites/ContractManagement/Shared%20Documents"/>
-    <p class="hint">Links resolve to: {URL}/{ContractLocation}/{FilePath}?web=1</p>
+    <input type="text" id="sp-base" value="https://diakoniagroupllc.sharepoint.com/sites/SalesforceContracts/Active%20Contracts"/>
+    <p class="hint">Links resolve to: {URL}/{VendorFolder}/{Filename}?web=1</p>
   </div>
 
   <!-- CATALOG TAB -->
@@ -473,9 +473,8 @@ function expiryBadge(r){const d=daysTo(r.ExpirationDate);if(d===null||d>90)retur
 function fileIcon(ext){const x=(ext||'').toLowerCase();if(x==='.pdf')return'<span class="fi fi-pdf">PDF</span>';if(x==='.docx')return'<span class="fi fi-docx">DOC</span>';if(x==='.doc')return'<span class="fi fi-doc">DOC</span>';if(x==='.msg')return'<span class="fi fi-msg">MSG</span>';return'<span class="fi fi-other">—</span>'}
 function spUrl(r){
   const base=(document.getElementById('sp-base').value||'').replace(/\/$/,'');
-  const loc=FOLDER_MAP[r.ContractLocation]||r.ContractLocation;
   const fp=r.FilePath||(r.VendorFolder+'/'+r.Filename);
-  return base+'/'+loc+'/'+fp.split('/').map(s=>encodeURIComponent(s||'')).join('/')+'?web=1';
+  return base+'/'+fp.split('/').map(s=>encodeURIComponent(s||'')).join('/')+'?web=1';
 }
 
 // ── Dark mode ──

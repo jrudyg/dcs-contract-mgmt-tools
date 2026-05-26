@@ -14,6 +14,7 @@ import subprocess
 from datetime import datetime
 from pathlib import Path
 from flask import Flask, Response, request
+from werkzeug.utils import secure_filename
 
 # ── Exit immediately if already running on port 5000 ────────────────────────
 _s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -562,6 +563,121 @@ def sync_sor():
 
     return Response(generate(), mimetype="text/event-stream",
                     headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
+
+
+@app.route("/api/create-folder", methods=["POST", "OPTIONS"])
+def create_folder():
+    if request.method == "OPTIONS":
+        return "", 204
+    body = request.get_json(force=True) or {}
+    location    = body.get("location", "").strip()
+    folder_name = body.get("folder_name", "").strip()
+    if not location or not folder_name:
+        return json.dumps({"ok": False, "message": "location and folder_name are required."}), 400, {"Content-Type": "application/json"}
+    if ".." in folder_name or "/" in folder_name or "\\" in folder_name:
+        return json.dumps({"ok": False, "message": "Invalid folder name."}), 400, {"Content-Type": "application/json"}
+    target = SHAREPOINT / location / folder_name
+    try:
+        target.mkdir(parents=True, exist_ok=True)
+        return json.dumps({"ok": True, "message": f"Created: {location}\\{folder_name}"}), 200, {"Content-Type": "application/json"}
+    except Exception as exc:
+        return json.dumps({"ok": False, "message": str(exc)}), 500, {"Content-Type": "application/json"}
+
+
+@app.route("/api/upload-file", methods=["POST", "OPTIONS"])
+def upload_file():
+    if request.method == "OPTIONS":
+        return "", 204
+    location      = request.form.get("location", "").strip()
+    vendor_folder = request.form.get("vendor_folder", "").strip()
+    f             = request.files.get("file")
+    if not location or not vendor_folder or not f:
+        return json.dumps({"ok": False, "message": "location, vendor_folder, and file are required."}), 400, {"Content-Type": "application/json"}
+    filename = secure_filename(f.filename)
+    if not filename:
+        return json.dumps({"ok": False, "message": "Invalid filename."}), 400, {"Content-Type": "application/json"}
+    if ".." in vendor_folder or "/" in vendor_folder or "\\" in vendor_folder:
+        return json.dumps({"ok": False, "message": "Invalid vendor folder name."}), 400, {"Content-Type": "application/json"}
+    dest_dir = SHAREPOINT / location / vendor_folder
+    try:
+        dest_dir.mkdir(parents=True, exist_ok=True)
+        f.save(str(dest_dir / filename))
+        return json.dumps({"ok": True, "message": f"Uploaded: {location}\\{vendor_folder}\\{filename}"}), 200, {"Content-Type": "application/json"}
+    except Exception as exc:
+        return json.dumps({"ok": False, "message": str(exc)}), 500, {"Content-Type": "application/json"}
+
+
+@app.route("/api/move-expired", methods=["POST", "OPTIONS"])
+def move_expired():
+    if request.method == "OPTIONS":
+        return "", 204
+
+    SOURCE_LOC = "01 Active Contracts"
+    DEST_LOC   = "04 Expired Contracts"
+    today      = datetime.now().date()
+
+    moved   = 0
+    skipped = 0
+    errors  = []
+
+    try:
+        with open(CSV_PATH, encoding="utf-8", newline="") as f:
+            reader     = csv.DictReader(f)
+            fieldnames = list(reader.fieldnames or [])
+            rows       = list(reader)
+
+        for row in rows:
+            if row.get("ContractLocation", "").strip() != SOURCE_LOC:
+                continue
+            exp_str = (row.get("ExpirationDate") or "").strip()[:10]
+            if not exp_str:
+                skipped += 1
+                continue
+            try:
+                exp_date = datetime.strptime(exp_str, "%Y-%m-%d").date()
+            except ValueError:
+                skipped += 1
+                continue
+            if exp_date > today:
+                skipped += 1
+                continue
+
+            vendor = (row.get("VendorFolder") or "").strip()
+            fname  = (row.get("Filename")     or "").strip()
+            if not fname:
+                skipped += 1
+                continue
+
+            src     = SHAREPOINT / SOURCE_LOC / vendor / fname if vendor else SHAREPOINT / SOURCE_LOC / fname
+            dst_dir = SHAREPOINT / DEST_LOC / vendor            if vendor else SHAREPOINT / DEST_LOC
+            dst     = dst_dir / fname
+
+            if not src.exists():
+                errors.append(f"File not found on disk: {(''+vendor+'/') if vendor else ''}{fname}")
+                skipped += 1
+                continue
+
+            try:
+                dst_dir.mkdir(parents=True, exist_ok=True)
+                shutil.move(str(src), str(dst))
+                row["ContractLocation"] = DEST_LOC
+                moved += 1
+            except Exception as exc:
+                errors.append(f"{fname}: {exc}")
+                skipped += 1
+
+        if moved > 0:
+            if CSV_PATH.exists():
+                shutil.copy2(str(CSV_PATH), str(CSV_PATH.with_suffix(".csv.bak")))
+            with open(CSV_PATH, "w", encoding="utf-8", newline="") as f:
+                writer = csv.DictWriter(f, fieldnames=fieldnames)
+                writer.writeheader()
+                writer.writerows(rows)
+
+        return json.dumps({"ok": True, "moved": moved, "skipped": skipped, "errors": errors}), 200, {"Content-Type": "application/json"}
+
+    except Exception as exc:
+        return json.dumps({"ok": False, "moved": 0, "skipped": skipped, "errors": [str(exc)]}), 500, {"Content-Type": "application/json"}
 
 
 @app.route("/api/save-catalog", methods=["POST", "OPTIONS"])

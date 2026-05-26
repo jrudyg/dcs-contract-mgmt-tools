@@ -1340,6 +1340,13 @@ fetch(csvUrl, {cache:'no-store'})
         <div class="deploy-status" id="upload-file-status"></div>
       </div>
       <div class="admin-section">
+        <h3>&#128228; Move Expired to Archive</h3>
+        <p>Moves all contracts where the expiration date has passed from <code>01 Active Contracts</code> to <code>04 Expired Contracts</code> on disk and updates the catalog. Requires the local scanner server to be running.</p>
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:8px 12px;font-size:13px;margin-bottom:12px;line-height:1.6" id="move-expired-count">Calculating…</div>
+        <button class="deploy-btn" id="move-expired-btn" onclick="moveExpired()" style="background:#d97706">&#128228; Move Expired Contracts</button>
+        <div class="deploy-status" id="move-expired-status"></div>
+      </div>
+      <div class="admin-section">
         <h3>&#128190; Export</h3>
         <p>Download to replace in your <code>Tools\</code> folder.</p>
         <div class="admin-export-row">
@@ -1388,7 +1395,7 @@ switchTab=function(tab){
   if(tab==='admin'){if(!adminUnlocked){showAdminLogin();return;}document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.tab==='admin'));['catalog','expiring','portfolio','coverage','activity'].forEach(t=>{const el=document.getElementById('tab-'+t);if(el)el.style.display='none';});document.getElementById('tab-admin').classList.add('visible');goOwner();return;}
   document.getElementById('tab-admin').classList.remove('visible');_origSwitchTab(tab);
 };
-function renderAdminStats(){const signed=DATA.filter(r=>r.SigningStatus==='Signed').length;const active=DATA.filter(r=>r.ContractLocation==='01 Active Contracts').length;const types=[...new Set(DATA.map(r=>r.DocType))].length;document.getElementById('admin-stats-row').innerHTML=`<div class="admin-stat"><strong>${DATA.length}</strong>Total</div><div class="admin-stat"><strong>${signed}</strong>Signed</div><div class="admin-stat"><strong>${active}</strong>Active</div><div class="admin-stat"><strong>${types}</strong>Doc Types</div>`;populateVendorList();}
+function renderAdminStats(){const signed=DATA.filter(r=>r.SigningStatus==='Signed').length;const active=DATA.filter(r=>r.ContractLocation==='01 Active Contracts').length;const types=[...new Set(DATA.map(r=>r.DocType))].length;document.getElementById('admin-stats-row').innerHTML=`<div class="admin-stat"><strong>${DATA.length}</strong>Total</div><div class="admin-stat"><strong>${signed}</strong>Signed</div><div class="admin-stat"><strong>${active}</strong>Active</div><div class="admin-stat"><strong>${types}</strong>Doc Types</div>`;populateVendorList();updateMoveExpiredCount();}
 function handleDrop(e){e.preventDefault();document.getElementById('drop-zone').classList.remove('drag');const file=e.dataTransfer.files[0];if(file)processCSV(file);}
 function handleFileSelect(e){const file=e.target.files[0];if(file)processCSV(file);e.target.value='';}
 function processCSV(file){
@@ -1574,6 +1581,46 @@ function uploadFile(){
     }else{
       status.className='deploy-status show err';
       status.textContent='⚠ '+(d.msg||'Server error');
+    }
+  })
+  .catch(function(){
+    btn.disabled=false;
+    status.className='deploy-status show err';
+    status.textContent='⚠ Could not reach local server (http://localhost:5000). Make sure the scanner server is running.';
+  });
+}
+// ── Move Expired ──
+function updateMoveExpiredCount(){
+  var n=DATA.filter(function(r){var d=daysTo(r.ExpirationDate);return d!==null&&d<=0&&r.ContractLocation==='01 Active Contracts';}).length;
+  var el=document.getElementById('move-expired-count');
+  if(el)el.textContent=n?n+' expired contract(s) in "01 Active Contracts" — ready to move.':'No expired contracts found in "01 Active Contracts".';
+}
+function moveExpired(){
+  var btn=document.getElementById('move-expired-btn');
+  var status=document.getElementById('move-expired-status');
+  var n=DATA.filter(function(r){var d=daysTo(r.ExpirationDate);return d!==null&&d<=0&&r.ContractLocation==='01 Active Contracts';}).length;
+  if(!n){status.className='deploy-status show ok';status.textContent='No expired contracts to move.';return;}
+  if(!confirm('Move '+n+' expired contract(s) from "01 Active Contracts" to "04 Expired Contracts" on disk and update the catalog?'))return;
+  status.className='deploy-status show pending';status.textContent='Moving '+n+' contracts…';
+  btn.disabled=true;
+  fetch('http://localhost:5000/api/move-expired',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({})})
+  .then(function(r){return r.json().then(function(d){return{ok:r.ok&&d.ok,moved:d.moved||0,skipped:d.skipped||0,errors:d.errors||[]};});})
+  .then(function(d){
+    btn.disabled=false;
+    if(d.ok){
+      var msg='✅ Moved '+d.moved+' contract(s) to "04 Expired Contracts".';
+      if(d.skipped)msg+=' Skipped: '+d.skipped+'.';
+      if(d.errors&&d.errors.length)msg+='\nErrors: '+d.errors.join('; ');
+      status.className='deploy-status show ok';status.textContent=msg;
+      // Reload CSV to reflect changes
+      var csvUrl=new URL('contract-catalog.csv?t='+Date.now(),window.location.href).href;
+      fetch(csvUrl,{cache:'no-store'}).then(function(r){return r.text();}).then(function(text){
+        var fresh=parseCSV(text);DATA.length=0;fresh.forEach(function(r){DATA.push(r);});
+        refreshDaysUntil();buildStats();buildFilters();go();renderAdminStats();
+      }).catch(function(){});
+    }else{
+      status.className='deploy-status show err';
+      status.textContent='⚠ '+(d.errors&&d.errors.length?d.errors.join('; '):'Server error');
     }
   })
   .catch(function(){

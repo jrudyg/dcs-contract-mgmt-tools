@@ -650,7 +650,6 @@ function renderTable(q){
   const tbody=document.getElementById('tbody');
   const cardList=document.getElementById('card-list');
   const empty=document.getElementById('empty');
-  const meta=document.getElementById('meta');
   const showNotes=document.getElementById('col-notes')?.checked;
   const showVer=document.getElementById('col-version')?.checked;
   const showAmend=document.getElementById('col-amendment')?.checked;
@@ -1004,7 +1003,6 @@ function renderOwnerThead(){
 function renderOwnerTable(){
   const tbody=document.getElementById('own-tbody');
   const empty=document.getElementById('own-empty');
-  const meta=document.getElementById('own-meta');
   const LIMIT=500;
   renderOwnerMeta();
   if(!ownerFiltered.length){tbody.innerHTML='';empty.style.display='block';return;}
@@ -1018,15 +1016,13 @@ function renderOwnerTable(){
     const fn=r.Filename||'';
     const trunc=fn.length>40?fn.slice(0,37)+'…':fn;
     const date=(r.EffectiveDate||'').slice(0,10)||'—';
-    const isActive=loc==='01 Active Contracts';
-    const isUnsigned=loc==='02 Unsigned Contracts';
     const isArchived=loc==='03 Archived Contracts';
-      const url=spUrl(r);
-      const rj=encodeURIComponent(JSON.stringify(r));
-      const actBtns=
-        '<a href="'+url+'" target="_blank" rel="noopener" class="own-btn" onclick="addRecent(JSON.parse(decodeURIComponent(\''+rj+'\')))">Open</a>'+
-        '<button class="own-btn own-blue" onclick="ownerAction('+idx+',\'manage\')">Manage</button>'+
-        (isArchived?'<button class="own-btn own-green" onclick="ownerAction('+idx+',\'restore\')">Restore</button>':'<button class="own-btn own-gray" onclick="ownerAction('+idx+',\'archive\')">Archive</button>');
+    const url=spUrl(r);
+    const rj=encodeURIComponent(JSON.stringify(r));
+    const actBtns=
+      '<a href="'+url+'" target="_blank" rel="noopener" class="own-btn" onclick="addRecent(JSON.parse(decodeURIComponent(\''+rj+'\')))">Open</a>'+
+      '<button class="own-btn own-blue" onclick="ownerAction('+idx+',\'manage\')">Manage</button>'+
+      (isArchived?'<button class="own-btn own-green" onclick="ownerAction('+idx+',\'restore\')">Restore</button>':'<button class="own-btn own-gray" onclick="ownerAction('+idx+',\'archive\')">Archive</button>');
     const fp=r.FilePath||r.Filename;
     return '<tr class="'+expiryClass(r)+'">'
       +'<td style="text-align:center;padding:4px 6px"><input type="checkbox" class="row-cb" data-fp="'+e(fp)+'" '+(ownerSelected.has(fp)?'checked':'')+' onchange="toggleOwnerRow(this)"></td>'
@@ -1291,6 +1287,59 @@ fetch(csvUrl, {cache:'no-store'})
         <div id="sync-log" style="display:none;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:10px 12px;font-family:monospace;font-size:11px;white-space:pre-wrap;max-height:300px;overflow-y:auto;line-height:1.6;color:var(--text2);margin-top:10px"></div>
       </div>
       <div class="admin-section">
+        <h3>&#128193; Create Vendor Folder</h3>
+        <p>Create a new vendor folder within a contract location. Requires the local scanner server to be running.</p>
+        <div style="display:flex;flex-direction:column;gap:10px;max-width:500px">
+          <div>
+            <label style="font-size:12px;color:var(--text3);display:block;margin-bottom:4px;font-weight:500">Folder name (vendor / counterparty)</label>
+            <input type="text" id="new-folder-name" placeholder="e.g., Acme Corporation" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;background:var(--surface);color:var(--text);outline:none"/>
+          </div>
+          <div>
+            <label style="font-size:12px;color:var(--text3);display:block;margin-bottom:4px;font-weight:500">Location</label>
+            <select id="new-folder-loc" style="padding:8px 10px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;background:var(--surface);color:var(--text);min-width:220px">
+              <option value="01 Active Contracts">01 Active Contracts</option>
+              <option value="02 Unsigned Contracts">02 Unsigned Contracts</option>
+              <option value="03 Archived Contracts">03 Archived Contracts</option>
+              <option value="04 Expired Contracts">04 Expired Contracts</option>
+            </select>
+          </div>
+          <div>
+            <button class="deploy-btn" onclick="createFolder()">&#128193; Create Folder</button>
+          </div>
+        </div>
+        <div class="deploy-status" id="create-folder-status"></div>
+      </div>
+      <div class="admin-section">
+        <h3>&#8679; Upload Contract File</h3>
+        <p>Upload a contract file to a vendor folder on disk. Requires the local scanner server to be running.</p>
+        <div style="display:flex;flex-direction:column;gap:10px;max-width:500px;margin-bottom:12px">
+          <div>
+            <label style="font-size:12px;color:var(--text3);display:block;margin-bottom:4px;font-weight:500">Destination location</label>
+            <select id="upload-loc" style="padding:8px 10px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;background:var(--surface);color:var(--text);min-width:220px">
+              <option value="01 Active Contracts">01 Active Contracts</option>
+              <option value="02 Unsigned Contracts">02 Unsigned Contracts</option>
+              <option value="03 Archived Contracts">03 Archived Contracts</option>
+              <option value="04 Expired Contracts">04 Expired Contracts</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size:12px;color:var(--text3);display:block;margin-bottom:4px;font-weight:500">Vendor folder</label>
+            <input list="upload-vendor-list" id="upload-vendor" placeholder="Type or pick existing…" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;background:var(--surface);color:var(--text);outline:none"/>
+            <datalist id="upload-vendor-list"></datalist>
+          </div>
+        </div>
+        <div class="drop-zone" id="upload-drop-zone" onclick="document.getElementById('upload-file-input').click()" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="handleUploadDrop(event)">
+          <div class="icon">&#8679;</div>
+          <p id="upload-drop-label">Click or drag &amp; drop file here</p>
+        </div>
+        <input type="file" id="upload-file-input" style="display:none" onchange="handleUploadSelect(event)"/>
+        <div id="upload-file-info" style="display:none;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:8px 12px;font-size:12px;font-family:monospace;color:var(--text2);margin-top:8px"></div>
+        <div style="margin-top:10px">
+          <button class="deploy-btn" id="upload-file-btn" onclick="uploadFile()">&#8679; Upload File</button>
+        </div>
+        <div class="deploy-status" id="upload-file-status"></div>
+      </div>
+      <div class="admin-section">
         <h3>&#128190; Export</h3>
         <p>Download to replace in your <code>Tools\</code> folder.</p>
         <div class="admin-export-row">
@@ -1339,7 +1388,7 @@ switchTab=function(tab){
   if(tab==='admin'){if(!adminUnlocked){showAdminLogin();return;}document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.tab==='admin'));['catalog','expiring','portfolio','coverage','activity'].forEach(t=>{const el=document.getElementById('tab-'+t);if(el)el.style.display='none';});document.getElementById('tab-admin').classList.add('visible');goOwner();return;}
   document.getElementById('tab-admin').classList.remove('visible');_origSwitchTab(tab);
 };
-function renderAdminStats(){const signed=DATA.filter(r=>r.SigningStatus==='Signed').length;const active=DATA.filter(r=>r.ContractLocation==='01 Active Contracts').length;const types=[...new Set(DATA.map(r=>r.DocType))].length;document.getElementById('admin-stats-row').innerHTML=`<div class="admin-stat"><strong>${DATA.length}</strong>Total</div><div class="admin-stat"><strong>${signed}</strong>Signed</div><div class="admin-stat"><strong>${active}</strong>Active</div><div class="admin-stat"><strong>${types}</strong>Doc Types</div>`;}
+function renderAdminStats(){const signed=DATA.filter(r=>r.SigningStatus==='Signed').length;const active=DATA.filter(r=>r.ContractLocation==='01 Active Contracts').length;const types=[...new Set(DATA.map(r=>r.DocType))].length;document.getElementById('admin-stats-row').innerHTML=`<div class="admin-stat"><strong>${DATA.length}</strong>Total</div><div class="admin-stat"><strong>${signed}</strong>Signed</div><div class="admin-stat"><strong>${active}</strong>Active</div><div class="admin-stat"><strong>${types}</strong>Doc Types</div>`;populateVendorList();}
 function handleDrop(e){e.preventDefault();document.getElementById('drop-zone').classList.remove('drag');const file=e.dataTransfer.files[0];if(file)processCSV(file);}
 function handleFileSelect(e){const file=e.target.files[0];if(file)processCSV(file);e.target.value='';}
 function processCSV(file){
@@ -1386,7 +1435,7 @@ function saveDeploy(){
     status.textContent='⚠ Could not reach local server (http://localhost:5000). Make sure the scanner server is running.';
   });
 }
-function exportHTML(){const dataJS='const DATA = '+JSON.stringify(DATA)+';';const src=document.documentElement.outerHTML;const updated=src.replace(/const DATA = \[.*?\];/s,dataJS);const blob=new Blob([updated],{type:'text/html'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='index.html';a.click();}
+function exportHTML(){const dataJS='let DATA='+JSON.stringify(DATA)+';';const src=document.documentElement.outerHTML;const updated=src.replace(/let DATA\s*=\s*\[[\s\S]*?\];/,dataJS);const blob=new Blob([updated],{type:'text/html'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='index.html';a.click();}
 function runSync(forceDry){
   const dry = forceDry || document.getElementById('sync-dry').checked;
   const btn = document.getElementById('sync-btn');
@@ -1446,6 +1495,93 @@ function runSync(forceDry){
   });
 }
 function exportCSVAdmin(){if(!DATA.length)return;const cols=Object.keys(DATA[0]);const rows=[cols.join(','),...DATA.map(r=>cols.map(v=>{const s=String(r[v]||'');return s.includes(',')||s.includes('"')?'"'+s.replace(/"/g,'""')+'"':s;}).join(','))];const blob=new Blob([rows.join('\n')],{type:'text/csv'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='contract-catalog-fixed.csv';a.click();}
+// ── Create Folder ──
+function createFolder(){
+  var name=(document.getElementById('new-folder-name').value||'').trim();
+  var loc=document.getElementById('new-folder-loc').value;
+  var status=document.getElementById('create-folder-status');
+  if(!name){status.className='deploy-status show err';status.textContent='⚠ Enter a folder name.';return;}
+  status.className='deploy-status show pending';status.textContent='Creating folder…';
+  fetch('http://localhost:5000/api/create-folder',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({location:loc,folder_name:name})
+  })
+  .then(function(r){return r.json().then(function(d){return{ok:r.ok&&d.ok,msg:d.message||d.error||''};});})
+  .then(function(d){
+    if(d.ok){
+      status.className='deploy-status show ok';
+      status.textContent='✅ Created: '+loc+'\\'+name;
+      document.getElementById('new-folder-name').value='';
+    }else{
+      status.className='deploy-status show err';
+      status.textContent='⚠ '+(d.msg||'Server error');
+    }
+  })
+  .catch(function(){
+    status.className='deploy-status show err';
+    status.textContent='⚠ Could not reach local server (http://localhost:5000). Make sure the scanner server is running.';
+  });
+}
+// ── Upload File ──
+var uploadSelectedFile=null;
+function handleUploadDrop(e){
+  e.preventDefault();
+  document.getElementById('upload-drop-zone').classList.remove('drag');
+  var file=e.dataTransfer.files[0];
+  if(file)setUploadFile(file);
+}
+function handleUploadSelect(e){
+  var file=e.target.files[0];
+  if(file)setUploadFile(file);
+  e.target.value='';
+}
+function setUploadFile(file){
+  uploadSelectedFile=file;
+  document.getElementById('upload-drop-label').textContent=file.name;
+  var info=document.getElementById('upload-file-info');
+  info.style.display='block';
+  info.textContent=file.name+' ('+Math.round(file.size/1024)+' KB)';
+}
+function populateVendorList(){
+  var vendors=[...new Set(DATA.map(function(r){return r.VendorFolder;}).filter(Boolean))].sort();
+  var dl=document.getElementById('upload-vendor-list');
+  if(dl)dl.innerHTML=vendors.map(function(v){return'<option value="'+e_(v)+'"/>';}).join('');
+}
+function uploadFile(){
+  var loc=document.getElementById('upload-loc').value;
+  var vendor=(document.getElementById('upload-vendor').value||'').trim();
+  var status=document.getElementById('upload-file-status');
+  var btn=document.getElementById('upload-file-btn');
+  if(!uploadSelectedFile){status.className='deploy-status show err';status.textContent='⚠ Select a file first.';return;}
+  if(!vendor){status.className='deploy-status show err';status.textContent='⚠ Enter a vendor folder name.';return;}
+  status.className='deploy-status show pending';status.textContent='Uploading…';
+  btn.disabled=true;
+  var form=new FormData();
+  form.append('file',uploadSelectedFile,uploadSelectedFile.name);
+  form.append('location',loc);
+  form.append('vendor_folder',vendor);
+  fetch('http://localhost:5000/api/upload-file',{method:'POST',body:form})
+  .then(function(r){return r.json().then(function(d){return{ok:r.ok&&d.ok,msg:d.message||d.error||''};});})
+  .then(function(d){
+    btn.disabled=false;
+    if(d.ok){
+      status.className='deploy-status show ok';
+      status.textContent='✅ Uploaded: '+loc+'\\'+vendor+'\\'+uploadSelectedFile.name;
+      uploadSelectedFile=null;
+      document.getElementById('upload-drop-label').textContent='Click or drag & drop file here';
+      document.getElementById('upload-file-info').style.display='none';
+    }else{
+      status.className='deploy-status show err';
+      status.textContent='⚠ '+(d.msg||'Server error');
+    }
+  })
+  .catch(function(){
+    btn.disabled=false;
+    status.className='deploy-status show err';
+    status.textContent='⚠ Could not reach local server (http://localhost:5000). Make sure the scanner server is running.';
+  });
+}
 </script>
 
 </body>

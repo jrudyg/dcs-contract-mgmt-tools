@@ -44,7 +44,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:0
 .btn-icon.active{color:var(--blue);border-color:var(--blue);background:var(--blue-light)}
 
 /* Tabs */
-.tabs{display:flex;gap:2px;padding:0 24px;background:var(--surface);border-bottom:1px solid var(--border);overflow-x:auto}
+.tabs{display:flex;gap:2px;padding:0 24px;background:var(--surface);border-bottom:1px solid var(--border);overflow-x:auto;position:sticky;top:56px;z-index:99}
 .tab{padding:10px 16px;font-size:13px;font-weight:500;color:var(--text3);border:none;background:none;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:color .15s}
 .tab:hover{color:var(--text)}
 .tab.active{color:var(--blue);border-bottom-color:var(--blue)}
@@ -1389,11 +1389,11 @@ async function adminLogin(){
   if(hash===OWNER_HASH){adminUnlocked=true;closeAdminLogin();document.getElementById('admin-tab').classList.add('unlocked');document.getElementById('admin-tab').textContent='🔓 Owner';document.getElementById('lock-btn').classList.add('show');switchTab('admin');renderAdminStats();}
   else{document.getElementById('admin-err').style.display='block';document.getElementById('admin-pwd').value='';document.getElementById('admin-pwd').focus();}
 }
-function adminLock(){adminUnlocked=false;document.getElementById('admin-tab').classList.remove('unlocked');document.getElementById('admin-tab').textContent='🔒 Owner';document.getElementById('lock-btn').classList.remove('show');document.getElementById('tab-admin').classList.remove('visible');switchTab('catalog');}
+function adminLock(){adminUnlocked=false;document.getElementById('admin-tab').classList.remove('unlocked');document.getElementById('admin-tab').textContent='🔒 Owner';document.getElementById('lock-btn').classList.remove('show');document.getElementById('tab-admin').style.display='none';switchTab('catalog');}
 const _origSwitchTab=switchTab;
 switchTab=function(tab){
-  if(tab==='admin'){if(!adminUnlocked){showAdminLogin();return;}document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.tab==='admin'));['catalog','expiring','portfolio','coverage','activity'].forEach(t=>{const el=document.getElementById('tab-'+t);if(el)el.style.display='none';});document.getElementById('tab-admin').classList.add('visible');goOwner();return;}
-  document.getElementById('tab-admin').classList.remove('visible');_origSwitchTab(tab);
+  if(tab==='admin'){if(!adminUnlocked){showAdminLogin();return;}document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.tab==='admin'));['catalog','expiring','portfolio','coverage','activity'].forEach(t=>{const el=document.getElementById('tab-'+t);if(el)el.style.display='none';});document.getElementById('tab-admin').style.display='block';goOwner();return;}
+  document.getElementById('tab-admin').style.display='none';_origSwitchTab(tab);
 };
 function renderAdminStats(){const signed=DATA.filter(r=>r.SigningStatus==='Signed').length;const active=DATA.filter(r=>r.ContractLocation==='01 Active Contracts').length;const types=[...new Set(DATA.map(r=>r.DocType))].length;document.getElementById('admin-stats-row').innerHTML=`<div class="admin-stat"><strong>${DATA.length}</strong>Total</div><div class="admin-stat"><strong>${signed}</strong>Signed</div><div class="admin-stat"><strong>${active}</strong>Active</div><div class="admin-stat"><strong>${types}</strong>Doc Types</div>`;populateVendorList();updateMoveExpiredCount();}
 function handleDrop(e){e.preventDefault();document.getElementById('drop-zone').classList.remove('drag');const file=e.dataTransfer.files[0];if(file)processCSV(file);}
@@ -1591,9 +1591,16 @@ function uploadFile(){
 }
 // ── Move Expired ──
 function updateMoveExpiredCount(){
-  var n=DATA.filter(function(r){var d=daysTo(r.ExpirationDate);return d!==null&&d<=0&&r.ContractLocation==='01 Active Contracts';}).length;
-  var el=document.getElementById('move-expired-count');
-  if(el)el.textContent=n?n+' expired contract(s) in "01 Active Contracts" — ready to move.':'No expired contracts found in "01 Active Contracts".';
+  var el=document.getElementById('move-expired-count');if(!el)return;
+  var allExp=DATA.filter(function(r){var d=daysTo(r.ExpirationDate);return d!==null&&d<=0;});
+  var eligible=allExp.filter(function(r){return r.ContractLocation==='01 Active Contracts';});
+  if(!allExp.length){el.textContent='No expired contracts found.';el.style.whiteSpace='';return;}
+  var byLoc={};
+  allExp.forEach(function(r){var loc=r.ContractLocation||'(none)';byLoc[loc]=(byLoc[loc]||0)+1;});
+  var lines=[allExp.length+' total expired across all folders:'];
+  Object.keys(byLoc).sort().forEach(function(loc){lines.push('• '+byLoc[loc]+' in “'+loc+'”'+(loc==='01 Active Contracts'?' → eligible to move':''));});
+  if(!eligible.length)lines.push('Nothing to move — no expired contracts remain in “01 Active Contracts”.');
+  el.textContent=lines.join('\n');el.style.whiteSpace='pre-line';
 }
 function moveExpired(){
   var btn=document.getElementById('move-expired-btn');

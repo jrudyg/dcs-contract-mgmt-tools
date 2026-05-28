@@ -256,8 +256,9 @@ body.dark .contract-card.exp-amber{background:#2d2010}
 th input[type=checkbox]{width:14px;height:14px;cursor:pointer;accent-color:var(--blue)}
 
 /* ── Admin Panel ── */
-.tab-admin{margin-left:auto;opacity:.5;font-size:12px}
-.tab-admin.unlocked{opacity:1;color:var(--amber)}
+.tab-admin{margin-left:auto;display:none}
+.tab-admin.unlocked{display:block;color:var(--amber)}
+.owner-hdr-btn.unlocked{background:rgba(245,158,11,.12);border-color:rgba(245,158,11,.5);color:#f59e0b}
 #admin-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center}
 #admin-overlay.show{display:flex}
 .admin-modal{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:32px;width:360px;max-width:92vw}
@@ -299,8 +300,6 @@ th input[type=checkbox]{width:14px;height:14px;cursor:pointer;accent-color:var(-
 .preview-table{width:100%;border-collapse:collapse;font-size:12px;margin-top:12px}
 .preview-table th{background:var(--surface2);padding:6px 8px;text-align:left;border-bottom:1px solid var(--border);font-weight:500;color:var(--text3)}
 .preview-table td{padding:6px 8px;border-bottom:1px solid var(--border);color:var(--text2)}
-.lock-btn{position:fixed;bottom:16px;right:16px;background:rgba(245,158,11,.1);color:#f59e0b;border:1px solid rgba(245,158,11,.3);border-radius:20px;padding:6px 14px;font-size:12px;cursor:pointer;display:none;z-index:500}
-.lock-btn.show{display:block}
 
 .own-action-cell{display:flex;gap:3px;flex-wrap:wrap}
 .own-btn{display:inline-flex;align-items:center;padding:2px 7px;border-radius:var(--radius);border:1px solid var(--border);background:var(--surface);font-size:11px;color:var(--text2);cursor:pointer;white-space:nowrap;transition:all .15s}
@@ -336,6 +335,7 @@ th input[type=checkbox]{width:14px;height:14px;cursor:pointer;accent-color:var(-
       <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><circle cx="12" cy="12" r="3"/></svg>
       Settings
     </button>
+    <button class="btn-icon owner-hdr-btn" id="owner-hdr-btn" onclick="showAdminLogin()" title="Owner access">🔒</button>
     <button class="theme-btn" onclick="toggleDark()" id="theme-btn" title="Toggle dark mode">🌙</button>
   </div>
 </header>
@@ -346,7 +346,7 @@ th input[type=checkbox]{width:14px;height:14px;cursor:pointer;accent-color:var(-
   <button class="tab" onclick="switchTab('portfolio')" data-tab="portfolio">📊 Portfolio</button>
   <button class="tab" onclick="switchTab('coverage')" data-tab="coverage">🔍 Coverage</button>
   <button class="tab" onclick="switchTab('activity')" data-tab="activity">📈 Activity</button>
-  <button class="tab tab-admin" onclick="showAdminLogin()" data-tab="admin" id="admin-tab">🔒 Owner</button>
+  <button class="tab tab-admin" onclick="switchTab('admin')" data-tab="admin" id="admin-tab">🔒 Owner</button>
 </nav>
 
 <main>
@@ -1377,7 +1377,6 @@ fetch(csvUrl, {cache:'no-store'})
   </div>
   <div id="drawer-output" class="drawer-output" style="display:none"></div>
 </div>
-<button class="lock-btn" id="lock-btn" onclick="adminLock()">🔒 Lock Owner</button>
 <script>
 const OWNER_HASH='049282c64821fee3faa9f7247396798f6282acbf14d19ceb9e655c316ab81962';
 let adminUnlocked=false;
@@ -1386,10 +1385,10 @@ function showAdminLogin(){if(adminUnlocked){switchTab('admin');return;}document.
 function closeAdminLogin(){document.getElementById('admin-overlay').classList.remove('show');document.getElementById('admin-pwd').value='';document.getElementById('admin-err').style.display='none';}
 async function adminLogin(){
   const hash=await sha256(document.getElementById('admin-pwd').value);
-  if(hash===OWNER_HASH){adminUnlocked=true;closeAdminLogin();document.getElementById('admin-tab').classList.add('unlocked');document.getElementById('admin-tab').textContent='🔓 Owner';document.getElementById('lock-btn').classList.add('show');switchTab('admin');renderAdminStats();}
+  if(hash===OWNER_HASH){adminUnlocked=true;closeAdminLogin();document.getElementById('admin-tab').classList.add('unlocked');document.getElementById('admin-tab').textContent='🔓 Owner';const _hb=document.getElementById('owner-hdr-btn');_hb.classList.add('unlocked');_hb.textContent='🔓';_hb.title='Owner mode active — click to lock';_hb.onclick=adminLock;switchTab('admin');renderAdminStats();}
   else{document.getElementById('admin-err').style.display='block';document.getElementById('admin-pwd').value='';document.getElementById('admin-pwd').focus();}
 }
-function adminLock(){adminUnlocked=false;document.getElementById('admin-tab').classList.remove('unlocked');document.getElementById('admin-tab').textContent='🔒 Owner';document.getElementById('lock-btn').classList.remove('show');document.getElementById('tab-admin').style.display='none';switchTab('catalog');}
+function adminLock(){adminUnlocked=false;document.getElementById('admin-tab').classList.remove('unlocked');document.getElementById('admin-tab').textContent='🔒 Owner';const _hb=document.getElementById('owner-hdr-btn');_hb.classList.remove('unlocked');_hb.textContent='🔒';_hb.title='Owner access';_hb.onclick=showAdminLogin;document.getElementById('tab-admin').style.display='none';switchTab('catalog');}
 const _origSwitchTab=switchTab;
 switchTab=function(tab){
   if(tab==='admin'){if(!adminUnlocked){showAdminLogin();return;}document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.tab==='admin'));['catalog','expiring','portfolio','coverage','activity'].forEach(t=>{const el=document.getElementById('tab-'+t);if(el)el.style.display='none';});document.getElementById('tab-admin').style.display='block';goOwner();return;}

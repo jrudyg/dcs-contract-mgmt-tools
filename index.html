@@ -273,6 +273,7 @@ th input[type=checkbox]{width:14px;height:14px;cursor:pointer;accent-color:var(-
 .admin-modal .err{color:var(--red);font-size:12px;margin-top:-8px;margin-bottom:10px;display:none}
 #tab-admin{display:none}
 #tab-admin.visible{display:block}
+#tab-owner-admin{display:none}
 .admin-section{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:24px;margin-bottom:16px}
 .admin-section h3{font-size:15px;font-weight:600;margin-bottom:6px}
 .admin-section p{font-size:13px;color:var(--text3);margin-bottom:16px;line-height:1.5}
@@ -347,6 +348,7 @@ th input[type=checkbox]{width:14px;height:14px;cursor:pointer;accent-color:var(-
   <button class="tab" onclick="switchTab('coverage')" data-tab="coverage">🔍 Coverage</button>
   <button class="tab" onclick="switchTab('activity')" data-tab="activity">📈 Activity</button>
   <button class="tab tab-admin" onclick="switchTab('admin')" data-tab="admin" id="admin-tab">🔒 Owner</button>
+  <button class="tab tab-admin" onclick="switchTab('owner-admin')" data-tab="owner-admin" id="owner-admin-tab">⚙ Admin</button>
 </nav>
 
 <main>
@@ -991,13 +993,14 @@ function toggleOwnerType(t){ownerAf.types.has(t)?ownerAf.types.delete(t):ownerAf
 function renderOwnerThead(){
   document.getElementById('own-thead-row').innerHTML=
     '<th style="width:32px;text-align:center" class="no-sort"><input type="checkbox" id="owner-sel-all" onchange="selectAllOwner(this)" title="Select / deselect all visible"></th>'+
-    '<th style="width:18%">Counterparty</th>'+
-    '<th style="width:7%">Type</th>'+
-    '<th style="width:8%">Status</th>'+
-    '<th style="width:10%">Location</th>'+
-    '<th style="width:25%">Filename</th>'+
-    '<th style="width:8%">Date</th>'+
-    '<th style="width:24%" class="no-sort">Actions</th>';
+    '<th style="width:16%">Counterparty</th>'+
+    '<th style="width:6%">Type</th>'+
+    '<th style="width:7%">Status</th>'+
+    '<th style="width:10%">Folder</th>'+
+    '<th style="width:8%">Location</th>'+
+    '<th style="width:22%">Filename</th>'+
+    '<th style="width:7%">Date</th>'+
+    '<th style="width:20%" class="no-sort">Actions</th>';
 }
 
 function renderOwnerTable(){
@@ -1029,6 +1032,7 @@ function renderOwnerTable(){
       +'<td title="'+e(r.CounterpartyName)+'">'+e(r.CounterpartyName||'—')+'</td>'
       +'<td>'+badge(r.DocType||'—',dtc)+'</td>'
       +'<td>'+badge(r.SigningStatus||'—',stc)+'</td>'
+      +'<td style="font-size:12px;color:var(--text2)" title="'+e(r.VendorFolder||'')+'">'+e(r.VendorFolder||'—')+'</td>'
       +'<td>'+locB+'</td>'
       +'<td title="'+e(fn)+'" style="font-family:monospace;font-size:11px;color:var(--text3)"><div class="fn-cell">'+fileIcon(r.Extension)+e(trunc)+'</div></td>'
       +'<td style="font-size:12px;color:var(--text3)">'+date+'</td>'
@@ -1244,124 +1248,122 @@ fetch(csvUrl, {cache:'no-store'})
     </div>
   </div>
 
-  <!-- Admin tools (collapsible) -->
-  <details style="margin-top:20px">
-    <summary style="cursor:pointer;font-size:13px;font-weight:600;color:var(--text2);padding:10px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-lg);list-style:none;display:flex;align-items:center;gap:6px">&#9881; Admin Tools</summary>
-    <div style="padding-top:12px;display:flex;flex-direction:column;gap:12px">
-      <div class="admin-section">
-        <h3>&#128202; Catalog Status</h3>
-        <p>Current snapshot loaded in this session.</p>
-        <div id="admin-stats-row"></div>
+</div>
+<div id="tab-owner-admin">
+  <div style="display:flex;flex-direction:column;gap:12px;max-width:900px;padding:20px 24px">
+    <div class="admin-section">
+      <h3>&#128202; Catalog Status</h3>
+      <p>Current snapshot loaded in this session.</p>
+      <div id="admin-stats-row"></div>
+    </div>
+    <div class="admin-section">
+      <h3>&#128194; Import Updated CSV</h3>
+      <p>Drop a new <code>contract-catalog.csv</code> to reload instantly.</p>
+      <div class="drop-zone" id="drop-zone" onclick="document.getElementById('csv-file-input').click()" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="handleDrop(event)">
+        <div class="icon">&#128196;</div>
+        <p>Click or drag &amp; drop CSV here</p>
       </div>
-      <div class="admin-section">
-        <h3>&#128194; Import Updated CSV</h3>
-        <p>Drop a new <code>contract-catalog.csv</code> to reload instantly.</p>
-        <div class="drop-zone" id="drop-zone" onclick="document.getElementById('csv-file-input').click()" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="handleDrop(event)">
-          <div class="icon">&#128196;</div>
-          <p>Click or drag &amp; drop CSV here</p>
-        </div>
-        <input type="file" id="csv-file-input" accept=".csv" style="display:none" onchange="handleFileSelect(event)"/>
-        <div class="upload-status" id="upload-status"></div>
-        <div id="csv-preview" style="overflow-x:auto;max-height:200px;overflow-y:auto;margin-top:8px"></div>
+      <input type="file" id="csv-file-input" accept=".csv" style="display:none" onchange="handleFileSelect(event)"/>
+      <div class="upload-status" id="upload-status"></div>
+      <div id="csv-preview" style="overflow-x:auto;max-height:200px;overflow-y:auto;margin-top:8px"></div>
+    </div>
+    <div class="admin-section">
+      <h3>&#128640; Save &amp; Deploy</h3>
+      <p>Saves the current catalog to disk and pushes to GitHub. Azure updates in ~1 minute. Requires the local scanner server to be running.</p>
+      <button class="deploy-btn" id="deploy-btn" onclick="saveDeploy()">&#128640; Save &amp; Deploy to Azure</button>
+      <div class="deploy-status" id="deploy-status"></div>
+    </div>
+    <div class="admin-section">
+      <h3>&#128260; Sync from Salesforce SoR</h3>
+      <p>Copies new or updated files from the Salesforce system of record into <code>01 Active Contracts</code>. Never moves or deletes. Run the scanner afterward to update the catalog.</p>
+      <div style="font-size:12px;color:var(--text3);background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:8px 12px;margin-bottom:12px;line-height:1.7">
+        <strong>Source:</strong> diakoniagroupllc.sharepoint.com/sites/SalesforceContracts/Active Contracts<br>
+        <strong>Dest:</strong> 01 Active Contracts\ (local OneDrive sync)
       </div>
-      <div class="admin-section">
-        <h3>&#128640; Save &amp; Deploy</h3>
-        <p>Saves the current catalog to disk and pushes to GitHub. Azure updates in ~1 minute. Requires the local scanner server to be running.</p>
-        <button class="deploy-btn" id="deploy-btn" onclick="saveDeploy()">&#128640; Save &amp; Deploy to Azure</button>
-        <div class="deploy-status" id="deploy-status"></div>
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:10px">
+        <button class="deploy-btn" id="sync-btn" onclick="runSync(false)">&#128260; Run Sync</button>
+        <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer">
+          <input type="checkbox" id="sync-dry" style="accent-color:var(--blue);width:14px;height:14px"> Dry run (preview only)
+        </label>
       </div>
-      <div class="admin-section">
-        <h3>&#128260; Sync from Salesforce SoR</h3>
-        <p>Copies new or updated files from the Salesforce system of record into <code>01 Active Contracts</code>. Never moves or deletes. Run the scanner afterward to update the catalog.</p>
-        <div style="font-size:12px;color:var(--text3);background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:8px 12px;margin-bottom:12px;line-height:1.7">
-          <strong>Source:</strong> diakoniagroupllc.sharepoint.com/sites/SalesforceContracts/Active Contracts<br>
-          <strong>Dest:</strong> 01 Active Contracts\ (local OneDrive sync)
+      <div class="deploy-status" id="sync-status"></div>
+      <div id="sync-log" style="display:none;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:10px 12px;font-family:monospace;font-size:11px;white-space:pre-wrap;max-height:300px;overflow-y:auto;line-height:1.6;color:var(--text2);margin-top:10px"></div>
+    </div>
+    <div class="admin-section">
+      <h3>&#128193; Create Vendor Folder</h3>
+      <p>Create a new vendor folder within a contract location. Requires the local scanner server to be running.</p>
+      <div style="display:flex;flex-direction:column;gap:10px;max-width:500px">
+        <div>
+          <label style="font-size:12px;color:var(--text3);display:block;margin-bottom:4px;font-weight:500">Folder name (vendor / counterparty)</label>
+          <input type="text" id="new-folder-name" placeholder="e.g., Acme Corporation" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;background:var(--surface);color:var(--text);outline:none"/>
         </div>
-        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:10px">
-          <button class="deploy-btn" id="sync-btn" onclick="runSync(false)">&#128260; Run Sync</button>
-          <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer">
-            <input type="checkbox" id="sync-dry" style="accent-color:var(--blue);width:14px;height:14px"> Dry run (preview only)
-          </label>
+        <div>
+          <label style="font-size:12px;color:var(--text3);display:block;margin-bottom:4px;font-weight:500">Location</label>
+          <select id="new-folder-loc" style="padding:8px 10px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;background:var(--surface);color:var(--text);min-width:220px">
+            <option value="01 Active Contracts">01 Active Contracts</option>
+            <option value="02 Unsigned Contracts">02 Unsigned Contracts</option>
+            <option value="03 Archived Contracts">03 Archived Contracts</option>
+            <option value="04 Expired Contracts">04 Expired Contracts</option>
+          </select>
         </div>
-        <div class="deploy-status" id="sync-status"></div>
-        <div id="sync-log" style="display:none;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:10px 12px;font-family:monospace;font-size:11px;white-space:pre-wrap;max-height:300px;overflow-y:auto;line-height:1.6;color:var(--text2);margin-top:10px"></div>
-      </div>
-      <div class="admin-section">
-        <h3>&#128193; Create Vendor Folder</h3>
-        <p>Create a new vendor folder within a contract location. Requires the local scanner server to be running.</p>
-        <div style="display:flex;flex-direction:column;gap:10px;max-width:500px">
-          <div>
-            <label style="font-size:12px;color:var(--text3);display:block;margin-bottom:4px;font-weight:500">Folder name (vendor / counterparty)</label>
-            <input type="text" id="new-folder-name" placeholder="e.g., Acme Corporation" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;background:var(--surface);color:var(--text);outline:none"/>
-          </div>
-          <div>
-            <label style="font-size:12px;color:var(--text3);display:block;margin-bottom:4px;font-weight:500">Location</label>
-            <select id="new-folder-loc" style="padding:8px 10px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;background:var(--surface);color:var(--text);min-width:220px">
-              <option value="01 Active Contracts">01 Active Contracts</option>
-              <option value="02 Unsigned Contracts">02 Unsigned Contracts</option>
-              <option value="03 Archived Contracts">03 Archived Contracts</option>
-              <option value="04 Expired Contracts">04 Expired Contracts</option>
-            </select>
-          </div>
-          <div>
-            <button class="deploy-btn" onclick="createFolder()">&#128193; Create Folder</button>
-          </div>
-        </div>
-        <div class="deploy-status" id="create-folder-status"></div>
-      </div>
-      <div class="admin-section">
-        <h3>&#8679; Upload Contract File</h3>
-        <p>Upload a contract file to a vendor folder on disk. Requires the local scanner server to be running.</p>
-        <div style="display:flex;flex-direction:column;gap:10px;max-width:500px;margin-bottom:12px">
-          <div>
-            <label style="font-size:12px;color:var(--text3);display:block;margin-bottom:4px;font-weight:500">Destination location</label>
-            <select id="upload-loc" style="padding:8px 10px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;background:var(--surface);color:var(--text);min-width:220px">
-              <option value="01 Active Contracts">01 Active Contracts</option>
-              <option value="02 Unsigned Contracts">02 Unsigned Contracts</option>
-              <option value="03 Archived Contracts">03 Archived Contracts</option>
-              <option value="04 Expired Contracts">04 Expired Contracts</option>
-            </select>
-          </div>
-          <div>
-            <label style="font-size:12px;color:var(--text3);display:block;margin-bottom:4px;font-weight:500">Vendor folder</label>
-            <input list="upload-vendor-list" id="upload-vendor" placeholder="Type or pick existing…" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;background:var(--surface);color:var(--text);outline:none"/>
-            <datalist id="upload-vendor-list"></datalist>
-          </div>
-        </div>
-        <div class="drop-zone" id="upload-drop-zone" onclick="document.getElementById('upload-file-input').click()" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="handleUploadDrop(event)">
-          <div class="icon">&#8679;</div>
-          <p id="upload-drop-label">Click or drag &amp; drop file here</p>
-        </div>
-        <input type="file" id="upload-file-input" style="display:none" onchange="handleUploadSelect(event)"/>
-        <div id="upload-file-info" style="display:none;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:8px 12px;font-size:12px;font-family:monospace;color:var(--text2);margin-top:8px"></div>
-        <div style="margin-top:10px">
-          <button class="deploy-btn" id="upload-file-btn" onclick="uploadFile()">&#8679; Upload File</button>
-        </div>
-        <div class="deploy-status" id="upload-file-status"></div>
-      </div>
-      <div class="admin-section">
-        <h3>&#128228; Move Expired to Archive</h3>
-        <p>Moves all contracts where the expiration date has passed from <code>01 Active Contracts</code> to <code>04 Expired Contracts</code> on disk and updates the catalog. Requires the local scanner server to be running.</p>
-        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:8px 12px;font-size:13px;margin-bottom:12px;line-height:1.6" id="move-expired-count">Calculating…</div>
-        <button class="deploy-btn" id="move-expired-btn" onclick="moveExpired()" style="background:#d97706">&#128228; Move Expired Contracts</button>
-        <div class="deploy-status" id="move-expired-status"></div>
-      </div>
-      <div class="admin-section">
-        <h3>&#128190; Export</h3>
-        <p>Download to replace in your <code>Tools\</code> folder.</p>
-        <div class="admin-export-row">
-          <button class="btn btn-primary" onclick="exportHTML()">&#8595; Download index.html</button>
-          <button class="btn btn-secondary" onclick="exportCSVAdmin()">&#8595; Download CSV</button>
+        <div>
+          <button class="deploy-btn" onclick="createFolder()">&#128193; Create Folder</button>
         </div>
       </div>
-      <div class="admin-section" style="border-color:rgba(239,68,68,.3)">
-        <h3 style="color:#ef4444">&#128275; Session</h3>
-        <div class="admin-export-row">
-          <button class="btn btn-danger" onclick="adminLock()">Lock &amp; Exit</button>
+      <div class="deploy-status" id="create-folder-status"></div>
+    </div>
+    <div class="admin-section">
+      <h3>&#8679; Upload Contract File</h3>
+      <p>Upload a contract file to a vendor folder on disk. Requires the local scanner server to be running.</p>
+      <div style="display:flex;flex-direction:column;gap:10px;max-width:500px;margin-bottom:12px">
+        <div>
+          <label style="font-size:12px;color:var(--text3);display:block;margin-bottom:4px;font-weight:500">Destination location</label>
+          <select id="upload-loc" style="padding:8px 10px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;background:var(--surface);color:var(--text);min-width:220px">
+            <option value="01 Active Contracts">01 Active Contracts</option>
+            <option value="02 Unsigned Contracts">02 Unsigned Contracts</option>
+            <option value="03 Archived Contracts">03 Archived Contracts</option>
+            <option value="04 Expired Contracts">04 Expired Contracts</option>
+          </select>
         </div>
+        <div>
+          <label style="font-size:12px;color:var(--text3);display:block;margin-bottom:4px;font-weight:500">Vendor folder</label>
+          <input list="upload-vendor-list" id="upload-vendor" placeholder="Type or pick existing…" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;background:var(--surface);color:var(--text);outline:none"/>
+          <datalist id="upload-vendor-list"></datalist>
+        </div>
+      </div>
+      <div class="drop-zone" id="upload-drop-zone" onclick="document.getElementById('upload-file-input').click()" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="handleUploadDrop(event)">
+        <div class="icon">&#8679;</div>
+        <p id="upload-drop-label">Click or drag &amp; drop file here</p>
+      </div>
+      <input type="file" id="upload-file-input" style="display:none" onchange="handleUploadSelect(event)"/>
+      <div id="upload-file-info" style="display:none;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:8px 12px;font-size:12px;font-family:monospace;color:var(--text2);margin-top:8px"></div>
+      <div style="margin-top:10px">
+        <button class="deploy-btn" id="upload-file-btn" onclick="uploadFile()">&#8679; Upload File</button>
+      </div>
+      <div class="deploy-status" id="upload-file-status"></div>
+    </div>
+    <div class="admin-section">
+      <h3>&#128228; Move Expired to Archive</h3>
+      <p>Moves all contracts where the expiration date has passed from <code>01 Active Contracts</code> to <code>04 Expired Contracts</code> on disk and updates the catalog. Requires the local scanner server to be running.</p>
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:8px 12px;font-size:13px;margin-bottom:12px;line-height:1.6" id="move-expired-count">Calculating…</div>
+      <button class="deploy-btn" id="move-expired-btn" onclick="moveExpired()" style="background:#d97706">&#128228; Move Expired Contracts</button>
+      <div class="deploy-status" id="move-expired-status"></div>
+    </div>
+    <div class="admin-section">
+      <h3>&#128190; Export</h3>
+      <p>Download to replace in your <code>Tools\</code> folder.</p>
+      <div class="admin-export-row">
+        <button class="btn btn-primary" onclick="exportHTML()">&#8595; Download index.html</button>
+        <button class="btn btn-secondary" onclick="exportCSVAdmin()">&#8595; Download CSV</button>
       </div>
     </div>
-  </details>
+    <div class="admin-section" style="border-color:rgba(239,68,68,.3)">
+      <h3 style="color:#ef4444">&#128275; Session</h3>
+      <div class="admin-export-row">
+        <button class="btn btn-danger" onclick="adminLock()">Lock &amp; Exit</button>
+      </div>
+    </div>
+  </div>
 </div>
 <div id="owner-drawer">
   <div class="drawer-header">
@@ -1385,14 +1387,24 @@ function showAdminLogin(){if(adminUnlocked){switchTab('admin');return;}document.
 function closeAdminLogin(){document.getElementById('admin-overlay').classList.remove('show');document.getElementById('admin-pwd').value='';document.getElementById('admin-err').style.display='none';}
 async function adminLogin(){
   const hash=await sha256(document.getElementById('admin-pwd').value);
-  if(hash===OWNER_HASH){adminUnlocked=true;closeAdminLogin();document.getElementById('admin-tab').classList.add('unlocked');document.getElementById('admin-tab').textContent='🔓 Owner';const _hb=document.getElementById('owner-hdr-btn');_hb.classList.add('unlocked');_hb.textContent='🔓';_hb.title='Owner mode active — click to lock';_hb.onclick=adminLock;switchTab('admin');renderAdminStats();}
+  if(hash===OWNER_HASH){adminUnlocked=true;closeAdminLogin();document.getElementById('admin-tab').classList.add('unlocked');document.getElementById('admin-tab').textContent='🔓 Owner';document.getElementById('owner-admin-tab').classList.add('unlocked');const _hb=document.getElementById('owner-hdr-btn');_hb.classList.add('unlocked');_hb.textContent='🔓';_hb.title='Owner mode active — click to lock';_hb.onclick=adminLock;switchTab('admin');}
   else{document.getElementById('admin-err').style.display='block';document.getElementById('admin-pwd').value='';document.getElementById('admin-pwd').focus();}
 }
-function adminLock(){adminUnlocked=false;document.getElementById('admin-tab').classList.remove('unlocked');document.getElementById('admin-tab').textContent='🔒 Owner';const _hb=document.getElementById('owner-hdr-btn');_hb.classList.remove('unlocked');_hb.textContent='🔒';_hb.title='Owner access';_hb.onclick=showAdminLogin;document.getElementById('tab-admin').style.display='none';switchTab('catalog');}
+function adminLock(){adminUnlocked=false;document.getElementById('admin-tab').classList.remove('unlocked');document.getElementById('admin-tab').textContent='🔒 Owner';document.getElementById('owner-admin-tab').classList.remove('unlocked');const _hb=document.getElementById('owner-hdr-btn');_hb.classList.remove('unlocked');_hb.textContent='🔒';_hb.title='Owner access';_hb.onclick=showAdminLogin;document.getElementById('tab-admin').style.display='none';document.getElementById('tab-owner-admin').style.display='none';switchTab('catalog');}
 const _origSwitchTab=switchTab;
 switchTab=function(tab){
-  if(tab==='admin'){if(!adminUnlocked){showAdminLogin();return;}document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.tab==='admin'));['catalog','expiring','portfolio','coverage','activity'].forEach(t=>{const el=document.getElementById('tab-'+t);if(el)el.style.display='none';});document.getElementById('tab-admin').style.display='block';goOwner();return;}
-  document.getElementById('tab-admin').style.display='none';_origSwitchTab(tab);
+  if(tab==='admin'||tab==='owner-admin'){
+    if(!adminUnlocked){showAdminLogin();return;}
+    document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
+    ['catalog','expiring','portfolio','coverage','activity'].forEach(t=>{const el=document.getElementById('tab-'+t);if(el)el.style.display='none';});
+    document.getElementById('tab-admin').style.display=tab==='admin'?'block':'none';
+    document.getElementById('tab-owner-admin').style.display=tab==='owner-admin'?'block':'none';
+    if(tab==='admin')goOwner();else renderAdminStats();
+    return;
+  }
+  document.getElementById('tab-admin').style.display='none';
+  document.getElementById('tab-owner-admin').style.display='none';
+  _origSwitchTab(tab);
 };
 function renderAdminStats(){const signed=DATA.filter(r=>r.SigningStatus==='Signed').length;const active=DATA.filter(r=>r.ContractLocation==='01 Active Contracts').length;const types=[...new Set(DATA.map(r=>r.DocType))].length;document.getElementById('admin-stats-row').innerHTML=`<div class="admin-stat"><strong>${DATA.length}</strong>Total</div><div class="admin-stat"><strong>${signed}</strong>Signed</div><div class="admin-stat"><strong>${active}</strong>Active</div><div class="admin-stat"><strong>${types}</strong>Doc Types</div>`;populateVendorList();updateMoveExpiredCount();}
 function handleDrop(e){e.preventDefault();document.getElementById('drop-zone').classList.remove('drag');const file=e.dataTransfer.files[0];if(file)processCSV(file);}

@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -7,403 +7,379 @@
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#f5f6f8;--surface:#fff;--surface2:#f9fafb;--border:#e2e5ea;--border2:#f1f3f5;
-  --text:#1a1d23;--text2:#374151;--text3:#6b7280;--text4:#9ca3af;
-  --blue:#2563eb;--blue-light:#eff6ff;--blue-border:#93c5fd;
+  --bg:#f0f2f5;--surface:#ffffff;--surface2:#f7f8fa;--surface3:#eef0f3;
+  --border:#dde1e8;--border2:#eaecf0;
+  --text:#111827;--text2:#374151;--text3:#6b7280;--text4:#9ca3af;
+  --blue:#2563eb;--blue-soft:#eff6ff;--blue-border:#93c5fd;
   --green:#059669;--green-bg:#d1fae5;--green-text:#065f46;
-  --amber:#d97706;--amber-bg:#fef3c7;--amber-text:#92400e;
+  --amber:#b45309;--amber-bg:#fef3c7;--amber-text:#78350f;
   --red:#dc2626;--red-bg:#fee2e2;--red-text:#991b1b;
-  --radius:6px;--radius-lg:8px;
+  --radius:6px;--radius-lg:10px;--radius-xl:14px;
+  --shadow:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.04);
+  --shadow-md:0 4px 12px rgba(0,0,0,.08),0 2px 4px rgba(0,0,0,.04);
 }
 body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;font-size:14px;background:var(--bg);color:var(--text);min-height:100vh}
-a{color:inherit;text-decoration:none}
-button{font-family:inherit;cursor:pointer}
-
-/* Dark mode */
 body.dark{
-  --bg:#0f1117;--surface:#1a1d27;--surface2:#22263a;--border:#2a2d3a;--border2:#1f2230;
-  --text:#e2e5ea;--text2:#c9cdd6;--text3:#6b7280;--text4:#4b5563;
-  --blue-light:#1e3a5f;--blue-border:#3b82f6;
-  --green-bg:#064e3b;--green-text:#6ee7b7;
-  --amber-bg:#451a03;--amber-text:#fcd34d;
-  --red-bg:#450a0a;--red-text:#fca5a5;
+  --bg:#0d1117;--surface:#161b22;--surface2:#1c2128;--surface3:#21262d;
+  --border:#30363d;--border2:#21262d;
+  --text:#e6edf3;--text2:#c9d1d9;--text3:#8b949e;--text4:#484f58;
+  --blue:#58a6ff;--blue-soft:#0d1b2e;--blue-border:#388bfd;
+  --green-bg:#033a20;--green-text:#56d364;
+  --amber-bg:#2d1b00;--amber-text:#e3b341;
+  --red-bg:#2d0f0f;--red-text:#ff7b72;
+  --shadow:0 1px 3px rgba(0,0,0,.3);
+  --shadow-md:0 4px 12px rgba(0,0,0,.4);
 }
 
-/* Header */
-header{background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
-.logo{display:flex;align-items:center;gap:10px;font-size:15px;font-weight:600;color:var(--text)}
-.logo-icon{color:var(--blue)}
-.hdr-right{display:flex;align-items:center;gap:8px}
-.hdr-count{font-size:12px;color:var(--text3)}
+/* ── Header ── */
+header{
+  background:var(--surface);border-bottom:1px solid var(--border);
+  padding:0 24px;height:54px;display:flex;align-items:center;
+  justify-content:space-between;position:sticky;top:0;z-index:200;
+  box-shadow:var(--shadow);
+}
+.logo{display:flex;align-items:center;gap:10px;font-size:15px;font-weight:700;letter-spacing:-.2px}
+.logo-mark{width:28px;height:28px;background:var(--blue);border-radius:7px;display:flex;align-items:center;justify-content:center}
+.logo-mark svg{color:#fff}
+.hdr-right{display:flex;align-items:center;gap:6px}
+.hdr-pill{font-size:11px;color:var(--text3);background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:3px 10px;white-space:nowrap}
 
-/* Buttons */
-.btn{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:var(--radius);border:1px solid var(--border);background:var(--surface);font-size:13px;color:var(--text2);cursor:pointer;transition:background .15s}
-.btn:hover{background:var(--surface2)}
-.btn-icon{width:32px;height:32px;padding:0;justify-content:center;border-radius:var(--radius);border:1px solid var(--border);background:var(--surface);color:var(--text3);cursor:pointer;transition:all .15s;display:inline-flex;align-items:center}
-.btn-icon:hover{color:var(--text);background:var(--surface2)}
-.btn-icon.active{color:var(--blue);border-color:var(--blue);background:var(--blue-light)}
+/* ── Icon buttons ── */
+.icon-btn{width:32px;height:32px;border-radius:var(--radius);border:1px solid var(--border);background:var(--surface);color:var(--text3);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;transition:all .15s;font-size:14px}
+.icon-btn:hover{background:var(--surface2);color:var(--text);border-color:var(--border)}
+.icon-btn.active{background:var(--blue-soft);border-color:var(--blue-border);color:var(--blue)}
 
-/* Tabs */
-.tabs{display:flex;gap:2px;padding:0 24px;background:var(--surface);border-bottom:1px solid var(--border);overflow-x:auto;position:sticky;top:56px;z-index:99}
-.tab{padding:10px 16px;font-size:13px;font-weight:500;color:var(--text3);border:none;background:none;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:color .15s}
+/* ── Tabs ── */
+.tabs{background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;display:flex;gap:0;position:sticky;top:54px;z-index:190}
+.tab{padding:11px 16px;font-size:13px;font-weight:500;color:var(--text3);border:none;background:none;cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;white-space:nowrap;display:flex;align-items:center;gap:6px}
+.tab svg{width:14px;height:14px;flex-shrink:0}
 .tab:hover{color:var(--text)}
 .tab.active{color:var(--blue);border-bottom-color:var(--blue)}
+.tab.manage-tab{margin-left:auto}
+.tab.manage-tab.locked{color:var(--text3)}
+.tab.manage-tab.unlocked{color:var(--amber)}
 
-/* Main */
+/* ── Main ── */
 main{max-width:1400px;margin:0 auto;padding:20px 24px}
 
-/* Stats */
-.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
-.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 18px;cursor:default}
-.stat-card.clickable{cursor:pointer;transition:border-color .15s}
-.stat-card.clickable:hover{border-color:var(--blue)}
-.stat-label{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
-.stat-value{font-size:24px;font-weight:600;color:var(--text)}
+/* ── Stat cards ── */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 18px;box-shadow:var(--shadow)}
+.stat-card.clickable{cursor:pointer;transition:border-color .15s,box-shadow .15s}
+.stat-card.clickable:hover{border-color:var(--blue);box-shadow:var(--shadow-md)}
+.stat-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);margin-bottom:5px}
+.stat-value{font-size:26px;font-weight:700;letter-spacing:-.5px;color:var(--text);line-height:1}
 .stat-value.green{color:var(--green)}
 .stat-value.amber{color:var(--amber)}
 .stat-value.red{color:var(--red)}
 
-/* Search bar */
-.search-bar{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 16px;margin-bottom:12px}
+/* ── Search bar ── */
+.search-block{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 16px;margin-bottom:12px;box-shadow:var(--shadow)}
 .search-row{display:flex;gap:8px;margin-bottom:10px;align-items:center}
 .search-wrap{position:relative;flex:1}
-.search-wrap svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text4);pointer-events:none}
-input[type=text]{width:100%;padding:8px 32px 8px 34px;border:1px solid var(--border);border-radius:var(--radius);font-size:14px;color:var(--text);background:var(--surface);outline:none;transition:border-color .15s}
-input[type=text]:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.1)}
-.clear-btn{position:absolute;right:8px;top:50%;transform:translateY(-50%);width:18px;height:18px;border-radius:50%;border:none;background:var(--text4);color:#fff;font-size:11px;display:none;align-items:center;justify-content:center;cursor:pointer;line-height:1}
-.clear-btn.show{display:flex}
+.search-wrap .s-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text4);pointer-events:none}
+input[type=text]{width:100%;padding:8px 32px 8px 34px;border:1px solid var(--border);border-radius:var(--radius);font-size:14px;color:var(--text);background:var(--surface);outline:none;transition:border-color .15s;font-family:inherit}
+input[type=text]:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.08)}
+.clear-x{position:absolute;right:8px;top:50%;transform:translateY(-50%);width:17px;height:17px;border-radius:50%;border:none;background:var(--text4);color:#fff;font-size:10px;display:none;align-items:center;justify-content:center;cursor:pointer;line-height:1}
+.clear-x.show{display:flex}
 
-/* Filters */
-.filters{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+/* ── Filter chips ── */
+.filter-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 .filter-group{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
-.filter-label{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.04em;white-space:nowrap}
-.chip{padding:3px 10px;border-radius:20px;border:1px solid var(--border);background:var(--surface);font-size:12px;color:var(--text2);cursor:pointer;transition:all .15s;white-space:nowrap}
-.chip:hover{border-color:var(--blue-border);background:var(--blue-light);color:var(--blue)}
+.filter-label{font-size:11px;font-weight:600;color:var(--text4);text-transform:uppercase;letter-spacing:.05em;white-space:nowrap}
+.chip{padding:3px 10px;border-radius:20px;border:1px solid var(--border);background:var(--surface);font-size:12px;font-weight:500;color:var(--text2);cursor:pointer;transition:all .15s;white-space:nowrap;line-height:1.6}
+.chip:hover{border-color:var(--blue-border);color:var(--blue);background:var(--blue-soft)}
 .chip.active{background:var(--blue);border-color:var(--blue);color:#fff}
 
-/* Column toggle */
+/* ── Col toggle ── */
 .col-toggle-wrap{position:relative}
-.col-toggle-panel{position:absolute;top:calc(100% + 6px);right:0;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:10px;min-width:180px;z-index:50;box-shadow:0 4px 16px rgba(0,0,0,.1)}
-.col-toggle-panel label{display:flex;align-items:center;gap:8px;padding:4px 6px;border-radius:4px;cursor:pointer;font-size:13px;color:var(--text2)}
-.col-toggle-panel label:hover{background:var(--surface2)}
-.col-toggle-panel input[type=checkbox]{accent-color:var(--blue);width:14px;height:14px}
+.col-panel{position:absolute;top:calc(100% + 6px);right:0;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:10px;min-width:180px;z-index:50;box-shadow:var(--shadow-md)}
+.col-panel label{display:flex;align-items:center;gap:8px;padding:4px 6px;border-radius:4px;cursor:pointer;font-size:13px;color:var(--text2)}
+.col-panel label:hover{background:var(--surface2)}
+.col-panel input[type=checkbox]{accent-color:var(--blue);width:14px;height:14px}
 
-/* Recently viewed */
-.recent-bar{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:10px 14px;margin-bottom:12px;display:none}
-.recent-bar.show{display:block}
-.recent-title{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
-.recent-items{display:flex;gap:6px;flex-wrap:wrap}
-.recent-item{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;border:1px solid var(--border);background:var(--surface2);font-size:12px;color:var(--text2);cursor:pointer;transition:all .15s;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.recent-item:hover{border-color:var(--blue-border);color:var(--blue)}
-
-/* Settings panel */
-.settings-panel{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:12px 16px;margin-bottom:12px;display:none}
-.settings-panel label{font-size:12px;color:var(--text3);display:block;margin-bottom:5px;font-weight:500}
-.settings-panel input[type=text]{padding:6px 10px;font-size:12px;font-family:monospace}
-.hint{font-size:11px;color:var(--text4);margin-top:5px}
-
-/* Table */
-.table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden}
+/* ── Table ── */
+.table-block{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow)}
 .table-meta{padding:9px 14px;font-size:12px;color:var(--text3);border-bottom:1px solid var(--border2);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
-.export-btn{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:var(--radius);border:1px solid var(--border);background:var(--surface);font-size:12px;color:var(--text2);cursor:pointer}
+.export-btn{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:var(--radius);border:1px solid var(--border);background:var(--surface);font-size:12px;color:var(--text2);cursor:pointer;transition:all .15s}
 .export-btn:hover{border-color:var(--blue);color:var(--blue)}
-.exp-legend{display:flex;align-items:center;gap:10px;font-size:11px;color:var(--text3)}
-.legend-dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:3px}
 table{width:100%;border-collapse:collapse;table-layout:fixed}
 th{padding:8px 10px;text-align:left;font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;background:var(--surface2);border-bottom:1px solid var(--border);cursor:pointer;user-select:none;white-space:nowrap}
 th.no-sort{cursor:default}
 td{padding:7px 10px;border-bottom:1px solid var(--border2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:middle}
 tr:last-child td{border-bottom:none}
 tr:hover td{background:var(--surface2)}
-tr.exp-red td{background:#fff5f5}
-tr.exp-red:hover td{background:#fee2e2}
-tr.exp-amber td{background:#fffbeb}
-tr.exp-amber:hover td{background:#fef3c7}
-body.dark tr.exp-red td{background:#2d1515!important}
-body.dark tr.exp-red:hover td{background:#3d1a1a!important}
-body.dark tr.exp-amber td{background:#2d2010!important}
-body.dark tr.exp-amber:hover td{background:#3d2a10!important}
-.sort-icon{opacity:.3;font-size:10px;margin-left:2px}
-.sort-icon.active{opacity:1;color:var(--blue)}
+tr.row-red td{background:#fff5f5}
+tr.row-red:hover td{background:#fee2e2}
+tr.row-amber td{background:#fffcf0}
+tr.row-amber:hover td{background:#fef3c7}
+body.dark tr.row-red td{background:#2a1515}
+body.dark tr.row-red:hover td{background:#3a1a1a}
+body.dark tr.row-amber td{background:#261e00}
+body.dark tr.row-amber:hover td{background:#342800}
+.sort-icon{opacity:.3;font-size:9px;margin-left:2px}
+.sort-icon.on{opacity:1;color:var(--blue)}
 
-/* File icons */
-.fi{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:3px;font-size:9px;font-weight:700;flex-shrink:0;margin-right:5px}
+/* ── File icons ── */
+.fi{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:3px;font-size:9px;font-weight:700;flex-shrink:0;margin-right:4px}
 .fi-pdf{background:#fee2e2;color:#dc2626}
 .fi-docx,.fi-doc{background:#dbeafe;color:#1d4ed8}
 .fi-msg{background:#f3e8ff;color:#7e22ce}
-.fi-other{background:#f3f4f6;color:#6b7280}
+.fi-other{background:var(--surface3);color:var(--text3)}
 body.dark .fi-pdf{background:#4c1111;color:#f87171}
-body.dark .fi-docx,body.dark .fi-doc{background:#1e3a5f;color:#93c5fd}
-body.dark .fi-msg{background:#3b1f5e;color:#c4b5fd}
-body.dark .fi-other{background:#22263a;color:#6b7280}
-.fn-cell{display:flex;align-items:center}
+body.dark .fi-docx,body.dark .fi-doc{background:#0d2447;color:#93c5fd}
+body.dark .fi-msg{background:#2d1450;color:#c4b5fd}
+.fn-wrap{display:flex;align-items:center}
 
-/* Badges */
-.badge{display:inline-flex;align-items:center;padding:2px 7px;border-radius:4px;font-size:11px;font-weight:500;white-space:nowrap}
+/* ── Badges ── */
+.badge{display:inline-flex;align-items:center;padding:2px 7px;border-radius:4px;font-size:11px;font-weight:600;white-space:nowrap;line-height:1.5}
 .b-nda{background:#dbeafe;color:#1e40af}.b-mnda{background:#d1fae5;color:#065f46}
 .b-msa{background:#fef3c7;color:#92400e}.b-sow{background:#ede9fe;color:#5b21b6}
-.b-sub{background:#fee2e2;color:#991b1b}.b-cda,.b-other{background:#f3f4f6;color:#374151}
+.b-sub{background:#fee2e2;color:#991b1b}.b-cda,.b-other{background:var(--surface3);color:var(--text2)}
 .b-eula,.b-ipa,.b-psa{background:#fce7f3;color:#9d174d}.b-amendment{background:#ffedd5;color:#9a3412}
-.b-signed{background:#d1fae5;color:#065f46}.b-unsigned{background:#fef3c7;color:#92400e}
-.b-active{background:#d1fae5;color:#065f46}.b-pending{background:#f3f4f6;color:#6b7280}
-body.dark .b-nda{background:#1e3a5f;color:#93c5fd}body.dark .b-mnda{background:#064e3b;color:#6ee7b7}
-body.dark .b-msa{background:#451a03;color:#fcd34d}body.dark .b-sow{background:#2e1065;color:#c4b5fd}
-body.dark .b-sub{background:#450a0a;color:#fca5a5}body.dark .b-cda,body.dark .b-other{background:#1f2230;color:#9ca3af}
-body.dark .b-eula,body.dark .b-ipa,body.dark .b-psa{background:#500724;color:#f9a8d4}
-body.dark .b-amendment{background:#431407;color:#fdba74}
-body.dark .b-signed{background:#064e3b;color:#6ee7b7}body.dark .b-unsigned{background:#451a03;color:#fcd34d}
-body.dark .b-active{background:#064e3b;color:#6ee7b7}body.dark .b-pending{background:#1f2230;color:#9ca3af}
-.exp-badge{display:inline-flex;align-items:center;padding:2px 6px;border-radius:4px;font-size:10px;font-weight:600}
-.exp-red-b{background:var(--red-bg);color:var(--red-text)}
-.exp-amber-b{background:var(--amber-bg);color:var(--amber-text)}
+.b-active{background:#d1fae5;color:#065f46}.b-expired{background:#fee2e2;color:#991b1b}
+.b-renewed{background:#dbeafe;color:#1e40af}.b-unsigned{background:#fef3c7;color:#92400e}
+.b-unknown{background:var(--surface3);color:var(--text3)}
+.b-loc-active{background:#d1fae5;color:#065f46}
+.b-loc-unsigned{background:#fef3c7;color:#92400e}
+.b-loc-archived{background:var(--surface3);color:var(--text3)}
+.b-loc-expired{background:#fee2e2;color:#991b1b}
+body.dark .b-nda{background:#0d2447;color:#93c5fd}
+body.dark .b-mnda{background:#023320;color:#56d364}
+body.dark .b-msa{background:#2d1b00;color:#e3b341}
+body.dark .b-sow{background:#1a0e3d;color:#c4b5fd}
+body.dark .b-sub{background:#2d0f0f;color:#ff7b72}
+body.dark .b-cda,body.dark .b-other{background:var(--surface3);color:var(--text3)}
+body.dark .b-active{background:#023320;color:#56d364}
+body.dark .b-expired{background:#2d0f0f;color:#ff7b72}
+body.dark .b-renewed{background:#0d2447;color:#93c5fd}
+body.dark .b-unsigned{background:#2d1b00;color:#e3b341}
+body.dark .b-loc-active{background:#023320;color:#56d364}
+body.dark .b-loc-unsigned{background:#2d1b00;color:#e3b341}
+body.dark .b-loc-archived{background:var(--surface3);color:var(--text3)}
+body.dark .b-loc-expired{background:#2d0f0f;color:#ff7b72}
 
-/* Action buttons */
-.action-cell{display:flex;align-items:center;gap:4px}
-.open-btn{display:inline-flex;align-items:center;gap:3px;padding:3px 9px;border-radius:var(--radius);border:1px solid var(--border);background:var(--surface);font-size:12px;color:var(--text2);cursor:pointer;transition:all .15s}
-.open-btn:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-light)}
-.copy-btn{width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;border-radius:var(--radius);border:1px solid var(--border);background:var(--surface);color:var(--text3);cursor:pointer;transition:all .15s;font-size:12px;position:relative}
-.copy-btn:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-light)}
-.copy-btn .tooltip{position:absolute;bottom:calc(100% + 4px);left:50%;transform:translateX(-50%);background:#1a1d23;color:#fff;font-size:10px;padding:2px 6px;border-radius:3px;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .15s}
-.copy-btn.copied .tooltip{opacity:1}
+.exp-tag{display:inline-flex;align-items:center;padding:2px 6px;border-radius:4px;font-size:10px;font-weight:700;margin-left:4px}
+.exp-tag.red{background:var(--red-bg);color:var(--red-text)}
+.exp-tag.amber{background:var(--amber-bg);color:var(--amber-text)}
 
-/* Empty */
-.empty{text-align:center;padding:48px;color:var(--text4)}
-.empty-icon{margin:0 auto 12px;opacity:.3}
-.empty h3{font-size:15px;font-weight:500;color:var(--text3);margin-bottom:6px}
-.suggestions{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:8px}
-.sug-chip{padding:3px 10px;border-radius:20px;border:1px solid var(--border);background:var(--surface);font-size:12px;color:var(--text2);cursor:pointer}
-.sug-chip:hover{border-color:var(--blue);color:var(--blue)}
+/* ── Action buttons ── */
+.open-btn{display:inline-flex;align-items:center;gap:3px;padding:3px 9px;border-radius:var(--radius);border:1px solid var(--border);background:var(--surface);font-size:12px;color:var(--text2);cursor:pointer;transition:all .15s;text-decoration:none}
+.open-btn:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-soft)}
+.copy-btn{width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;border-radius:var(--radius);border:1px solid var(--border);background:var(--surface);color:var(--text3);cursor:pointer;transition:all .15s;position:relative}
+.copy-btn:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-soft)}
+.copy-tip{position:absolute;bottom:calc(100%+4px);left:50%;transform:translateX(-50%);background:#111;color:#fff;font-size:10px;padding:2px 6px;border-radius:3px;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .15s}
+.copy-btn.copied .copy-tip{opacity:1}
 
-/* Section panels */
-.panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;margin-bottom:16px}
-.panel-title{font-size:14px;font-weight:600;color:var(--text);margin-bottom:14px;display:flex;align-items:center;gap:8px}
-.panel-title svg{color:var(--text3)}
+/* ── Empty state ── */
+.empty-state{text-align:center;padding:56px 20px;color:var(--text4)}
+.empty-state svg{opacity:.25;margin-bottom:14px}
+.empty-state h3{font-size:15px;font-weight:600;color:var(--text3);margin-bottom:6px}
+.empty-state p{font-size:13px}
 
-/* Charts */
-.chart-wrap{overflow-x:auto}
-.bar-chart{display:flex;align-items:flex-end;gap:6px;height:160px;padding-bottom:24px;position:relative}
-.bar-col{display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;min-width:40px}
-.bar{border-radius:3px 3px 0 0;background:var(--blue);transition:opacity .15s;min-height:2px}
-.bar:hover{opacity:.8}
-.bar-label{font-size:10px;color:var(--text3);text-align:center;white-space:nowrap}
-.bar-val{font-size:10px;color:var(--text3);font-weight:500}
+/* ── Panel ── */
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;margin-bottom:14px;box-shadow:var(--shadow)}
+.panel-title{font-size:14px;font-weight:700;color:var(--text);margin-bottom:14px;display:flex;align-items:center;gap:8px}
 
-/* Coverage table */
+/* ── Expiring tab ── */
+.exp-section{margin-bottom:16px}
+.exp-section-hdr{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.exp-section-title{font-size:14px;font-weight:700}
+.exp-count-badge{display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:22px;padding:0 6px;border-radius:11px;font-size:11px;font-weight:700}
+.exp-count-badge.red{background:var(--red-bg);color:var(--red-text)}
+.exp-count-badge.amber{background:var(--amber-bg);color:var(--amber-text)}
+.exp-count-badge.gray{background:var(--surface3);color:var(--text3)}
+
+/* ── Insights tab ── */
+.insights-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.port-list{list-style:none}
+.port-item{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border2);font-size:13px}
+.port-item:last-child{border-bottom:none}
+.port-bar-track{flex:1;height:5px;background:var(--border);border-radius:3px;overflow:hidden}
+.port-bar-fill{height:100%;background:var(--blue);border-radius:3px}
+.port-num{font-size:12px;color:var(--text3);font-weight:600;min-width:32px;text-align:right}
 .cov-table{width:100%;border-collapse:collapse;font-size:13px}
 .cov-table th{padding:7px 10px;text-align:left;font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;background:var(--surface2);border-bottom:1px solid var(--border)}
-.cov-table td{padding:6px 10px;border-bottom:1px solid var(--border2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cov-table td{padding:6px 10px;border-bottom:1px solid var(--border2)}
 .cov-table tr:hover td{background:var(--surface2)}
-.cov-check{color:var(--green);font-size:14px}
-.cov-x{color:var(--red-text);font-size:14px}
-.cov-filter{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+.cov-ok{color:var(--green);font-weight:700}
+.cov-no{color:var(--red-text);font-weight:700}
 
-/* Expiry dashboard */
-.exp-group{margin-bottom:20px}
-.exp-group-title{font-size:13px;font-weight:600;margin-bottom:8px;display:flex;align-items:center;gap:6px}
-.exp-count{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;font-size:11px;font-weight:700}
-.exp-count.red{background:var(--red-bg);color:var(--red-text)}
-.exp-count.amber{background:var(--amber-bg);color:var(--amber-text)}
+/* ── Manage tab ── */
+.manage-section{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:22px;margin-bottom:14px;box-shadow:var(--shadow)}
+.manage-section-title{font-size:15px;font-weight:700;color:var(--text);margin-bottom:4px;display:flex;align-items:center;gap:8px}
+.manage-section-sub{font-size:13px;color:var(--text3);margin-bottom:16px;line-height:1.5}
 
-/* Portfolio */
-.port-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
-.port-list{list-style:none}
-.port-item{display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border2);font-size:13px}
-.port-item:last-child{border-bottom:none}
-.port-bar-wrap{flex:1;margin:0 10px;height:6px;background:var(--border);border-radius:3px;overflow:hidden}
-.port-bar{height:100%;background:var(--blue);border-radius:3px}
-.port-num{font-size:12px;color:var(--text3);font-weight:500;min-width:30px;text-align:right}
-.print-btn{display:inline-flex;align-items:center;gap:5px;padding:6px 14px;border-radius:var(--radius);border:1px solid var(--border);background:var(--surface);font-size:13px;color:var(--text2);cursor:pointer}
-.print-btn:hover{background:var(--surface2)}
+/* Review queue */
+.review-card{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px;margin-bottom:10px}
+.review-card-hdr{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:8px}
+.review-vendor{font-size:15px;font-weight:700}
+.review-flag{font-size:12px;color:var(--amber);background:var(--amber-bg);border-radius:4px;padding:2px 8px;font-weight:600;white-space:nowrap}
+.review-rows{font-size:12px;color:var(--text2);font-family:monospace;line-height:1.7;margin-bottom:12px;background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius);padding:8px 10px}
+.review-note{font-size:12px;color:var(--text3);margin-bottom:10px;font-style:italic}
+.review-actions{display:flex;gap:6px;flex-wrap:wrap}
+.rev-btn{display:inline-flex;align-items:center;gap:4px;padding:6px 14px;border-radius:var(--radius);border:1px solid;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s}
+.rev-btn.primary{background:var(--blue);border-color:var(--blue);color:#fff}
+.rev-btn.primary:hover{opacity:.9}
+.rev-btn.neutral{background:var(--surface);border-color:var(--border);color:var(--text2)}
+.rev-btn.neutral:hover{border-color:var(--text3)}
+.rev-btn.danger{background:var(--surface);border-color:rgba(220,38,38,.4);color:var(--red)}
+.rev-btn.danger:hover{background:var(--red-bg)}
+.review-progress{font-size:12px;color:var(--text3);margin-bottom:12px;display:flex;align-items:center;gap:10px}
+.progress-bar{flex:1;height:4px;background:var(--border);border-radius:2px;overflow:hidden}
+.progress-fill{height:100%;background:var(--blue);border-radius:2px;transition:width .3s}
+.review-done-state{text-align:center;padding:40px;color:var(--text3)}
 
-/* Mobile */
-@media(max-width:767px){
+/* Bulk actions table */
+.bulk-tbl-wrap{overflow-x:auto}
+.bulk-tbl{width:100%;border-collapse:collapse;font-size:13px}
+.bulk-tbl th{padding:7px 10px;text-align:left;font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;background:var(--surface2);border-bottom:1px solid var(--border)}
+.bulk-tbl td{padding:6px 10px;border-bottom:1px solid var(--border2);vertical-align:middle}
+.bulk-tbl tr:hover td{background:var(--surface2)}
+.bulk-action-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.bulk-action-bar select{padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;background:var(--surface);color:var(--text);outline:none;font-family:inherit}
+.bulk-action-bar .btn-gen{padding:7px 16px;border-radius:var(--radius);border:none;background:var(--blue);color:#fff;font-size:13px;font-weight:600;cursor:pointer}
+.bulk-action-bar .btn-gen:disabled{opacity:.5;cursor:not-allowed}
+.bulk-sel-count{font-size:12px;color:var(--text3)}
+
+/* CC relay output */
+.relay-output{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:12px;font-family:monospace;font-size:12px;white-space:pre-wrap;max-height:260px;overflow-y:auto;line-height:1.6;color:var(--text2);margin-top:10px}
+.relay-copy-btn{margin-top:8px;display:inline-flex;align-items:center;gap:5px;padding:6px 14px;border-radius:var(--radius);border:1px solid var(--border);background:var(--surface);font-size:12px;font-weight:600;cursor:pointer;color:var(--text2)}
+.relay-copy-btn:hover{border-color:var(--blue);color:var(--blue)}
+
+/* Catalog tools cards */
+.tool-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.tool-card{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px}
+.tool-card-title{font-size:13px;font-weight:700;margin-bottom:4px;display:flex;align-items:center;gap:6px}
+.tool-card-desc{font-size:12px;color:var(--text3);margin-bottom:12px;line-height:1.5}
+.drop-zone{border:2px dashed var(--border);border-radius:var(--radius);padding:20px;text-align:center;cursor:pointer;transition:border-color .15s}
+.drop-zone:hover,.drop-zone.drag{border-color:var(--blue)}
+.drop-zone p{font-size:12px;color:var(--text3);margin:0}
+.drop-zone .dz-icon{font-size:22px;margin-bottom:6px}
+.upload-status{margin-top:8px;font-size:12px;display:none}
+.upload-status.ok{color:var(--green);display:block}
+.upload-status.err{color:var(--red);display:block}
+.tool-btn{width:100%;padding:7px 14px;border-radius:var(--radius);border:1px solid var(--border);background:var(--surface);font-size:13px;font-weight:600;cursor:pointer;color:var(--text2);font-family:inherit;margin-bottom:6px;transition:all .15s}
+.tool-btn:hover{border-color:var(--blue);color:var(--blue)}
+.tool-btn.primary{background:var(--blue);border-color:var(--blue);color:#fff}
+.tool-btn.primary:hover{opacity:.9}
+
+/* ── Admin login modal ── */
+#admin-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center;backdrop-filter:blur(2px)}
+#admin-overlay.show{display:flex}
+.admin-modal{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-xl);padding:32px;width:360px;max-width:92vw;box-shadow:var(--shadow-md)}
+.admin-modal h3{font-size:17px;font-weight:700;margin-bottom:4px}
+.admin-modal p{font-size:13px;color:var(--text3);margin-bottom:20px}
+.admin-modal input[type=password]{width:100%;border:1px solid var(--border);border-radius:var(--radius);padding:9px 12px;font-size:14px;background:var(--surface2);color:var(--text);margin-bottom:8px;font-family:inherit;outline:none}
+.admin-modal input[type=password]:focus{border-color:var(--blue)}
+.modal-err{color:var(--red);font-size:12px;margin-bottom:10px;display:none}
+.modal-btns{display:flex;gap:8px;justify-content:flex-end}
+.modal-btns button{padding:8px 18px;border-radius:var(--radius);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
+.modal-btn-primary{background:var(--blue);color:#fff;border:none}
+.modal-btn-cancel{background:var(--surface2);color:var(--text2);border:1px solid var(--border)}
+
+/* ── Responsive ── */
+@media(max-width:900px){
+  .insights-grid{grid-template-columns:1fr}
+  .tool-cards{grid-template-columns:1fr}
+  .stats-row{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:600px){
   main{padding:12px}
-  .stats-row{grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:12px}
   table{display:none}
   .card-list{display:block}
-  .port-grid{grid-template-columns:1fr}
 }
-@media(min-width:768px){.card-list{display:none}}
+@media(min-width:601px){.card-list{display:none}}
 .contract-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:12px 14px;margin-bottom:8px}
-.contract-card.exp-red{border-left:3px solid var(--red);background:#fff5f5}
-.contract-card.exp-amber{border-left:3px solid var(--amber);background:#fffbeb}
-body.dark .contract-card{background:var(--surface);border-color:var(--border)}
-body.dark .contract-card.exp-red{background:#2d1515}
-body.dark .contract-card.exp-amber{background:#2d2010}
+.contract-card.row-red{border-left:3px solid var(--red)}
+.contract-card.row-amber{border-left:3px solid var(--amber)}
 .card-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:6px}
-.card-name{font-weight:500;font-size:14px}
-.card-badges{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px}
-.card-fn{font-size:11px;color:var(--text3);font-family:monospace;display:flex;align-items:center;gap:4px;margin-bottom:8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.card-name{font-weight:600;font-size:14px}
+.card-badges{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:5px}
+.card-fn{font-size:11px;color:var(--text3);font-family:monospace;margin-bottom:8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .card-footer{display:flex;align-items:center;justify-content:space-between}
 .card-date{font-size:11px;color:var(--text4)}
 
-/* Print */
+/* ── Print ── */
 @media print{
-  header,.tabs,.search-bar,.recent-bar,.settings-panel,.hdr-right,.print-btn,#tabs-nav{display:none!important}
+  header,.tabs,.search-block,#tab-manage,.hdr-right{display:none!important}
   main{padding:0}
   body{background:#fff;color:#000}
 }
 
-/* Theme btn */
-.theme-btn{width:32px;height:32px;display:inline-flex;align-items:center;justify-content:center;border-radius:var(--radius);border:1px solid var(--border);background:var(--surface);cursor:pointer;font-size:15px}
-.theme-btn:hover{background:var(--surface2)}
-
-/* Footer */
+/* ── Footer ── */
 .footer-note{font-size:11px;color:var(--text4);text-align:right;margin-top:8px}
-
-/* Row checkboxes */
-.row-cb{width:14px;height:14px;cursor:pointer;accent-color:var(--blue)}
-th input[type=checkbox]{width:14px;height:14px;cursor:pointer;accent-color:var(--blue)}
-
-/* ── Admin Panel ── */
-.tab-admin{margin-left:auto;display:none}
-.tab-admin.unlocked{display:block;color:var(--amber)}
-.owner-hdr-btn.unlocked{background:rgba(245,158,11,.12);border-color:rgba(245,158,11,.5);color:#f59e0b}
-#admin-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center}
-#admin-overlay.show{display:flex}
-.admin-modal{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:32px;width:360px;max-width:92vw}
-.admin-modal h3{font-size:16px;font-weight:600;margin-bottom:4px}
-.admin-modal p{font-size:13px;color:var(--text3);margin-bottom:20px}
-.admin-modal input{width:100%;border:1px solid var(--border);border-radius:var(--radius);padding:9px 12px;font-size:14px;background:var(--surface2);color:var(--text);margin-bottom:12px;box-sizing:border-box}
-.admin-modal input:focus{outline:none;border-color:var(--blue)}
-.admin-modal .btn-row{display:flex;gap:8px;justify-content:flex-end}
-.admin-modal .btn{padding:8px 16px;border-radius:var(--radius);border:none;font-size:13px;font-weight:500;cursor:pointer}
-.admin-modal .btn-primary{background:var(--blue);color:#fff}
-.admin-modal .btn-cancel{background:var(--surface2);color:var(--text2);border:1px solid var(--border)}
-.admin-modal .err{color:var(--red);font-size:12px;margin-top:-8px;margin-bottom:10px;display:none}
-#tab-admin{display:none}
-#tab-admin.visible{display:block}
-#tab-owner-admin{display:none}
-.admin-section{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:24px;margin-bottom:16px}
-.admin-section h3{font-size:15px;font-weight:600;margin-bottom:6px}
-.admin-section p{font-size:13px;color:var(--text3);margin-bottom:16px;line-height:1.5}
-.admin-section .drop-zone{border:2px dashed var(--border);border-radius:var(--radius);padding:32px;text-align:center;cursor:pointer;transition:border-color .15s}
-.admin-section .drop-zone:hover,.admin-section .drop-zone.drag{border-color:var(--blue)}
-.admin-section .drop-zone p{margin:0;color:var(--text3);font-size:13px}
-.admin-section .drop-zone .icon{font-size:28px;margin-bottom:8px}
-.upload-status{margin-top:12px;font-size:13px;display:none}
-.upload-status.ok{color:var(--green);display:block}
-.upload-status.err{color:var(--red);display:block}
-.deploy-btn{padding:9px 20px;border-radius:var(--radius);border:none;font-size:13px;font-weight:600;cursor:pointer;background:var(--green,#16a34a);color:#fff;white-space:nowrap}
-.deploy-btn:disabled{opacity:.5;cursor:not-allowed}
-.deploy-status{margin-top:10px;font-size:12px;line-height:1.6;padding:10px 12px;border-radius:var(--radius);display:none}
-.deploy-status.show{display:block}
-.deploy-status.ok{background:#dcfce7;color:#166534}
-.deploy-status.err{background:#fee2e2;color:#991b1b}
-.deploy-status.pending{background:#eff6ff;color:#1e40af}
-.admin-export-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:4px}
-.admin-export-row .btn{padding:9px 18px;border-radius:var(--radius);border:none;font-size:13px;font-weight:500;cursor:pointer}
-.admin-export-row .btn-primary{background:var(--blue);color:#fff}
-.admin-export-row .btn-secondary{background:var(--surface2);color:var(--text2);border:1px solid var(--border)}
-.admin-export-row .btn-danger{background:rgba(239,68,68,.1);color:#ef4444;border:1px solid rgba(239,68,68,.3)}
-.admin-stat{display:inline-block;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:10px 16px;margin:4px;font-size:13px}
-.admin-stat strong{display:block;font-size:20px;font-weight:700;color:var(--blue)}
-.preview-table{width:100%;border-collapse:collapse;font-size:12px;margin-top:12px}
-.preview-table th{background:var(--surface2);padding:6px 8px;text-align:left;border-bottom:1px solid var(--border);font-weight:500;color:var(--text3)}
-.preview-table td{padding:6px 8px;border-bottom:1px solid var(--border);color:var(--text2)}
-
-.own-action-cell{display:flex;gap:3px;flex-wrap:wrap}
-.own-btn{display:inline-flex;align-items:center;padding:2px 7px;border-radius:var(--radius);border:1px solid var(--border);background:var(--surface);font-size:11px;color:var(--text2);cursor:pointer;white-space:nowrap;transition:all .15s}
-.own-btn.own-green:hover{border-color:#059669;color:#059669;background:#d1fae5}
-.own-btn.own-amber:hover{border-color:#d97706;color:#d97706;background:#fef3c7}
-.own-btn.own-gray:hover{border-color:var(--text3);color:var(--text3);background:var(--surface2)}
-.own-btn.own-blue:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-light)}
-#owner-drawer{position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:2px solid var(--blue);padding:16px 24px 20px;z-index:300;box-shadow:0 -4px 24px rgba(0,0,0,.15);display:none}
-#owner-drawer.show{display:block}
-.drawer-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
-.drawer-title{font-size:14px;font-weight:600;color:var(--text)}
-.drawer-close{width:28px;height:28px;border:none;background:none;cursor:pointer;font-size:18px;color:var(--text3);display:flex;align-items:center;justify-content:center;border-radius:var(--radius)}
-.drawer-close:hover{background:var(--surface2);color:var(--text)}
-.drawer-contract-info{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:8px 12px;font-size:12px;line-height:1.7;margin-bottom:10px}
-.drawer-form{margin-bottom:4px}
-.drawer-form label{font-size:12px;color:var(--text3);display:block;margin-bottom:4px;font-weight:500}
-.drawer-form select,.drawer-form input[type=text]{padding:7px 10px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;background:var(--surface);color:var(--text);outline:none;min-width:200px}
-.drawer-output{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:12px;font-family:monospace;font-size:12px;white-space:pre-wrap;max-height:220px;overflow-y:auto;line-height:1.6;color:var(--text2);margin-top:10px}
-
 </style>
 </head>
 <body>
 
 <header>
   <div class="logo">
-    <svg class="logo-icon" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+    <div class="logo-mark">
+      <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+    </div>
     Contract Catalog
   </div>
   <div class="hdr-right">
-    <span class="hdr-count" id="hdr-count"></span>
-    <button class="btn" onclick="window.open('http://localhost:5000','_blank','noopener')" title="Open Contract Scanner">🔍 Start Scan</button>
-    <button class="btn" onclick="toggleSettings()" title="Settings">
-      <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><circle cx="12" cy="12" r="3"/></svg>
-      Settings
-    </button>
-    <button class="btn-icon owner-hdr-btn" id="owner-hdr-btn" onclick="showAdminLogin()" title="Owner access">🔒</button>
-    <button class="theme-btn" onclick="toggleDark()" id="theme-btn" title="Toggle dark mode">🌙</button>
+    <span class="hdr-pill" id="hdr-pill">Loading…</span>
+    <button class="icon-btn" id="theme-btn" onclick="toggleDark()" title="Toggle dark mode">🌙</button>
   </div>
 </header>
 
-<nav class="tabs" id="tabs-nav">
-  <button class="tab active" onclick="switchTab('catalog')" data-tab="catalog">📋 Catalog</button>
-  <button class="tab" onclick="switchTab('expiring')" data-tab="expiring">⏰ Expiring</button>
-  <button class="tab" onclick="switchTab('portfolio')" data-tab="portfolio">📊 Portfolio</button>
-  <button class="tab" onclick="switchTab('coverage')" data-tab="coverage">🔍 Coverage</button>
-  <button class="tab" onclick="switchTab('activity')" data-tab="activity">📈 Activity</button>
-  <button class="tab tab-admin" onclick="switchTab('admin')" data-tab="admin" id="admin-tab">🔒 Owner</button>
-  <button class="tab tab-admin" onclick="switchTab('owner-admin')" data-tab="owner-admin" id="owner-admin-tab">⚙ Admin</button>
+<nav class="tabs">
+  <button class="tab active" data-tab="catalog" onclick="switchTab('catalog')">
+    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
+    Catalog
+  </button>
+  <button class="tab" data-tab="expiring" onclick="switchTab('expiring')">
+    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6l4 2"/></svg>
+    Expiring
+  </button>
+  <button class="tab" data-tab="insights" onclick="switchTab('insights')">
+    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+    Insights
+  </button>
+  <button class="tab manage-tab locked" id="manage-tab" data-tab="manage" onclick="handleManageClick()">
+    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+    <span id="manage-tab-label">Manage</span>
+  </button>
 </nav>
 
 <main>
-  <div id="settings-panel" class="settings-panel">
-    <label>SharePoint document library base URL</label>
-    <input type="text" id="sp-base" value="https://diakoniagroupllc.sharepoint.com/sites/SalesforceContracts/Active%20Contracts"/>
-    <p class="hint">Links resolve to: {URL}/{VendorFolder}/{Filename}?web=1</p>
-  </div>
 
-  <!-- CATALOG TAB -->
+  <!-- ══ CATALOG TAB ══ -->
   <div id="tab-catalog">
-    <div class="stats-row" id="stats"></div>
+    <div class="stats-row" id="stats-row"></div>
 
-    <div class="search-bar">
+    <div class="search-block">
       <div class="search-row">
         <div class="search-wrap">
-          <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path stroke-linecap="round" d="M21 21l-4.35-4.35"/></svg>
-          <input type="text" id="q" placeholder="Search counterparty or filename… (press / to focus)" oninput="onSearch()" aria-label="Search"/>
-          <button class="clear-btn" id="clear-btn" onclick="clearSearch()" title="Clear (Esc)">✕</button>
+          <svg class="s-icon" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path stroke-linecap="round" d="M21 21l-4.35-4.35"/></svg>
+          <input type="text" id="q" placeholder="Search counterparty or filename… (press / to focus)" oninput="onSearch()" aria-label="Search">
+          <button class="clear-x" id="clear-x" onclick="clearSearch()" title="Clear">✕</button>
         </div>
         <div class="col-toggle-wrap">
-          <button class="btn" onclick="toggleColPanel()" id="col-btn" title="Show/hide columns">
-            <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18"/></svg>
-            Columns
+          <button class="icon-btn" onclick="toggleColPanel()" title="Show/hide columns">
+            <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
           </button>
-          <div class="col-toggle-panel" id="col-panel" style="display:none">
+          <div class="col-panel" id="col-panel" style="display:none">
             <label><input type="checkbox" id="col-expires" onchange="go()" checked> Expires</label>
             <label><input type="checkbox" id="col-daysleft" onchange="go()" checked> Days Left</label>
             <label><input type="checkbox" id="col-notes" onchange="go()"> Notes</label>
             <label><input type="checkbox" id="col-version" onchange="go()"> Version</label>
-            <label><input type="checkbox" id="col-amendment" onchange="go()"> Amendment #</label>
           </div>
         </div>
       </div>
-      <div class="filters" id="filter-bar"></div>
+      <div class="filter-row" id="filter-bar"></div>
     </div>
 
-    <div class="recent-bar" id="recent-bar">
-      <div class="recent-title">Recently viewed</div>
-      <div class="recent-items" id="recent-items"></div>
-    </div>
-
-    <div class="table-wrap">
+    <div class="table-block">
       <div class="table-meta">
-        <span id="meta"></span>
-        <div style="display:flex;align-items:center;gap:10px">
-          <div class="exp-legend" id="exp-legend" style="display:none">
-            <span><span class="legend-dot" style="background:#dc2626"></span>≤30d</span>
-            <span><span class="legend-dot" style="background:#d97706"></span>≤90d</span>
-          </div>
-          <button class="export-btn" onclick="exportCSV()">
-            <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-            Export
-          </button>
-        </div>
+        <span id="tbl-meta"></span>
+        <button class="export-btn" onclick="exportCSV()">
+          <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+          Export CSV
+        </button>
       </div>
       <div style="overflow-x:auto">
         <table>
@@ -412,236 +388,423 @@ th input[type=checkbox]{width:14px;height:14px;cursor:pointer;accent-color:var(-
         </table>
       </div>
       <div class="card-list" id="card-list"></div>
-      <div id="empty" class="empty" style="display:none">
-        <svg class="empty-icon" width="40" height="40" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path stroke-linecap="round" d="M21 21l-4.35-4.35"/></svg>
+      <div id="empty-state" class="empty-state" style="display:none">
+        <svg width="36" height="36" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.2"><circle cx="11" cy="11" r="8"/><path stroke-linecap="round" d="M21 21l-4.35-4.35"/></svg>
         <h3>No contracts found</h3>
-        <p id="empty-msg" style="font-size:13px;color:var(--text4)">Try adjusting your filters.</p>
-        <div class="suggestions" id="suggestions"></div>
+        <p id="empty-msg">Try adjusting your filters or search term.</p>
       </div>
     </div>
-    <p class="footer-note" id="footer-date"></p>
+    <p class="footer-note" id="footer-note"></p>
   </div>
 
-  <!-- EXPIRING TAB -->
+  <!-- ══ EXPIRING TAB ══ -->
   <div id="tab-expiring" style="display:none">
-    <div id="exp-content"></div>
+    <div id="expiring-content"></div>
   </div>
 
-  <!-- PORTFOLIO TAB -->
-  <div id="tab-portfolio" style="display:none">
+  <!-- ══ INSIGHTS TAB ══ -->
+  <div id="tab-insights" style="display:none">
     <div style="display:flex;justify-content:flex-end;margin-bottom:12px">
-      <button class="print-btn" onclick="window.print()">
-        <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+      <button class="export-btn" onclick="window.print()">
+        <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
         Print
       </button>
     </div>
-    <div id="portfolio-content"></div>
+    <div id="insights-content"></div>
   </div>
 
-  <!-- COVERAGE TAB -->
-  <div id="tab-coverage" style="display:none">
-    <div id="coverage-content"></div>
+  <!-- ══ MANAGE TAB ══ -->
+  <div id="tab-manage" style="display:none">
+
+    <!-- Section 1: Review Queue -->
+    <div class="manage-section" id="review-section">
+      <div class="manage-section-title">
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+        Manual Review Queue
+      </div>
+      <div class="manage-section-sub">Work through flagged vendors one at a time. Resolve generates a CC relay prompt to apply the change.</div>
+      <div id="review-queue-content"></div>
+    </div>
+
+    <!-- Section 2: Bulk Actions -->
+    <div class="manage-section">
+      <div class="manage-section-title">
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+        Bulk Actions
+      </div>
+      <div class="manage-section-sub">Select contracts below, choose an action, and generate a CC relay prompt to apply the changes.</div>
+
+      <div class="search-block" style="margin-bottom:12px;box-shadow:none">
+        <div class="search-row">
+          <div class="search-wrap">
+            <svg class="s-icon" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path stroke-linecap="round" d="M21 21l-4.35-4.35"/></svg>
+            <input type="text" id="bulk-q" placeholder="Search…" oninput="goBulk()">
+            <button class="clear-x" id="bulk-clear-x" onclick="clearBulkSearch()" title="Clear">✕</button>
+          </div>
+        </div>
+        <div class="filter-row" id="bulk-filter-bar"></div>
+      </div>
+
+      <div class="bulk-action-bar">
+        <span class="bulk-sel-count" id="bulk-sel-count">0 selected</span>
+        <select id="bulk-action-sel">
+          <option value="">Choose action…</option>
+          <option value="move-active">Move → 01 Active Contracts</option>
+          <option value="move-unsigned">Move → 02 Unsigned Contracts</option>
+          <option value="move-archived">Move → 03 Archived Contracts</option>
+          <option value="move-expired">Move → 04 Expired Contracts</option>
+          <option value="mark-active">Mark Status = active</option>
+          <option value="mark-expired">Mark Status = expired</option>
+        </select>
+        <button class="btn-gen" id="bulk-gen-btn" onclick="generateBulkRelay()" disabled>Generate CC Prompt</button>
+        <button class="export-btn" onclick="clearBulkSel()">Clear selection</button>
+      </div>
+
+      <div class="bulk-tbl-wrap">
+        <table class="bulk-tbl">
+          <thead><tr id="bulk-thead"></tr></thead>
+          <tbody id="bulk-tbody"></tbody>
+        </table>
+        <div id="bulk-empty" class="empty-state" style="display:none;padding:32px">
+          <h3>No contracts found</h3>
+        </div>
+      </div>
+
+      <div id="bulk-relay-wrap" style="display:none">
+        <div class="relay-output" id="bulk-relay-output"></div>
+        <button class="relay-copy-btn" onclick="copyRelay('bulk-relay-output',this)">
+          <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path stroke-linecap="round" stroke-linejoin="round" d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+          Copy to Clipboard
+        </button>
+      </div>
+    </div>
+
+    <!-- Section 3: Catalog Tools -->
+    <div class="manage-section">
+      <div class="manage-section-title">
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><circle cx="12" cy="12" r="3"/></svg>
+        Catalog Tools
+      </div>
+      <div class="manage-section-sub">No server required. Import reloads data for this session only. Export downloads the current working copy.</div>
+      <div class="tool-cards">
+
+        <!-- Import -->
+        <div class="tool-card">
+          <div class="tool-card-title">📥 Import CSV</div>
+          <div class="tool-card-desc">Reload catalog data from a new CSV file without refreshing the page.</div>
+          <div class="drop-zone" id="import-dz" onclick="document.getElementById('import-file').click()" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="handleImportDrop(event)">
+            <div class="dz-icon">📄</div>
+            <p>Click or drag & drop CSV here</p>
+          </div>
+          <input type="file" id="import-file" accept=".csv" style="display:none" onchange="handleImportSelect(event)">
+          <div class="upload-status" id="import-status"></div>
+        </div>
+
+        <!-- Export -->
+        <div class="tool-card">
+          <div class="tool-card-title">📤 Export</div>
+          <div class="tool-card-desc">Download the current session data or this page for deployment.</div>
+          <button class="tool-btn" onclick="exportCSVFull()">⬇ Download CSV</button>
+          <button class="tool-btn" onclick="exportHTML()">⬇ Download index.html</button>
+        </div>
+
+        <!-- Deploy -->
+        <div class="tool-card">
+          <div class="tool-card-title">🚀 Deploy</div>
+          <div class="tool-card-desc">Generate a CC relay prompt to save the catalog to disk and push to GitHub.</div>
+          <button class="tool-btn primary" onclick="generateDeployRelay()">Generate Deploy Prompt</button>
+          <div id="deploy-relay-wrap" style="display:none">
+            <div class="relay-output" id="deploy-relay-output" style="max-height:160px"></div>
+            <button class="relay-copy-btn" onclick="copyRelay('deploy-relay-output',this)">Copy to Clipboard</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Lock session -->
+    <div style="text-align:right;margin-top:4px">
+      <button class="export-btn" onclick="adminLock()" style="color:var(--red-text);border-color:rgba(220,38,38,.3)">🔒 Lock &amp; Exit</button>
+    </div>
+
   </div>
 
-  <!-- ACTIVITY TAB -->
-  <div id="tab-activity" style="display:none">
-    <div id="activity-content"></div>
-  </div>
 </main>
 
+<!-- ── Admin login modal ── -->
+<div id="admin-overlay">
+  <div class="admin-modal">
+    <h3>🔒 Manage Access</h3>
+    <p>Enter the owner password to access catalog management tools.</p>
+    <input type="password" id="admin-pwd" placeholder="Password" onkeydown="if(event.key==='Enter')adminLogin()">
+    <div class="modal-err" id="modal-err">Incorrect password. Try again.</div>
+    <div class="modal-btns">
+      <button class="modal-btn-cancel" onclick="closeAdminLogin()">Cancel</button>
+      <button class="modal-btn-primary" onclick="adminLogin()">Unlock</button>
+    </div>
+  </div>
+</div>
+
 <script>
+// ══════════════════════════════════════════════
+// DATA & STATE
+// ══════════════════════════════════════════════
 let DATA = [];
-const GENERATED = new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
-document.getElementById('footer-date').textContent = 'Catalog generated ' + GENERATED;
-document.getElementById('hdr-count').textContent = 'Loading…';
+let filtered = [];
+let bulkFiltered = [];
+let bulkSelected = new Set();
+let sortField = 'CounterpartyName', sortDir = 1;
+let af = { types: new Set(), status: 'active', loc: 'All' };
+let bulkAf = { types: new Set(), status: 'All', loc: 'All' };
+let adminUnlocked = false;
+let reviewIndex = 0;
+let reviewResolved = new Set();
 
-// ── Constants ──
-const DT_CLASS={NDA:'b-nda',MNDA:'b-mnda',MSA:'b-msa',SOW:'b-sow',Subcontract:'b-sub',CDA:'b-cda',EULA:'b-eula',IPA:'b-ipa',PSA:'b-psa',Amendment:'b-amendment',Other:'b-other'};
-const FOLDER_MAP={'01 Active Contracts':'01 Active Contracts','02 Unsigned Contracts':'02 Unsigned Contracts','03 Archived Contracts':'03 Archived Contracts'};
-const SUGGEST_MAP={nda:['MNDA','CDA'],confidential:['NDA','CDA','MNDA'],master:['MSA'],work:['SOW'],service:['SOW','PSA'],sub:['Subcontract'],software:['EULA','MSA'],partner:['IPA']};
+const today = new Date(); today.setHours(0,0,0,0);
 
-// ── State ──
-let sf='CounterpartyName',sd=1,filtered=[],recentlyViewed=[];
-let af={types:new Set(),status:'All',loc:'01 Active Contracts'};
-let currentTab='catalog';
-let catalogSelected=new Set(),ownerSelected=new Set();
-const today=new Date();today.setHours(0,0,0,0);
+// SharePoint base URL
+const SP_BASE = 'https://diakoniagroupllc.sharepoint.com/sites/SalesforceContracts/Active%20Contracts';
 
-// ── Helpers ──
-function e(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;')}
-function badge(t,c){return`<span class="badge ${c}">${e(t)}</span>`}
-function daysTo(s){if(!s)return null;const d=new Date(s);if(isNaN(d))return null;return Math.round((d-today)/86400000)}
-function expiryClass(r){const d=daysTo(r.ExpirationDate);if(d===null)return'';if(d<=0)return'exp-red';if(d<=30)return'exp-red';if(d<=90)return'exp-amber';return''}
-function expiryBadge(r){const d=daysTo(r.ExpirationDate);if(d===null||d>90)return'';if(d<=0)return'<span class="exp-badge exp-red-b">Expired</span>';if(d<=30)return`<span class="exp-badge exp-red-b">⚠ ${d}d</span>`;return`<span class="exp-badge exp-amber-b">${d}d</span>`}
-function daysLeftCell(r){const d=daysTo(r.ExpirationDate);if(d===null)return'<td style="font-size:12px;color:var(--text3)">—</td>';let color='var(--text3)',weight='400',txt=d+'d';if(d<0){color='#dc2626';weight='600';txt=(-d)+'d ago';}else if(d===0){color='#dc2626';weight='600';txt='Today';}else if(d<=30){color='#dc2626';weight='600';}else if(d<=90){color='#d97706';weight='600';}return`<td style="font-size:12px;color:${color};font-weight:${weight}">${txt}</td>`}
-function fileIcon(ext){const x=(ext||'').toLowerCase();if(x==='.pdf')return'<span class="fi fi-pdf">PDF</span>';if(x==='.docx')return'<span class="fi fi-docx">DOC</span>';if(x==='.doc')return'<span class="fi fi-doc">DOC</span>';if(x==='.msg')return'<span class="fi fi-msg">MSG</span>';return'<span class="fi fi-other">—</span>'}
-function spUrl(r){
-  const base=(document.getElementById('sp-base').value||'').replace(/\/$/,'');
-  const fp=r.FilePath||(r.VendorFolder+'/'+r.Filename);
-  return base+'/'+fp.split('/').map(s=>encodeURIComponent(s||'')).join('/')+'?web=1';
+// ── Review queue data (22 vendors from HANDOFF §3) ──
+const REVIEW_QUEUE = [
+  {vendor:'ISI', flag:'Misrouted file', note:'Contains a Precision Tools file — verify and move to correct vendor folder.'},
+  {vendor:'NFI', flag:'Misrouted file', note:'Contains a Ventura Foods file — verify and move to correct vendor folder.'},
+  {vendor:'SVT / SVT Robotics', flag:'Duplicate folders', note:'Two folders contain identical file — confirm single entity and consolidate.'},
+  {vendor:'Geek+ / GeekPlus Robotics', flag:'Duplicate folders', note:'Two folders contain identical file — confirm single entity and consolidate.'},
+  {vendor:'Trinity Controls / Trinity Solutions', flag:'Possible duplicate', note:'Verify whether these are the same entity or distinct counterparties.'},
+  {vendor:'Dematic', flag:'Multiple files', note:'2 files present — 2015 and 2025 versions. Confirm which is current; archive the other.'},
+  {vendor:'EMIT', flag:'Multiple files', note:'2 files — signed version and earlier unsigned version. Confirm which is active.'},
+  {vendor:'NPI', flag:'Multiple files', note:'2 NDA versions present. Confirm which is current.'},
+  {vendor:'Ventura Foods', flag:'Multiple files', note:'2 files — signed and unsigned. Confirm which is the executed copy.'},
+  {vendor:'Designed Integrators (DMI)', flag:'DCS entity as counterparty?', note:'Rows 36, 408, 628, 629 — verify whether DCS/Diakonia is listed as counterparty rather than vendor.'},
+  {vendor:'EDMCI', flag:'Boilerplate counterparty name', note:'Row 647 — counterparty name appears to be a template placeholder. Verify and correct.'},
+  {vendor:'Fletchline', flag:'Boilerplate counterparty name', note:'Row 666 — counterparty name appears to be a template placeholder. Verify and correct.'},
+  {vendor:'ScanSource', flag:'Not standalone contracts', note:'Rows 828-830 — 3 exhibit files, not standalone contracts. Confirm correct catalog classification.'},
+  {vendor:'Amazon', flag:'MSA expiration check', note:'MSA (2015) — verify whether expiration date is current and whether renewal is needed.'},
+  {vendor:'CEI', flag:'MSA expiration check', note:'MSA — verify expiration date.'},
+  {vendor:'Tevora', flag:'MSA expiration check', note:'MSA (2.12.2024) — verify expiration date.'},
+  {vendor:'Lamb Weston', flag:'Confirmed expired — renewal decision', note:'Expired 2025-02-11. Evergreen policy does NOT apply. Renewal decision needed.'},
+  {vendor:'UNARCO', flag:'Dated expiration — verify', note:'Verify expiration date is accurate.'},
+  {vendor:'Fletchline', flag:'Dated expiration — verify', note:'Verify expiration date is accurate.'},
+  {vendor:'NPI', flag:'Dated expiration — verify', note:'Verify expiration date is accurate.'},
+  {vendor:'Trinity', flag:'Dated expiration — verify', note:'Verify expiration date is accurate.'},
+  {vendor:'EMIT', flag:'Dated expiration — verify', note:'Verify expiration date is accurate.'},
+];
+
+// ══════════════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════════════
+const DT_CLASS = {NDA:'b-nda',MNDA:'b-mnda',MSA:'b-msa',SOW:'b-sow',Subcontract:'b-sub',CDA:'b-cda',EULA:'b-eula',IPA:'b-ipa',PSA:'b-psa',Amendment:'b-amendment',Other:'b-other'};
+
+function esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;'); }
+function badge(t,c){ return `<span class="badge ${c}">${esc(t)}</span>`; }
+
+function daysTo(s){
+  if(!s) return null;
+  const d = new Date(s);
+  if(isNaN(d)) return null;
+  return Math.round((d - today) / 86400000);
 }
 
-// ── Dark mode ──
+function rowClass(r){
+  if(r.Status==='expired') return 'row-red';
+  const d = daysTo(r.ExpirationDate);
+  if(d===null) return '';
+  if(d<=30) return 'row-red';
+  if(d<=90) return 'row-amber';
+  return '';
+}
+
+function expiryTag(r){
+  if(r.Status==='expired'){
+    const d = daysTo(r.ExpirationDate);
+    return `<span class="exp-tag red">Expired${d!==null?' ('+(-d)+'d)':''}</span>`;
+  }
+  const d = daysTo(r.ExpirationDate);
+  if(d===null||d>90) return '';
+  if(d<=30) return `<span class="exp-tag red">⚠ ${d}d</span>`;
+  return `<span class="exp-tag amber">${d}d</span>`;
+}
+
+function daysCell(r){
+  const d = daysTo(r.ExpirationDate);
+  if(d===null) return '<td style="font-size:12px;color:var(--text4)">—</td>';
+  let col='var(--text3)',wt='400',txt=d+'d';
+  if(d<0){col='var(--red)';wt='700';txt=(-d)+'d ago';}
+  else if(d===0){col='var(--red)';wt='700';txt='Today';}
+  else if(d<=30){col='var(--red)';wt='700';}
+  else if(d<=90){col='var(--amber)';wt='700';}
+  return `<td style="font-size:12px;color:${col};font-weight:${wt}">${txt}</td>`;
+}
+
+function fileIcon(ext){
+  const x=(ext||'').toLowerCase();
+  if(x==='.pdf') return '<span class="fi fi-pdf">PDF</span>';
+  if(x==='.docx') return '<span class="fi fi-docx">DOC</span>';
+  if(x==='.doc') return '<span class="fi fi-doc">DOC</span>';
+  if(x==='.msg') return '<span class="fi fi-msg">MSG</span>';
+  return '<span class="fi fi-other">—</span>';
+}
+
+function locBadge(loc){
+  if(loc==='01 Active Contracts') return badge('Active','b-loc-active');
+  if(loc==='02 Unsigned Contracts') return badge('Unsigned','b-loc-unsigned');
+  if(loc==='03 Archived Contracts') return badge('Archived','b-loc-archived');
+  if(loc==='04 Expired Contracts') return badge('Expired','b-loc-expired');
+  return badge(loc||'—','b-loc-archived');
+}
+
+function statusBadge(s){
+  const map={active:'b-active',expired:'b-expired',renewed:'b-renewed',unsigned:'b-unsigned'};
+  return badge(s||'—', map[s]||'b-unknown');
+}
+
+function spUrl(r){
+  const fp = r.FilePath || (r.VendorFolder+'/'+r.Filename);
+  return SP_BASE+'/'+fp.split('/').map(s=>encodeURIComponent(s||'')).join('/')+'?web=1';
+}
+
+// ══════════════════════════════════════════════
+// DARK MODE
+// ══════════════════════════════════════════════
 function toggleDark(){
-  const dark=document.body.classList.toggle('dark');
-  document.getElementById('theme-btn').textContent=dark?'☀️':'🌙';
-  try{localStorage.setItem('cm-theme',dark?'dark':'light')}catch(e){}
+  const d = document.body.classList.toggle('dark');
+  document.getElementById('theme-btn').textContent = d ? '☀️' : '🌙';
+  try{localStorage.setItem('cm-theme',d?'dark':'light')}catch(e){}
 }
 (function(){
-  let saved;try{saved=localStorage.getItem('cm-theme')}catch(e){}
-  const prefersDark=window.matchMedia&&window.matchMedia('(prefers-color-scheme:dark)').matches;
-  if(saved==='dark'||(saved===null&&prefersDark)){document.body.classList.add('dark');document.getElementById('theme-btn').textContent='☀️'}
+  let saved; try{saved=localStorage.getItem('cm-theme')}catch(e){}
+  const pref = window.matchMedia&&window.matchMedia('(prefers-color-scheme:dark)').matches;
+  if(saved==='dark'||(saved===null&&pref)){document.body.classList.add('dark');document.getElementById('theme-btn').textContent='☀️';}
 })();
 
-// ── Settings ──
-function toggleSettings(){if(!adminUnlocked){showAdminLogin();return;}const p=document.getElementById('settings-panel');p.style.display=p.style.display==='none'?'block':'none';}
-
-// ── Column toggle ──
-function toggleColPanel(){const p=document.getElementById('col-panel');p.style.display=p.style.display==='none'?'block':'none'}
-document.addEventListener('click',e=>{if(!e.target.closest('.col-toggle-wrap'))document.getElementById('col-panel').style.display='none'});
-
-// ── Tab system ──
+// ══════════════════════════════════════════════
+// TAB SWITCHING
+// ══════════════════════════════════════════════
 function switchTab(tab){
-  currentTab=tab;
   document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
-  ['catalog','expiring','portfolio','coverage','activity'].forEach(t=>{
-    document.getElementById('tab-'+t).style.display=t===tab?'block':'none';
+  ['catalog','expiring','insights','manage'].forEach(t=>{
+    document.getElementById('tab-'+t).style.display = t===tab?'block':'none';
   });
-  if(tab==='expiring')renderExpiring();
-  if(tab==='portfolio')renderPortfolio();
-  if(tab==='coverage')renderCoverage();
-  if(tab==='activity')renderActivity();
+  if(tab==='expiring') renderExpiring();
+  if(tab==='insights') renderInsights();
+  if(tab==='manage' && adminUnlocked) renderManage();
 }
 
-// ── Stats ──
+function handleManageClick(){
+  if(adminUnlocked){ switchTab('manage'); return; }
+  showAdminLogin();
+}
+
+// ══════════════════════════════════════════════
+// STATS
+// ══════════════════════════════════════════════
 function buildStats(){
-  const signed=DATA.filter(r=>r.SigningStatus==='Signed').length;
-  const active=DATA.filter(r=>r.ContractLocation==='01 Active Contracts').length;
-  const exp90=DATA.filter(r=>{const d=daysTo(r.ExpirationDate);return d!==null&&d<=90&&d>0}).length;
-  const types=new Set(DATA.map(r=>r.DocType).filter(Boolean)).size;
-  const hasExp=DATA.some(r=>daysTo(r.ExpirationDate)!==null);
-  if(hasExp)document.getElementById('exp-legend').style.display='flex';
-  document.getElementById('stats').innerHTML=[
-    ['Total',DATA.length.toLocaleString(),'',false],
-    ['Active',active.toLocaleString(),'',false],
-    ['Unsigned',(DATA.length-active).toLocaleString(),'amber',false],
-    hasExp?['Expiring ≤90d',exp90.toLocaleString(),exp90>0?'amber':'','expiring']:['Doc Types',types,'',false]
-  ].map(([l,v,c,tab])=>`<div class="stat-card ${tab?'clickable':''}" ${tab?`onclick="switchTab('${tab}')"`:''}>
-    <div class="stat-label">${l}</div><div class="stat-value ${c}">${v}</div>
-  </div>`).join('');
+  const inForce = DATA.filter(r=>r.Status==='active'||r.Status==='renewed').length;
+  const expired = DATA.filter(r=>r.Status==='expired').length;
+  const exp90 = DATA.filter(r=>{
+    if(r.Status!=='active'&&r.Status!=='renewed') return false;
+    const d=daysTo(r.ExpirationDate); return d!==null&&d<=90&&d>0;
+  }).length;
+  document.getElementById('stats-row').innerHTML = [
+    {label:'Total',value:DATA.length.toLocaleString(),cls:'',tab:''},
+    {label:'In Force',value:inForce.toLocaleString(),cls:'green',tab:''},
+    {label:'Expired',value:expired.toLocaleString(),cls:expired>0?'red':'',tab:'expiring'},
+    {label:'Expiring ≤90d',value:exp90.toLocaleString(),cls:exp90>0?'amber':'',tab:'expiring'},
+  ].map(s=>`<div class="stat-card${s.tab?' clickable':''}" ${s.tab?`onclick="switchTab('${s.tab}')"`:''}><div class="stat-label">${s.label}</div><div class="stat-value ${s.cls}">${s.value}</div></div>`).join('');
 }
 
-// ── Filters ──
+// ══════════════════════════════════════════════
+// FILTERS (Catalog)
+// ══════════════════════════════════════════════
 function buildFilters(){
-  const HIDDEN_TYPES=new Set(['License','Tax-Form','Insurance','Other']);
-  const allTypes=[...new Set(DATA.map(r=>r.DocType).filter(Boolean))].filter(t=>!HIDDEN_TYPES.has(t)).sort();
-  let h=`<div class="filter-group"><span class="filter-label">Type</span>`;
-  h+=`<button class="chip${af.types.size===0?' active':''}" onclick="setTypeAll()">All</button>`;
-  h+=allTypes.map(t=>`<button class="chip${af.types.has(t)?' active':''}" onclick="toggleType('${e(t)}')">${e(t)}</button>`).join('');
-  h+='</div>';
-  h+=`<div class="filter-group"><span class="filter-label">Folder</span>`;
-  h+=[['All','All'],['01 Active Contracts','01 Active Contracts'],['02 Unsigned Contracts','02 Unsigned Contracts'],['03 Archived Contracts','03 Archived Contracts'],['04 Expired Contracts','04 Expired Contracts']].map(([v,l])=>`<button class="chip${af.loc===v?' active':''}" onclick="setF('loc','${e(v)}')">${l}</button>`).join('');
-  h+='</div>';
-  document.getElementById('filter-bar').innerHTML=h;
+  const HIDDEN = new Set(['License','Tax-Form','Insurance','Other']);
+  const types = [...new Set(DATA.map(r=>r.DocType).filter(Boolean))].filter(t=>!HIDDEN.has(t)).sort();
+  let h = `<div class="filter-group"><span class="filter-label">Type</span>`;
+  h += `<button class="chip${af.types.size===0?' active':''}" onclick="setTypeAll()">All</button>`;
+  h += types.map(t=>`<button class="chip${af.types.has(t)?' active':''}" onclick="toggleType('${esc(t)}')">${esc(t)}</button>`).join('');
+  h += '</div>';
+  h += `<div class="filter-group"><span class="filter-label">Status</span>`;
+  h += [['All','All'],['active','Active'],['expired','Expired'],['renewed','Renewed'],['unsigned','Unsigned']].map(([v,l])=>`<button class="chip${af.status===v?' active':''}" onclick="setAf('status','${v}')">${l}</button>`).join('');
+  h += '</div>';
+  h += `<div class="filter-group"><span class="filter-label">Folder</span>`;
+  h += [['All','All'],['01 Active Contracts','Active'],['02 Unsigned Contracts','Unsigned'],['03 Archived Contracts','Archived'],['04 Expired Contracts','Expired']].map(([v,l])=>`<button class="chip${af.loc===v?' active':''}" onclick="setAf('loc','${esc(v)}')">${l}</button>`).join('');
+  h += '</div>';
+  document.getElementById('filter-bar').innerHTML = h;
 }
-function setTypeAll(){af.types.clear();buildFilters();go()}
-function toggleType(t){af.types.has(t)?af.types.delete(t):af.types.add(t);buildFilters();go()}
-function setF(k,v){af[k]=v;buildFilters();go()}
+function setTypeAll(){ af.types.clear(); buildFilters(); go(); }
+function toggleType(t){ af.types.has(t)?af.types.delete(t):af.types.add(t); buildFilters(); go(); }
+function setAf(k,v){ af[k]=v; buildFilters(); go(); }
 
-// ── Search ──
+// ══════════════════════════════════════════════
+// SEARCH
+// ══════════════════════════════════════════════
 function onSearch(){
-  const q=document.getElementById('q').value;
-  document.getElementById('clear-btn').classList.toggle('show',q.length>0);
+  const q = document.getElementById('q').value;
+  document.getElementById('clear-x').classList.toggle('show',q.length>0);
   go();
 }
-function clearSearch(){document.getElementById('q').value='';document.getElementById('clear-btn').classList.remove('show');go()}
+function clearSearch(){ document.getElementById('q').value=''; document.getElementById('clear-x').classList.remove('show'); go(); }
 
-// ── Sort ──
-function sortBy(f){sf===f?sd*=-1:(sf=f,sd=1);renderThead();go()}
-function renderThead(){
-  const cols=getColumns();
-  document.getElementById('thead-row').innerHTML=cols.map(c=>
-    c.isCheck
-      ?`<th style="width:32px;text-align:center" class="no-sort"><input type="checkbox" id="catalog-sel-all" onchange="selectAllCatalog(this)" title="Select / deselect all visible"></th>`
-      :`<th style="width:${c.w}" class="${c.sort?'':'no-sort'}" ${c.sort?`onclick="sortBy('${c.field}')"`:''}>${c.label}${c.sort?`<span id="si-${c.field}" class="sort-icon ${sf===c.field?'active':''}">${sf===c.field?(sd===1?'▲':'▼'):'↕'}</span>`:''}</th>`
-  ).join('');
-}
+// ══════════════════════════════════════════════
+// SORT & COLUMNS
+// ══════════════════════════════════════════════
+function sortBy(f){ sortField===f?sortDir*=-1:(sortField=f,sortDir=1); go(); }
+
 function getColumns(){
-  const showNotes=document.getElementById('col-notes')?.checked;
-  const showVer=document.getElementById('col-version')?.checked;
-  const showAmend=document.getElementById('col-amendment')?.checked;
-  const showExpires=document.getElementById('col-expires')?.checked!==false;
-  const showDaysLeft=document.getElementById('col-daysleft')?.checked!==false;
-  const cols=[
-    {label:'',field:'',w:'32px',sort:false,isCheck:true},
-    {label:'Counterparty',field:'CounterpartyName',w:'18%',sort:true},
+  const showExp = document.getElementById('col-expires')?.checked!==false;
+  const showDL  = document.getElementById('col-daysleft')?.checked!==false;
+  const showNot = document.getElementById('col-notes')?.checked;
+  const showVer = document.getElementById('col-version')?.checked;
+  const cols = [
+    {label:'Counterparty',field:'CounterpartyName',w:'20%',sort:true},
     {label:'Type',field:'DocType',w:'7%',sort:false},
-    {label:'Status',field:'',w:'7%',sort:false},
-    {label:'Folder',field:'',w:'7%',sort:false},
-    {label:'Filename',field:'Filename',w:'22%',sort:true},
+    {label:'Status',field:'Status',w:'7%',sort:false},
+    {label:'Folder',field:'ContractLocation',w:'8%',sort:false},
+    {label:'Filename',field:'Filename',w:'auto',sort:true},
     {label:'Effective',field:'EffectiveDate',w:'8%',sort:true},
-    {label:'',field:'',w:'10%',sort:false},
   ];
-  if(showExpires)cols.splice(7,0,{label:'Expires',field:'ExpirationDate',w:'9%',sort:true});
-  if(showDaysLeft)cols.splice(showExpires?8:7,0,{label:'Days Left',field:'DaysUntilExpiration',w:'7%',sort:true});
-  if(showNotes)cols.splice(6,0,{label:'Notes',field:'Notes',w:'12%',sort:false});
-  if(showVer)cols.splice(6,0,{label:'Ver',field:'VersionLabel',w:'6%',sort:false});
-  if(showAmend)cols.splice(6,0,{label:'Amend #',field:'AmendmentNumber',w:'7%',sort:false});
+  if(showExp) cols.push({label:'Expires',field:'ExpirationDate',w:'9%',sort:true});
+  if(showDL)  cols.push({label:'Days Left',field:'DaysUntilExpiration',w:'7%',sort:true});
+  if(showNot) cols.push({label:'Notes',field:'Notes',w:'12%',sort:false});
+  if(showVer) cols.push({label:'Version',field:'VersionLabel',w:'6%',sort:false});
+  cols.push({label:'',field:'',w:'90px',sort:false});
   return cols;
 }
 
-// ── Recently viewed ──
-function addRecent(r){
-  recentlyViewed=recentlyViewed.filter(x=>x.Filename!==r.Filename);
-  recentlyViewed.unshift(r);
-  if(recentlyViewed.length>5)recentlyViewed.pop();
-  renderRecent();
-}
-function renderRecent(){
-  const bar=document.getElementById('recent-bar');
-  const items=document.getElementById('recent-items');
-  if(!recentlyViewed.length){bar.classList.remove('show');return}
-  bar.classList.add('show');
-  items.innerHTML=recentlyViewed.map(r=>`<a href="${spUrl(r)}" target="_blank" rel="noopener" class="recent-item" onclick="addRecent(JSON.parse(decodeURIComponent('${encodeURIComponent(JSON.stringify(r))}')))">${fileIcon(r.Extension)}<span>${e(r.CounterpartyName||'')}</span></a>`).join('');
+function renderThead(){
+  const cols = getColumns();
+  document.getElementById('thead-row').innerHTML = cols.map(c=>
+    `<th style="width:${c.w}" class="${c.sort?'':'no-sort'}" ${c.sort?`onclick="sortBy('${c.field}')"`:''}>${c.label}${c.sort?`<span class="sort-icon${sortField===c.field?' on':''}"> ${sortField===c.field?(sortDir===1?'▲':'▼'):'↕'}</span>`:''}</th>`
+  ).join('');
 }
 
-// ── Copy link ──
-function copyLink(url,btn){
-  navigator.clipboard.writeText(url).then(()=>{
-    btn.classList.add('copied');
-    btn.querySelector('.tooltip').textContent='Copied!';
-    setTimeout(()=>{btn.classList.remove('copied');btn.querySelector('.tooltip').textContent='Copy link'},1500);
-  }).catch(()=>{
-    btn.querySelector('.tooltip').textContent='Failed';
-    btn.classList.add('copied');
-    setTimeout(()=>{btn.classList.remove('copied')},1500);
-  });
-}
-
-// ── Main filter + render ──
+// ══════════════════════════════════════════════
+// MAIN FILTER + RENDER
+// ══════════════════════════════════════════════
 function go(){
-  const q=(document.getElementById('q').value||'').trim().toLowerCase();
-  filtered=DATA.filter(r=>{
-    if(af.types.size>0&&!af.types.has(r.DocType))return false;
-    if(af.status!=='All'&&r.SigningStatus!==af.status)return false;
-    if(af.loc!=='All'&&r.ContractLocation!==af.loc)return false;
+  const q = (document.getElementById('q').value||'').trim().toLowerCase();
+  filtered = DATA.filter(r=>{
+    if(af.types.size>0&&!af.types.has(r.DocType)) return false;
+    if(af.status!=='All'&&r.Status!==af.status) return false;
+    if(af.loc!=='All'&&r.ContractLocation!==af.loc) return false;
     if(q){
       const n=(r.CounterpartyName||'').toLowerCase();
       const fn=(r.Filename||'').toLowerCase();
-      if(!n.includes(q)&&!fn.includes(q))return false;
+      if(!n.includes(q)&&!fn.includes(q)) return false;
     }
     return true;
   });
   filtered.sort((a,b)=>{
-    if(sf==='DaysUntilExpiration'){
+    if(sortField==='DaysUntilExpiration'){
       const an=daysTo(a.ExpirationDate),bn=daysTo(b.ExpirationDate);
-      if(an===bn)return 0;
-      if(an===null)return 1;   // non-date expirations always sort last
-      if(bn===null)return -1;
-      return (an-bn)*sd;
+      if(an===bn) return 0;
+      if(an===null) return 1;
+      if(bn===null) return -1;
+      return (an-bn)*sortDir;
     }
-    const av=(a[sf]||'').toLowerCase(),bv=(b[sf]||'').toLowerCase();
-    return av<bv?-sd:av>bv?sd:0;
+    const av=(a[sortField]||'').toLowerCase(),bv=(b[sortField]||'').toLowerCase();
+    return av<bv?-sortDir:av>bv?sortDir:0;
   });
   renderThead();
   renderTable(q);
@@ -649,1005 +812,592 @@ function go(){
 
 function renderTable(q){
   const LIMIT=500;
-  const tbody=document.getElementById('tbody');
-  const cardList=document.getElementById('card-list');
-  const empty=document.getElementById('empty');
-  const showNotes=document.getElementById('col-notes')?.checked;
-  const showVer=document.getElementById('col-version')?.checked;
-  const showAmend=document.getElementById('col-amendment')?.checked;
-  const showExpires=document.getElementById('col-expires')?.checked!==false;
-  const showDaysLeft=document.getElementById('col-daysleft')?.checked!==false;
+  const tbody   = document.getElementById('tbody');
+  const cardList= document.getElementById('card-list');
+  const empty   = document.getElementById('empty-state');
+  const showExp = document.getElementById('col-expires')?.checked!==false;
+  const showDL  = document.getElementById('col-daysleft')?.checked!==false;
+  const showNot = document.getElementById('col-notes')?.checked;
+  const showVer = document.getElementById('col-version')?.checked;
 
-  renderCatalogMeta();
+  const n = Math.min(filtered.length,LIMIT);
+  document.getElementById('tbl-meta').textContent = `Showing ${n.toLocaleString()} of ${filtered.length.toLocaleString()} · ${DATA.length.toLocaleString()} total`;
 
   if(!filtered.length){
-    tbody.innerHTML='';cardList.innerHTML='';empty.style.display='block';
-    const sugg=getSuggestions(q);
-    document.getElementById('empty-msg').textContent=sugg.types.length?'No results — did you mean:':'Try a different search term or clear your filters.';
-    document.getElementById('suggestions').innerHTML=sugg.types.map(t=>`<button class="sug-chip" onclick="toggleType('${t}');clearSearch()">${t}</button>`).join('');
-    return;
+    tbody.innerHTML=''; cardList.innerHTML=''; empty.style.display='block'; return;
   }
   empty.style.display='none';
-  const slice=filtered.slice(0,LIMIT);
+  const slice = filtered.slice(0,LIMIT);
 
-  tbody.innerHTML=slice.map(r=>{
-    const ec=expiryClass(r);
-    const dtc=DT_CLASS[r.DocType]||'b-other';
-    const stc=r.SigningStatus==='Signed'?'b-signed':'b-unsigned';
-    const locB=r.ContractLocation==='01 Active Contracts'?badge('Active','b-active'):badge('Unsigned','b-unsigned');
-    const fn=r.Filename||'';
-    const trunc=fn.length>46?fn.slice(0,43)+'…':fn;
-    const expB=expiryBadge(r);
-    const date=(r.EffectiveDate||'').slice(0,10)||'—';
-    const url=spUrl(r);
-    const rj=encodeURIComponent(JSON.stringify(r));
-    const fp=r.FilePath||r.Filename;
-    let extra='';
-    if(showAmend)extra+=`<td style="font-size:12px;color:var(--text3)">${e(r.AmendmentNumber)||'—'}</td>`;
-    if(showVer)extra+=`<td style="font-size:12px;color:var(--text3)">${e(r.VersionLabel)||'—'}</td>`;
-    if(showNotes)extra+=`<td style="font-size:12px;color:var(--text3)" title="${e(r.Notes)}">${e((r.Notes||'').slice(0,40))||'—'}</td>`;
-    const exp=r.ExpirationDate||'';
-    const expStyle=exp&&exp.match(/^\d{4}-\d{2}-\d{2}$/)&&exp<new Date().toISOString().slice(0,10)?'color:#dc2626;font-weight:600':'color:var(--text3)';
-    const expDisplay=exp.match(/^\d{4}-\d{2}-\d{2}$/)?exp.slice(0,10):exp||'—';
-    const expiresCell=showExpires?`<td style="font-size:12px;${expStyle}">${e(expDisplay)}</td>`:'';
-    extra=expiresCell+(showDaysLeft?daysLeftCell(r):'')+extra;
-    return`<tr class="${ec}">
-      <td style="text-align:center;padding:4px 6px"><input type="checkbox" class="row-cb" data-fp="${e(fp)}" ${catalogSelected.has(fp)?'checked':''} onchange="toggleCatalogRow(this)"></td>
-      <td title="${e(r.CounterpartyName)}">${e(r.CounterpartyName||'—')}</td>
+  tbody.innerHTML = slice.map(r=>{
+    const rc = rowClass(r);
+    const dtc = DT_CLASS[r.DocType]||'b-other';
+    const fn = r.Filename||'';
+    const trunc = fn.length>44?fn.slice(0,41)+'…':fn;
+    const url = spUrl(r);
+    const rj = encodeURIComponent(JSON.stringify(r));
+    const expB = expiryTag(r);
+    let extra = '';
+    const expDate = (r.ExpirationDate||'').slice(0,10)||'—';
+    const expStyle = r.ExpirationDate&&r.ExpirationDate<new Date().toISOString().slice(0,10)?'color:var(--red);font-weight:700':'color:var(--text3)';
+    if(showExp) extra += `<td style="font-size:12px;${expStyle}">${expDate}</td>`;
+    if(showDL)  extra += daysCell(r);
+    if(showNot) extra += `<td style="font-size:12px;color:var(--text3)" title="${esc(r.Notes)}">${esc((r.Notes||'').slice(0,35))||'—'}</td>`;
+    if(showVer) extra += `<td style="font-size:12px;color:var(--text3)">${esc(r.VersionLabel)||'—'}</td>`;
+    return `<tr class="${rc}">
+      <td title="${esc(r.CounterpartyName)}">${esc(r.CounterpartyName||'—')}</td>
       <td>${badge(r.DocType||'—',dtc)}</td>
-      <td>${badge(r.SigningStatus||'—',stc)}</td>
-      <td>${locB}</td>
-      <td title="${e(fn)}" style="font-family:monospace;font-size:11px;color:var(--text3)">
-        <div class="fn-cell">${fileIcon(r.Extension)}${e(trunc)}${expB?' '+expB:''}</div>
+      <td>${statusBadge(r.Status)}</td>
+      <td>${locBadge(r.ContractLocation)}</td>
+      <td title="${esc(fn)}" style="font-family:monospace;font-size:11px;color:var(--text3)">
+        <div class="fn-wrap">${fileIcon(r.Extension)}${esc(trunc)}${expB}</div>
       </td>
-      <td style="font-size:12px;color:var(--text3)">${date}</td>
+      <td style="font-size:12px;color:var(--text3)">${(r.EffectiveDate||'').slice(0,10)||'—'}</td>
       ${extra}
       <td>
-        <div class="action-cell">
-          <a href="${url}" target="_blank" rel="noopener" class="open-btn" onclick="addRecent(JSON.parse(decodeURIComponent('${rj}')))">
+        <div style="display:flex;align-items:center;gap:4px">
+          <a href="${url}" target="_blank" rel="noopener" class="open-btn">
             <svg width="10" height="10" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
             Open
           </a>
           <button class="copy-btn" onclick="copyLink('${url}',this)" title="Copy link">
-            <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path stroke-linecap="round" stroke-linejoin="round" d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
-            <span class="tooltip">Copy link</span>
+            <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path stroke-linecap="round" stroke-linejoin="round" d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+            <span class="copy-tip">Copy link</span>
           </button>
         </div>
       </td>
     </tr>`;
-  }).join('')+(filtered.length>LIMIT?`<tr><td colspan="21" style="text-align:center;padding:10px;font-size:12px;color:var(--text4)">Showing first ${LIMIT} of ${filtered.length.toLocaleString()} — refine search to see more</td></tr>`:'');
+  }).join('') + (filtered.length>LIMIT?`<tr><td colspan="12" style="text-align:center;padding:10px;font-size:12px;color:var(--text4)">Showing first ${LIMIT} of ${filtered.length.toLocaleString()} — refine search to see more</td></tr>`:'');
 
   // Mobile cards
-  cardList.innerHTML=slice.map(r=>{
-    const ec=expiryClass(r);
-    const url=spUrl(r);
-    const fn=r.Filename||'';
-    const trunc=fn.length>48?fn.slice(0,45)+'…':fn;
+  cardList.innerHTML = slice.map(r=>{
+    const rc=rowClass(r); const url=spUrl(r);
+    const fn=r.Filename||''; const trunc=fn.length>46?fn.slice(0,43)+'…':fn;
     const rj=encodeURIComponent(JSON.stringify(r));
-    return`<div class="contract-card ${ec}">
-      <div class="card-top"><span class="card-name">${e(r.CounterpartyName||'—')}</span>${expiryBadge(r)}</div>
-      <div class="card-badges">${badge(r.DocType||'—',DT_CLASS[r.DocType]||'b-other')}${badge(r.SigningStatus||'—',r.SigningStatus==='Signed'?'b-signed':'b-unsigned')}${r.ContractLocation==='01 Active Contracts'?badge('Active','b-active'):badge('Unsigned','b-unsigned')}</div>
-      <div class="card-fn">${fileIcon(r.Extension)}<span>${e(trunc)}</span></div>
+    return `<div class="contract-card ${rc}">
+      <div class="card-top"><span class="card-name">${esc(r.CounterpartyName||'—')}</span>${expiryTag(r)}</div>
+      <div class="card-badges">${badge(r.DocType||'—',DT_CLASS[r.DocType]||'b-other')}${statusBadge(r.Status)}${locBadge(r.ContractLocation)}</div>
+      <div class="card-fn">${fileIcon(r.Extension)}${esc(trunc)}</div>
       <div class="card-footer">
         <span class="card-date">${(r.EffectiveDate||'').slice(0,10)||'—'}</span>
-        <div style="display:flex;gap:4px">
-          <a href="${url}" target="_blank" rel="noopener" class="open-btn" onclick="addRecent(JSON.parse(decodeURIComponent('${rj}')))">Open</a>
-          <button class="copy-btn" onclick="copyLink('${url}',this)" title="Copy link"><svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path stroke-linecap="round" stroke-linejoin="round" d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg><span class="tooltip">Copy link</span></button>
-        </div>
+        <a href="${url}" target="_blank" rel="noopener" class="open-btn">Open</a>
       </div>
     </div>`;
   }).join('');
-  syncCatalogSelUI();
 }
 
-// ── Catalog selection ──
-function toggleCatalogRow(cb){if(cb.checked)catalogSelected.add(cb.dataset.fp);else catalogSelected.delete(cb.dataset.fp);syncCatalogSelUI();}
-function selectAllCatalog(cb){if(cb.checked)filtered.forEach(r=>catalogSelected.add(r.FilePath||r.Filename));else filtered.forEach(r=>catalogSelected.delete(r.FilePath||r.Filename));document.querySelectorAll('#tbody .row-cb').forEach(c=>c.checked=cb.checked);syncCatalogSelUI();}
-function syncCatalogSelUI(){const cbs=[...document.querySelectorAll('#tbody .row-cb')];const hdr=document.getElementById('catalog-sel-all');if(hdr){const n=cbs.filter(c=>c.checked).length;hdr.checked=cbs.length>0&&n===cbs.length;hdr.indeterminate=n>0&&n<cbs.length;}renderCatalogMeta();}
-function renderCatalogMeta(){const n=Math.min(filtered.length,500);let txt='Showing '+n.toLocaleString()+' of '+filtered.length.toLocaleString()+' \xb7 '+DATA.length.toLocaleString()+' total';if(catalogSelected.size)txt+=' &nbsp;<span style="color:var(--blue);font-weight:600">'+catalogSelected.size+' selected</span> <button onclick="clearCatalogSel()" style="font-size:11px;border:none;background:none;color:var(--text3);cursor:pointer;padding:0 2px">\xd7 clear</button>';document.getElementById('meta').innerHTML=txt;}
-function clearCatalogSel(){catalogSelected.clear();document.querySelectorAll('#tbody .row-cb').forEach(c=>c.checked=false);const hdr=document.getElementById('catalog-sel-all');if(hdr){hdr.checked=false;hdr.indeterminate=false;}renderCatalogMeta();}
-// ── Owner selection ──
-function toggleOwnerRow(cb){if(cb.checked)ownerSelected.add(cb.dataset.fp);else ownerSelected.delete(cb.dataset.fp);syncOwnerSelUI();}
-function selectAllOwner(cb){if(cb.checked)ownerFiltered.forEach(r=>ownerSelected.add(r.FilePath||r.Filename));else ownerFiltered.forEach(r=>ownerSelected.delete(r.FilePath||r.Filename));document.querySelectorAll('#own-tbody .row-cb').forEach(c=>c.checked=cb.checked);syncOwnerSelUI();}
-function syncOwnerSelUI(){const cbs=[...document.querySelectorAll('#own-tbody .row-cb')];const hdr=document.getElementById('owner-sel-all');if(hdr){const n=cbs.filter(c=>c.checked).length;hdr.checked=cbs.length>0&&n===cbs.length;hdr.indeterminate=n>0&&n<cbs.length;}renderOwnerMeta();}
-function renderOwnerMeta(){const n=Math.min(ownerFiltered.length,500);let txt='Showing '+n.toLocaleString()+' of '+ownerFiltered.length.toLocaleString()+' \xb7 '+DATA.length.toLocaleString()+' total';if(ownerSelected.size)txt+=' &nbsp;<span style="color:var(--blue);font-weight:600">'+ownerSelected.size+' selected</span> <button onclick="clearOwnerSel()" style="font-size:11px;border:none;background:none;color:var(--text3);cursor:pointer;padding:0 2px">\xd7 clear</button>';document.getElementById('own-meta').innerHTML=txt;}
-function clearOwnerSel(){ownerSelected.clear();document.querySelectorAll('#own-tbody .row-cb').forEach(c=>c.checked=false);const hdr=document.getElementById('owner-sel-all');if(hdr){hdr.checked=false;hdr.indeterminate=false;}renderOwnerMeta();}
+function toggleColPanel(){
+  const p=document.getElementById('col-panel');
+  p.style.display=p.style.display==='none'?'block':'none';
+}
+document.addEventListener('click',e=>{
+  if(!e.target.closest('.col-toggle-wrap')) document.getElementById('col-panel').style.display='none';
+});
 
-// ── Export CSV ──
+// ══════════════════════════════════════════════
+// COPY LINK
+// ══════════════════════════════════════════════
+function copyLink(url,btn){
+  navigator.clipboard.writeText(url).then(()=>{
+    btn.classList.add('copied');
+    btn.querySelector('.copy-tip').textContent='Copied!';
+    setTimeout(()=>{btn.classList.remove('copied');btn.querySelector('.copy-tip').textContent='Copy link';},1500);
+  });
+}
+
+// ══════════════════════════════════════════════
+// EXPORT CSV
+// ══════════════════════════════════════════════
 function exportCSV(){
-  const cols=['CounterpartyName','DocType','SigningStatus','ContractLocation','Filename','EffectiveDate','ExpirationDate','DaysUntilExpiration','Notes'];
+  const cols=['CounterpartyName','DocType','Status','ContractLocation','Filename','EffectiveDate','ExpirationDate','DaysUntilExpiration','Notes'];
   const rows=[cols.join(','),...filtered.map(r=>cols.map(c=>`"${(r[c]||'').replace(/"/g,'""')}"`).join(','))];
+  dl(rows.join('\n'),'text/csv','contracts-filtered-'+ts()+'.csv');
+}
+function exportCSVFull(){
+  if(!DATA.length) return;
+  const cols=Object.keys(DATA[0]);
+  const rows=[cols.join(','),...DATA.map(r=>cols.map(c=>`"${(r[c]||'').replace(/"/g,'""')}"`).join(','))];
+  dl(rows.join('\n'),'text/csv','contract-catalog-'+ts()+'.csv');
+}
+function exportHTML(){
+  const dataJS='let DATA='+JSON.stringify(DATA)+';';
+  const src=document.documentElement.outerHTML;
+  const updated=src.replace(/let DATA\s*=\s*\[[\s\S]*?\];/,dataJS);
+  dl(updated,'text/html','index.html');
+}
+function dl(content,type,name){
   const a=document.createElement('a');
-  a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(rows.join('\n'));
-  a.download='contracts-filtered-'+new Date().toISOString().slice(0,10)+'.csv';
-  a.click();
+  a.href='data:'+type+';charset=utf-8,'+encodeURIComponent(content);
+  a.download=name; a.click();
 }
+function ts(){ return new Date().toISOString().slice(0,10); }
 
-// ── Suggestions ──
-function getSuggestions(q){
-  if(!q||q.length<2)return{types:[],names:[]};
-  const ql=q.toLowerCase();
-  const types=[];
-  for(const[k,v]of Object.entries(SUGGEST_MAP)){if(ql.includes(k))v.forEach(t=>{if(!types.includes(t))types.push(t)})}
-  return{types,names:[]};
-}
-
-// ── EXPIRING TAB ──
+// ══════════════════════════════════════════════
+// EXPIRING TAB
+// ══════════════════════════════════════════════
 function renderExpiring(){
-  const expired=DATA.filter(r=>{const d=daysTo(r.ExpirationDate);return d!==null&&d<=0});
-  const d30=DATA.filter(r=>{const d=daysTo(r.ExpirationDate);return d!==null&&d>0&&d<=30});
-  const d90=DATA.filter(r=>{const d=daysTo(r.ExpirationDate);return d!==null&&d>30&&d<=90});
-  const hasAny=expired.length||d30.length||d90.length;
+  const expired = DATA.filter(r=>r.Status==='expired').sort((a,b)=>{
+    const da=daysTo(a.ExpirationDate)||0, db=daysTo(b.ExpirationDate)||0; return da-db;
+  });
+  const d30 = DATA.filter(r=>{
+    if(r.Status!=='active'&&r.Status!=='renewed') return false;
+    const d=daysTo(r.ExpirationDate); return d!==null&&d>0&&d<=30;
+  }).sort((a,b)=>daysTo(a.ExpirationDate)-daysTo(b.ExpirationDate));
+  const d90 = DATA.filter(r=>{
+    if(r.Status!=='active'&&r.Status!=='renewed') return false;
+    const d=daysTo(r.ExpirationDate); return d!==null&&d>30&&d<=90;
+  }).sort((a,b)=>daysTo(a.ExpirationDate)-daysTo(b.ExpirationDate));
 
-  if(!hasAny){
-    document.getElementById('exp-content').innerHTML=`<div class="panel"><div style="text-align:center;padding:40px;color:var(--text4)"><div style="font-size:40px;margin-bottom:12px">📅</div><h3 style="font-size:15px;font-weight:500;color:var(--text3);margin-bottom:8px">No expiration data yet</h3><p style="font-size:13px">Populate the ExpirationDate column in your CSV and regenerate to see expiring contracts here.</p></div></div>`;
-    return;
-  }
-
-  function expTable(rows,cls){
-    if(!rows.length)return'<p style="font-size:13px;color:var(--text4);padding:8px 0">None</p>';
-    return`<div style="overflow-x:auto"><table class="cov-table">
+  function expTable(rows,tagCls){
+    if(!rows.length) return '<p style="font-size:13px;color:var(--text4);padding:8px 0">None</p>';
+    return `<div style="overflow-x:auto"><table class="cov-table">
       <thead><tr><th>Counterparty</th><th>Type</th><th>Filename</th><th>Expires</th><th></th></tr></thead>
       <tbody>${rows.map(r=>`<tr>
-        <td>${e(r.CounterpartyName||'—')}</td>
+        <td>${esc(r.CounterpartyName||'—')}</td>
         <td>${badge(r.DocType||'—',DT_CLASS[r.DocType]||'b-other')}</td>
-        <td style="font-family:monospace;font-size:11px;color:var(--text3)" title="${e(r.Filename)}">${e((r.Filename||'').slice(0,40))}</td>
-        <td><span class="exp-badge ${cls}">${r.ExpirationDate||'—'}</span></td>
+        <td style="font-family:monospace;font-size:11px;color:var(--text3)" title="${esc(r.Filename)}">${esc((r.Filename||'').slice(0,38))}</td>
+        <td><span class="exp-tag ${tagCls}">${(r.ExpirationDate||'—').slice(0,10)}</span></td>
         <td><a href="${spUrl(r)}" target="_blank" rel="noopener" class="open-btn">Open</a></td>
       </tr>`).join('')}</tbody>
     </table></div>`;
   }
 
-  document.getElementById('exp-content').innerHTML=`
-    <div class="panel"><div class="exp-group"><div class="exp-group-title" style="color:var(--red)">Expired <span class="exp-count red">${expired.length}</span></div>${expTable(expired,'exp-red-b')}</div></div>
-    <div class="panel"><div class="exp-group"><div class="exp-group-title" style="color:var(--red)">Expiring within 30 days <span class="exp-count red">${d30.length}</span></div>${expTable(d30,'exp-red-b')}</div></div>
-    <div class="panel"><div class="exp-group"><div class="exp-group-title" style="color:var(--amber)">Expiring within 90 days <span class="exp-count amber">${d90.length}</span></div>${expTable(d90,'exp-amber-b')}</div></div>`;
+  document.getElementById('expiring-content').innerHTML = `
+    <div class="panel">
+      <div class="exp-section-hdr"><span class="exp-section-title" style="color:var(--red)">Expired</span><span class="exp-count-badge red">${expired.length}</span></div>
+      ${expTable(expired,'red')}
+    </div>
+    <div class="panel">
+      <div class="exp-section-hdr"><span class="exp-section-title" style="color:var(--red)">Expiring within 30 days</span><span class="exp-count-badge red">${d30.length}</span></div>
+      ${expTable(d30,'red')}
+    </div>
+    <div class="panel">
+      <div class="exp-section-hdr"><span class="exp-section-title" style="color:var(--amber)">Expiring within 90 days</span><span class="exp-count-badge amber">${d90.length}</span></div>
+      ${expTable(d90,'amber')}
+    </div>`;
 }
 
-// ── PORTFOLIO TAB ──
-function renderPortfolio(){
-  const byType={};const byStatus={};const byLoc={};
+// ══════════════════════════════════════════════
+// INSIGHTS TAB
+// ══════════════════════════════════════════════
+function renderInsights(){
+  // Portfolio
+  const byType={}, byLoc={};
   DATA.forEach(r=>{
     byType[r.DocType]=(byType[r.DocType]||0)+1;
-    byStatus[r.SigningStatus]=(byStatus[r.SigningStatus]||0)+1;
     byLoc[r.ContractLocation]=(byLoc[r.ContractLocation]||0)+1;
   });
-  const maxT=Math.max(...Object.values(byType));
-  const maxV=DATA.length;
+  const maxT = Math.max(...Object.values(byType));
 
-  function portList(obj,max,colorFn){
+  function portList(obj,max){
     return Object.entries(obj).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`
       <li class="port-item">
-        <span style="min-width:90px;font-size:12px">${e(k)}</span>
-        <div class="port-bar-wrap"><div class="port-bar" style="width:${Math.round(v/max*100)}%;background:${colorFn?colorFn(k):'var(--blue)'}"></div></div>
-        <span class="port-num">${v.toLocaleString()}</span>
+        <span style="min-width:80px;font-size:12px">${esc(k)||'—'}</span>
+        <div class="port-bar-track"><div class="port-bar-fill" style="width:${Math.round(v/max*100)}%"></div></div>
+        <span class="port-num">${v}</span>
       </li>`).join('');
   }
 
-  const signed=byStatus['Signed']||0;
-  const unsigned=byStatus['Unsigned']||0;
-
-  document.getElementById('portfolio-content').innerHTML=`
-    <div class="stats-row" style="margin-bottom:16px">
-      <div class="stat-card"><div class="stat-label">Total Contracts</div><div class="stat-value">${DATA.length.toLocaleString()}</div></div>
-      <div class="stat-card"><div class="stat-label">Signed</div><div class="stat-value green">${signed.toLocaleString()}</div></div>
-      <div class="stat-card"><div class="stat-label">Unsigned</div><div class="stat-value amber">${unsigned.toLocaleString()}</div></div>
-      <div class="stat-card"><div class="stat-label">Counterparties</div><div class="stat-value">${new Set(DATA.map(r=>r.CounterpartyName).filter(Boolean)).size.toLocaleString()}</div></div>
-    </div>
-    <div class="port-grid">
-      <div class="panel"><div class="panel-title">By Document Type</div><ul class="port-list">${portList(byType,maxT,k=>DT_CLASS[k]?'var(--blue)':'var(--blue)')}</ul></div>
-      <div class="panel"><div class="panel-title">By Folder</div><ul class="port-list">${portList(byLoc,maxV,k=>k==='01 Active Contracts'?'var(--green)':'var(--amber)')}</ul></div>
-    </div>`;
-}
-
-// ── COVERAGE TAB ──
-function renderCoverage(){
+  // Coverage
   const cp={};
   DATA.forEach(r=>{
-    const n=r.CounterpartyName;if(!n)return;
-    if(!cp[n])cp[n]={ndaTypes:new Set(),msaTypes:new Set(),projectTypes:new Set(),all:new Set()};
-    cp[n].all.add(r.DocType);
-    if(['NDA','MNDA','CDA'].includes(r.DocType))cp[n].ndaTypes.add(r.DocType);
-    if(['MSA','IPA'].includes(r.DocType))cp[n].msaTypes.add(r.DocType);
-    if(['SOW','PSA','Subcontract'].includes(r.DocType))cp[n].projectTypes.add(r.DocType);
+    const n=r.CounterpartyName; if(!n) return;
+    if(!cp[n]) cp[n]={nda:false,msa:false,project:false,types:new Set()};
+    cp[n].types.add(r.DocType);
+    if(['NDA','MNDA','CDA'].includes(r.DocType)) cp[n].nda=true;
+    if(['MSA','IPA'].includes(r.DocType)) cp[n].msa=true;
+    if(['SOW','PSA','Subcontract'].includes(r.DocType)) cp[n].project=true;
   });
+  const gaps = Object.entries(cp).filter(([,v])=>(v.msa&&!v.nda)||(v.nda&&!v.msa)).sort((a,b)=>a[0].localeCompare(b[0]));
 
-  let filter='gaps';
-  function render(f){
-    filter=f;
-    const rows=Object.entries(cp).filter(([n,v])=>{
-      if(f==='all')return true;
-      if(f==='gaps')return v.msaTypes.size>0&&v.ndaTypes.size===0||v.ndaTypes.size>0&&v.msaTypes.size===0;
-      if(f==='no-msa')return v.ndaTypes.size>0&&v.msaTypes.size===0;
-      if(f==='no-nda')return v.msaTypes.size>0&&v.ndaTypes.size===0;
-      return true;
-    }).sort((a,b)=>a[0].localeCompare(b[0]));
+  const signed   = DATA.filter(r=>r.SigningStatus==='Signed').length;
+  const unsigned = DATA.filter(r=>r.SigningStatus==='Unsigned').length;
+  const cps      = Object.keys(cp).length;
 
-    const tbody=rows.map(([n,v])=>`<tr>
-      <td title="${e(n)}" style="max-width:180px;overflow:hidden;text-overflow:ellipsis">${e(n)}</td>
-      <td style="text-align:center">${v.ndaTypes.size>0?'<span class="cov-check">✓</span>':'<span class="cov-x">✗</span>'}</td>
-      <td style="text-align:center">${v.msaTypes.size>0?'<span class="cov-check">✓</span>':'<span class="cov-x">✗</span>'}</td>
-      <td style="text-align:center">${v.projectTypes.size>0?'<span class="cov-check">✓</span>':'<span class="cov-x">✗</span>'}</td>
-      <td style="font-size:11px;color:var(--text3)">${[...v.all].sort().join(', ')}</td>
-    </tr>`).join('');
-
-    document.getElementById('cov-body').innerHTML=tbody||`<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--text4)">No counterparties match this filter</td></tr>`;
-    document.getElementById('cov-count').textContent=rows.length.toLocaleString()+' counterparties';
-    document.querySelectorAll('.cov-chip').forEach(b=>b.classList.toggle('active',b.dataset.f===filter));
-  }
-
-  document.getElementById('coverage-content').innerHTML=`
+  document.getElementById('insights-content').innerHTML = `
+    <div class="stats-row" style="margin-bottom:14px">
+      <div class="stat-card"><div class="stat-label">Total</div><div class="stat-value">${DATA.length.toLocaleString()}</div></div>
+      <div class="stat-card"><div class="stat-label">Signed</div><div class="stat-value green">${signed.toLocaleString()}</div></div>
+      <div class="stat-card"><div class="stat-label">Unsigned</div><div class="stat-value amber">${unsigned.toLocaleString()}</div></div>
+      <div class="stat-card"><div class="stat-label">Counterparties</div><div class="stat-value">${cps.toLocaleString()}</div></div>
+    </div>
+    <div class="insights-grid">
+      <div class="panel">
+        <div class="panel-title">By Document Type</div>
+        <ul class="port-list">${portList(byType,maxT)}</ul>
+      </div>
+      <div class="panel">
+        <div class="panel-title">By Folder</div>
+        <ul class="port-list">${portList(byLoc,DATA.length)}</ul>
+      </div>
+    </div>
     <div class="panel">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
-        <div class="panel-title" style="margin-bottom:0">Counterparty Coverage</div>
-        <span id="cov-count" style="font-size:12px;color:var(--text3)"></span>
-      </div>
-      <div class="cov-filter">
-        <button class="chip cov-chip active" data-f="gaps" onclick="renderCovGap('gaps')">Gaps only</button>
-        <button class="chip cov-chip" data-f="no-msa" onclick="renderCovGap('no-msa')">Has NDA, no MSA</button>
-        <button class="chip cov-chip" data-f="no-nda" onclick="renderCovGap('no-nda')">Has MSA, no NDA</button>
-        <button class="chip cov-chip" data-f="all" onclick="renderCovGap('all')">All counterparties</button>
-      </div>
+      <div class="panel-title">Coverage Gaps <span style="font-size:12px;font-weight:400;color:var(--text3);margin-left:6px">${gaps.length} counterparties with NDA but no MSA, or MSA but no NDA</span></div>
       <div style="overflow-x:auto">
         <table class="cov-table">
           <thead><tr><th>Counterparty</th><th style="text-align:center">NDA/MNDA/CDA</th><th style="text-align:center">MSA/IPA</th><th style="text-align:center">SOW/PSA/Sub</th><th>Doc Types</th></tr></thead>
-          <tbody id="cov-body"></tbody>
+          <tbody>${gaps.map(([n,v])=>`<tr>
+            <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis">${esc(n)}</td>
+            <td style="text-align:center">${v.nda?'<span class="cov-ok">✓</span>':'<span class="cov-no">✗</span>'}</td>
+            <td style="text-align:center">${v.msa?'<span class="cov-ok">✓</span>':'<span class="cov-no">✗</span>'}</td>
+            <td style="text-align:center">${v.project?'<span class="cov-ok">✓</span>':'<span class="cov-no">✗</span>'}</td>
+            <td style="font-size:11px;color:var(--text3)">${[...v.types].sort().join(', ')}</td>
+          </tr>`).join('')}</tbody>
         </table>
       </div>
     </div>`;
-
-  window._covData=cp;
-  window.renderCovGap=render;
-  render('gaps');
 }
 
-// ── ACTIVITY TAB ──
-function renderActivity(){
-  const byMonth={};
-  DATA.forEach(r=>{
-    const d=(r.FileCreatedDate||'').slice(0,7);
-    if(d&&d.length===7)byMonth[d]=(byMonth[d]||0)+1;
-  });
-  const months=Object.keys(byMonth).sort();
-  if(!months.length){document.getElementById('activity-content').innerHTML='<div class="panel"><p style="text-align:center;padding:40px;color:var(--text4)">No date data available</p></div>';return}
-  const max=Math.max(...Object.values(byMonth));
-  const bars=months.map(m=>{
-    const v=byMonth[m];
-    const h=Math.max(4,Math.round(v/max*120));
-    const label=m.slice(0,7);
-    return`<div class="bar-col" title="${m}: ${v}">
-      <span class="bar-val">${v}</span>
-      <div class="bar" style="height:${h}px;width:100%"></div>
-      <span class="bar-label">${m.slice(5,7)}/${m.slice(2,4)}</span>
-    </div>`;
-  }).join('');
+// ══════════════════════════════════════════════
+// MANAGE TAB — REVIEW QUEUE
+// ══════════════════════════════════════════════
+function renderManage(){
+  renderReviewQueue();
+  goBulk();
+  buildBulkFilters();
+}
 
-  // By type breakdown
-  const byType={};
-  DATA.forEach(r=>{byType[r.DocType]=(byType[r.DocType]||0)+1});
-  const typeRows=Object.entries(byType).sort((a,b)=>b[1]-a[1]).map(([t,v])=>`
-    <div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border2)">
-      <span style="min-width:80px;font-size:12px">${badge(t,DT_CLASS[t]||'b-other')}</span>
-      <div style="flex:1;height:6px;background:var(--border);border-radius:3px"><div style="height:100%;width:${Math.round(v/DATA.length*100)}%;background:var(--blue);border-radius:3px"></div></div>
-      <span style="font-size:12px;color:var(--text3);min-width:40px;text-align:right">${v.toLocaleString()} (${Math.round(v/DATA.length*100)}%)</span>
-    </div>`).join('');
+function renderReviewQueue(){
+  const remaining = REVIEW_QUEUE.filter((_,i)=>!reviewResolved.has(i));
+  const total = REVIEW_QUEUE.length;
+  const done = reviewResolved.size;
+  const pct = Math.round(done/total*100);
 
-  document.getElementById('activity-content').innerHTML=`
-    <div class="panel">
-      <div class="panel-title">Contracts Added by Month</div>
-      <div class="chart-wrap"><div class="bar-chart">${bars}</div></div>
+  if(done===total){
+    document.getElementById('review-queue-content').innerHTML=`
+      <div class="review-done-state">
+        <div style="font-size:32px;margin-bottom:8px">✅</div>
+        <div style="font-size:15px;font-weight:700;margin-bottom:4px">All ${total} items reviewed</div>
+        <div style="font-size:13px;color:var(--text4)">Manual review queue is clear.</div>
+      </div>`;
+    return;
+  }
+
+  const item = remaining[reviewIndex % remaining.length];
+  const globalIdx = REVIEW_QUEUE.indexOf(item);
+
+  // Find matching catalog rows
+  const matches = DATA.filter(r=>{
+    const n=(r.CounterpartyName||'').toLowerCase();
+    const v=(item.vendor||'').toLowerCase().split('/')[0].trim();
+    return n.includes(v);
+  }).slice(0,8);
+  const rowsHtml = matches.length
+    ? matches.map(r=>`${r.ContractLocation} / ${r.VendorFolder} / ${r.Filename}`).join('\n')
+    : '(no matching rows found in current catalog — search manually)';
+
+  document.getElementById('review-queue-content').innerHTML = `
+    <div class="review-progress">
+      <span>${done} / ${total} reviewed</span>
+      <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+      <span>${pct}%</span>
     </div>
-    <div class="panel">
-      <div class="panel-title">Distribution by Doc Type</div>
-      ${typeRows}
+    <div class="review-card">
+      <div class="review-card-hdr">
+        <span class="review-vendor">${esc(item.vendor)}</span>
+        <span class="review-flag">${esc(item.flag)}</span>
+      </div>
+      <div class="review-note">${esc(item.note)}</div>
+      <div class="review-rows">${esc(rowsHtml)}</div>
+      <div class="review-actions">
+        <button class="rev-btn primary" onclick="resolveReview(${globalIdx},'resolved')">✓ Mark Resolved</button>
+        <button class="rev-btn neutral" onclick="resolveReview(${globalIdx},'escalate')">⬆ Generate CC Prompt</button>
+        <button class="rev-btn neutral" onclick="skipReview()">→ Skip</button>
+        <button class="rev-btn danger" onclick="resolveReview(${globalIdx},'defer')">⏸ Defer</button>
+      </div>
+    </div>
+    <div id="review-relay-wrap" style="display:none">
+      <div class="relay-output" id="review-relay-output"></div>
+      <button class="relay-copy-btn" onclick="copyRelay('review-relay-output',this)">Copy to Clipboard</button>
     </div>`;
 }
 
-// ── Keyboard shortcuts ──
-document.addEventListener('keydown',ev=>{
-  if(ev.key==='/'&&document.activeElement!==document.getElementById('q')){ev.preventDefault();document.getElementById('q').focus()}
-  if(ev.key==='Escape'&&document.activeElement===document.getElementById('q')){clearSearch();document.getElementById('q').blur()}
-});
+function resolveReview(idx, action){
+  const item = REVIEW_QUEUE[idx];
+  if(action==='escalate'){
+    const matches = DATA.filter(r=>{
+      const n=(r.CounterpartyName||'').toLowerCase();
+      const v=(item.vendor||'').toLowerCase().split('/')[0].trim();
+      return n.includes(v);
+    });
+    const fields=['ContractLocation','VendorFolder','Filename','FilePath','DocType','Status'];
+    const rows = matches.map((r,i)=>(i+1)+'. '+fields.map(f=>f+': '+(r[f]||'')).join(' | ')).join('\n');
+    const text = `Manual Review: ${item.vendor}\nFlag: ${item.flag}\nNote: ${item.note}\n\nMatching catalog rows:\n${rows||'(none found)'}\n\nRequested action: Please review the above and advise on resolution. Update contract-catalog.csv and move files on disk as needed.`;
+    document.getElementById('review-relay-wrap').style.display='block';
+    document.getElementById('review-relay-output').textContent=text;
+    return;
+  }
+  reviewResolved.add(idx);
+  renderReviewQueue();
+}
 
-// ── Owner Tab ──
-let ownerFiltered=[], ownerAf={types:new Set(),status:'All',loc:'All'};
+function skipReview(){
+  reviewIndex++;
+  renderReviewQueue();
+}
 
-function goOwner(){
-  const q=(document.getElementById('own-q').value||'').trim().toLowerCase();
-  const cb=document.getElementById('own-clear-btn');
-  if(cb)cb.className='clear-btn'+(q?' show':'');
-  ownerFiltered=DATA.filter(r=>{
-    if(ownerAf.types.size>0&&!ownerAf.types.has(r.DocType))return false;
-    if(ownerAf.status!=='All'&&r.SigningStatus!==ownerAf.status)return false;
-    if(ownerAf.loc!=='All'&&r.ContractLocation!==ownerAf.loc)return false;
+// ══════════════════════════════════════════════
+// MANAGE TAB — BULK ACTIONS
+// ══════════════════════════════════════════════
+function buildBulkFilters(){
+  const types=[...new Set(DATA.map(r=>r.DocType).filter(Boolean))].sort();
+  const locs=[['All','All'],['01 Active Contracts','Active'],['02 Unsigned Contracts','Unsigned'],['03 Archived Contracts','Archived'],['04 Expired Contracts','Expired']];
+  const sts=[['All','All'],['active','Active'],['expired','Expired'],['unsigned','Unsigned']];
+  let h=`<div class="filter-group"><span class="filter-label">Folder</span>`;
+  h+=locs.map(([v,l])=>`<button class="chip${bulkAf.loc===v?' active':''}" onclick="setBulkAf('loc','${esc(v)}')">${l}</button>`).join('');
+  h+='</div>';
+  h+=`<div class="filter-group"><span class="filter-label">Status</span>`;
+  h+=sts.map(([v,l])=>`<button class="chip${bulkAf.status===v?' active':''}" onclick="setBulkAf('status','${v}')">${l}</button>`).join('');
+  h+='</div>';
+  h+=`<div class="filter-group"><span class="filter-label">Type</span>`;
+  h+=`<button class="chip${bulkAf.types.size===0?' active':''}" onclick="setBulkTypeAll()">All</button>`;
+  h+=types.map(t=>`<button class="chip${bulkAf.types.has(t)?' active':''}" onclick="toggleBulkType('${esc(t)}')">${esc(t)}</button>`).join('');
+  h+='</div>';
+  document.getElementById('bulk-filter-bar').innerHTML=h;
+}
+function setBulkAf(k,v){ bulkAf[k]=v; buildBulkFilters(); goBulk(); }
+function setBulkTypeAll(){ bulkAf.types.clear(); buildBulkFilters(); goBulk(); }
+function toggleBulkType(t){ bulkAf.types.has(t)?bulkAf.types.delete(t):bulkAf.types.add(t); buildBulkFilters(); goBulk(); }
+
+function clearBulkSearch(){ document.getElementById('bulk-q').value=''; goBulk(); }
+
+function goBulk(){
+  const q=(document.getElementById('bulk-q')?.value||'').trim().toLowerCase();
+  document.getElementById('bulk-clear-x').classList.toggle('show',q.length>0);
+  bulkFiltered=DATA.filter(r=>{
+    if(bulkAf.types.size>0&&!bulkAf.types.has(r.DocType)) return false;
+    if(bulkAf.status!=='All'&&r.Status!==bulkAf.status) return false;
+    if(bulkAf.loc!=='All'&&r.ContractLocation!==bulkAf.loc) return false;
     if(q){const n=(r.CounterpartyName||'').toLowerCase(),fn=(r.Filename||'').toLowerCase();if(!n.includes(q)&&!fn.includes(q))return false;}
     return true;
-  });
-  ownerFiltered.sort((a,b)=>{const av=(a.CounterpartyName||'').toLowerCase(),bv=(b.CounterpartyName||'').toLowerCase();return av<bv?-1:av>bv?1:0;});
-  renderOwnerThead();
-  renderOwnerTable();
-  buildOwnerFilters();
-}
+  }).sort((a,b)=>(a.CounterpartyName||'').localeCompare(b.CounterpartyName||''));
 
-function clearOwnerSearch(){
-  document.getElementById('own-q').value='';
-  goOwner();
-}
-
-function buildOwnerFilters(){
-  const types=[...new Set(DATA.map(r=>r.DocType).filter(Boolean))].sort();
-  const locs=['All','01 Active Contracts','02 Unsigned Contracts','03 Archived Contracts','04 Expired Contracts'];
-  const statuses=['All','Signed','Unsigned'];
-  const locChips=locs.map(l=>'<button class="chip'+(ownerAf.loc===l?' active':'')+'" onclick="setOwnerF(\'loc\',\''+l+'\')">'+(l==='All'?'All':l.replace(/^\d+ /,''))+'</button>').join('');
-  const stChips=statuses.map(s=>'<button class="chip'+(ownerAf.status===s?' active':'')+'" onclick="setOwnerF(\'status\',\''+s+'\')">'+s+'</button>').join('');
-  const tChips=types.map(t=>'<button class="chip'+(ownerAf.types.has(t)?' active':'')+'" onclick="toggleOwnerType(\''+t+'\')">'+t+'</button>').join('');
-  document.getElementById('own-filter-bar').innerHTML=
-    '<div class="filter-group"><span class="filter-label">Location</span>'+locChips+'</div>'+
-    '<div class="filter-group"><span class="filter-label">Status</span>'+stChips+'</div>'+
-    '<div class="filter-group"><span class="filter-label">Type</span>'+tChips+'</div>';
-}
-
-function setOwnerF(k,v){ownerAf[k]=v;goOwner();}
-function toggleOwnerType(t){ownerAf.types.has(t)?ownerAf.types.delete(t):ownerAf.types.add(t);goOwner();}
-
-function renderOwnerThead(){
-  document.getElementById('own-thead-row').innerHTML=
-    '<th style="width:32px;text-align:center" class="no-sort"><input type="checkbox" id="owner-sel-all" onchange="selectAllOwner(this)" title="Select / deselect all visible"></th>'+
-    '<th style="width:16%">Counterparty</th>'+
-    '<th style="width:6%">Type</th>'+
-    '<th style="width:7%">Status</th>'+
-    '<th style="width:10%">Folder</th>'+
-    '<th style="width:8%">Location</th>'+
-    '<th style="width:22%">Filename</th>'+
-    '<th style="width:7%">Date</th>'+
-    '<th style="width:20%" class="no-sort">Actions</th>';
-}
-
-function renderOwnerTable(){
-  const tbody=document.getElementById('own-tbody');
-  const empty=document.getElementById('own-empty');
-  const LIMIT=500;
-  renderOwnerMeta();
-  if(!ownerFiltered.length){tbody.innerHTML='';empty.style.display='block';return;}
-  empty.style.display='none';
-  tbody.innerHTML=ownerFiltered.slice(0,LIMIT).map(function(r,i){
-    const idx=DATA.indexOf(r);
-    const dtc=DT_CLASS[r.DocType]||'b-other';
-    const stc=r.SigningStatus==='Signed'?'b-signed':'b-unsigned';
-    const loc=r.ContractLocation;
-    const locB=loc==='01 Active Contracts'?badge('Active','b-active'):loc==='02 Unsigned Contracts'?badge('Unsigned','b-unsigned'):badge('Archived','b-pending');
-    const fn=r.Filename||'';
-    const trunc=fn.length>40?fn.slice(0,37)+'…':fn;
-    const date=(r.EffectiveDate||'').slice(0,10)||'—';
-    const isArchived=loc==='03 Archived Contracts';
-    const url=spUrl(r);
-    const rj=encodeURIComponent(JSON.stringify(r));
-    const actBtns=
-      '<a href="'+url+'" target="_blank" rel="noopener" class="own-btn" onclick="addRecent(JSON.parse(decodeURIComponent(\''+rj+'\')))">Open</a>'+
-      '<button class="own-btn own-blue" onclick="ownerAction('+idx+',\'manage\')">Manage</button>'+
-      (isArchived?'<button class="own-btn own-green" onclick="ownerAction('+idx+',\'restore\')">Restore</button>':'<button class="own-btn own-gray" onclick="ownerAction('+idx+',\'archive\')">Archive</button>');
-    const fp=r.FilePath||r.Filename;
-    return '<tr class="'+expiryClass(r)+'">'
-      +'<td style="text-align:center;padding:4px 6px"><input type="checkbox" class="row-cb" data-fp="'+e(fp)+'" '+(ownerSelected.has(fp)?'checked':'')+' onchange="toggleOwnerRow(this)"></td>'
-      +'<td title="'+e(r.CounterpartyName)+'">'+e(r.CounterpartyName||'—')+'</td>'
-      +'<td>'+badge(r.DocType||'—',dtc)+'</td>'
-      +'<td>'+badge(r.SigningStatus||'—',stc)+'</td>'
-      +'<td style="font-size:12px;color:var(--text2)" title="'+e(r.VendorFolder||'')+'">'+e(r.VendorFolder||'—')+'</td>'
-      +'<td>'+locB+'</td>'
-      +'<td title="'+e(fn)+'" style="font-family:monospace;font-size:11px;color:var(--text3)"><div class="fn-cell">'+fileIcon(r.Extension)+e(trunc)+'</div></td>'
-      +'<td style="font-size:12px;color:var(--text3)">'+date+'</td>'
-      +'<td><div class="own-action-cell">'+actBtns+'</div></td>'
-      +'</tr>';
-  }).join('');
-  syncOwnerSelUI();
-}
-
-// ── Owner Drawer ──
-let ownerActionRecord=null, ownerActionType=null;
-
-function getOwnerTargets(){
-  if(ownerSelected.size>0)return DATA.filter(r=>ownerSelected.has(r.FilePath||r.Filename));
-  return ownerActionRecord?[ownerActionRecord]:[];
-}
-
-function buildSingleInstruction(r,action,fv){
-  fv=fv||{};
-  if(action==='archive'){
-    return 'Move from "'+r.ContractLocation+'" to "03 Archived Contracts". Move the file on disk and update contract-catalog.csv: ContractLocation → "03 Archived Contracts", SigningStatus → "'+r.SigningStatus+'".';
-  }else if(action==='restore'){
-    return 'Restore from "'+r.ContractLocation+'" to "01 Active Contracts". Move the file on disk and update contract-catalog.csv: ContractLocation → "01 Active Contracts", SigningStatus → "Signed".';
-  }else if(action==='manage'){
-    const steps=[];
-    if(fv.doScan)steps.push('Scan this contract file and report: (a) Is it signed? (b) What is the document type? (c) Does the filename accurately reflect the document?\nFile path: '+r.ContractLocation+'\\'+r.FilePath);
-    if(fv.newType&&fv.newType!==r.DocType)steps.push('Reclassify DocType from "'+r.DocType+'" to "'+fv.newType+'". Update contract-catalog.csv: DocType → "'+fv.newType+'".');
-    if(!fv.isMulti&&fv.newName&&fv.newName!==r.Filename)steps.push('Rename file from "'+r.Filename+'" to "'+fv.newName+'". Update contract-catalog.csv (Filename + FilePath) and rename the file on disk at: '+r.ContractLocation+'\\'+r.FilePath+'.');
-    if(fv.dest){const ds=fv.dest==='01 Active Contracts'?'Signed':fv.dest==='02 Unsigned Contracts'?'Unsigned':r.SigningStatus;steps.push('Move from "'+r.ContractLocation+'" to "'+fv.dest+'". Move the file on disk and update contract-catalog.csv: ContractLocation → "'+fv.dest+'", SigningStatus → "'+ds+'".');}
-    return steps.length?steps.map(function(s,i){return(i+1)+'. '+s;}).join('\n\n'):'No actions selected.';
-  }else if(action==='scan'){
-    return 'Please read this contract file and report:\n1. Is it signed? (look for signatures, DocuSign envelope IDs, executed keywords)\n2. What is the document type? (NDA, MNDA, MSA, SOW, EULA, etc.)\n3. Does the filename accurately reflect the document name and counterparty?\n\nFile path: '+r.ContractLocation+'\\'+r.FilePath;
-  }else if(action==='move'){
-    const ds=fv.dest==='01 Active Contracts'?'Signed':fv.dest==='02 Unsigned Contracts'?'Unsigned':r.SigningStatus;
-    return 'Move from "'+r.ContractLocation+'" to "'+fv.dest+'".\nUpdate CSV: ContractLocation → "'+fv.dest+'", SigningStatus → "'+ds+'".\nMove the file on disk to: '+fv.dest+'\\'+r.VendorFolder+'\\'+r.Filename;
-  }else if(action==='reclassify'){
-    return 'Reclassify DocType from "'+r.DocType+'" to "'+fv.newType+'".\nUpdate CSV: DocType → "'+fv.newType+'".';
-  }else if(action==='rename'){
-    return 'Rename from "'+r.Filename+'" to "'+fv.newName+'".\nUpdate CSV: Filename and FilePath.\nRename on disk at: '+r.ContractLocation+'\\'+r.FilePath;
-  }
-  return '';
-}
-
-function ownerAction(idx,action){
-  ownerActionRecord=DATA[idx];
-  ownerActionType=action;
-  const r=ownerActionRecord;
-  const targets=getOwnerTargets();
-  const isMulti=targets.length>1;
-  document.getElementById('drawer-output').style.display='none';
-  document.getElementById('drawer-copy-btn').style.display='none';
-  const titles={scan:'Scan Document',reclassify:'Reclassify Document Type',rename:'Rename File',move:'Move Contract',manage:'Manage Contract',archive:'Archive Contract',restore:'Restore Contract'};
-  document.getElementById('drawer-title').textContent=(isMulti?targets.length+' contracts — ':'')+( titles[action]||action);
-  if(isMulti){
-    const list=targets.slice(0,8).map(t=>'<div style="margin-top:2px;font-family:monospace;font-size:11px;color:var(--text2)">'+e(t.CounterpartyName||'')+(t.Filename?' / '+e(t.Filename):'')+'</div>').join('');
-    const more=targets.length>8?'<div style="font-size:11px;color:var(--text3);margin-top:3px">…and '+(targets.length-8)+' more</div>':'';
-    document.getElementById('drawer-contract-info').innerHTML='<strong>'+targets.length+' contracts selected</strong>'+list+more;
-  }else{
-    document.getElementById('drawer-contract-info').innerHTML=
-      '<strong>'+e(r.CounterpartyName)+'</strong> <span class="badge '+(DT_CLASS[r.DocType]||'b-other')+'">'+e(r.DocType)+'</span>'+
-      '<div style="margin-top:3px;color:var(--text2);font-size:11px;font-family:monospace">'+e(r.Filename)+'</div>'+
-      '<div style="margin-top:2px;color:var(--text3);font-size:11px">'+e(r.ContractLocation)+' \xb7 '+e(r.SigningStatus)+'</div>';
-  }
-  const form=document.getElementById('drawer-form');
-  if(action==='manage'){
-    const types=[...new Set(DATA.map(function(d){return d.DocType;}).filter(Boolean))].sort();
-    const allLocs=[['01 Active Contracts','→ Active'],['02 Unsigned Contracts','→ Unsigned'],['03 Archived Contracts','→ Archived']];
-    const renameRow=isMulti?'':'<div><label style="display:block;font-size:12px;color:var(--text3);margin-bottom:4px;font-weight:500">Rename filename</label><input type="text" id="m-name" value="'+e(r.Filename)+'" style="width:100%;max-width:500px"/></div>';
-    form.innerHTML=
-      '<div style="display:flex;flex-direction:column;gap:14px">'+
-      '<label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" id="m-scan" checked style="width:14px;height:14px;flex-shrink:0"> Scan document — check signatures, type &amp; filename</label>'+
-      '<div><label style="display:block;font-size:12px;color:var(--text3);margin-bottom:4px;font-weight:500">Reclassify DocType</label><input list="m-type-list" id="m-type" value="'+e(r.DocType)+'" style="width:200px"/><datalist id="m-type-list">'+types.map(function(t){return'<option value="'+t+'">';}).join('')+'</datalist></div>'+
-      renameRow+
-      '<div><label style="display:block;font-size:12px;color:var(--text3);margin-bottom:4px;font-weight:500">Move to</label><select id="m-loc"><option value="">Keep current location</option>'+allLocs.filter(function(l){return l[0]!==r.ContractLocation;}).map(function(l){return'<option value="'+l[0]+'">'+l[1]+'</option>';}).join('')+'</select></div>'+
-      '</div>';
-  }else if(action==='reclassify'){
-    const types=['NDA','MNDA','MSA','SOW','EULA','IPA','PSA','Subcontract','Amendment','Other'];
-    form.innerHTML='<label>New document type</label><select id="drawer-reclassify-val">'+types.map(t=>'<option value="'+t+'"'+(t===r.DocType?' selected':'')+'>'+t+'</option>').join('')+'</select>';
-  }else if(action==='rename'){
-    form.innerHTML='<label>New filename</label><input type="text" id="drawer-rename-val" value="'+e(r.Filename)+'" style="width:100%;max-width:500px"/>';
-  }else if(action==='move'){
-    const locs=[['01 Active Contracts','→ Active'],['02 Unsigned Contracts','→ Unsigned'],['03 Archived Contracts','→ Archived']].filter(function(l){return l[0]!==r.ContractLocation;});
-    form.innerHTML='<label>Destination</label><select id="drawer-move-val">'+locs.map(function(l){return'<option value="'+l[0]+'">'+l[1]+'</option>';}).join('')+'</select>';
-  }else if(action==='archive'||action==='restore'){
-    form.innerHTML='';
-    document.getElementById('owner-drawer').classList.add('show');
-    buildOwnerReq();
+  const LIMIT=300;
+  const empty=document.getElementById('bulk-empty');
+  if(!bulkFiltered.length){
+    document.getElementById('bulk-thead').innerHTML='';
+    document.getElementById('bulk-tbody').innerHTML='';
+    empty.style.display='block';
+    syncBulkSelUI();
     return;
-  }else{
-    form.innerHTML='';
   }
-  document.getElementById('owner-drawer').classList.add('show');
+  empty.style.display='none';
+
+  document.getElementById('bulk-thead').innerHTML=
+    '<th style="width:32px"><input type="checkbox" id="bulk-sel-all" onchange="selectAllBulk(this)" style="accent-color:var(--blue);width:14px;height:14px;cursor:pointer"></th>'+
+    '<th>Counterparty</th><th>Type</th><th>Status</th><th>Folder</th><th>Filename</th><th>Effective</th>';
+
+  document.getElementById('bulk-tbody').innerHTML=bulkFiltered.slice(0,LIMIT).map(r=>{
+    const fp=r.FilePath||r.Filename;
+    const fn=r.Filename||''; const trunc=fn.length>38?fn.slice(0,35)+'…':fn;
+    return `<tr class="${rowClass(r)}">
+      <td style="padding:4px 6px"><input type="checkbox" class="bulk-cb" data-fp="${esc(fp)}" ${bulkSelected.has(fp)?'checked':''} onchange="toggleBulkRow(this)" style="accent-color:var(--blue);width:14px;height:14px;cursor:pointer"></td>
+      <td>${esc(r.CounterpartyName||'—')}</td>
+      <td>${badge(r.DocType||'—',DT_CLASS[r.DocType]||'b-other')}</td>
+      <td>${statusBadge(r.Status)}</td>
+      <td>${locBadge(r.ContractLocation)}</td>
+      <td style="font-family:monospace;font-size:11px;color:var(--text3)" title="${esc(fn)}">${esc(trunc)}</td>
+      <td style="font-size:12px;color:var(--text3)">${(r.EffectiveDate||'').slice(0,10)||'—'}</td>
+    </tr>`;
+  }).join('');
+  syncBulkSelUI();
 }
 
-function closeOwnerDrawer(){
-  document.getElementById('owner-drawer').classList.remove('show');
-  ownerActionRecord=null;ownerActionType=null;
+function toggleBulkRow(cb){ cb.checked?bulkSelected.add(cb.dataset.fp):bulkSelected.delete(cb.dataset.fp); syncBulkSelUI(); }
+function selectAllBulk(cb){ if(cb.checked)bulkFiltered.forEach(r=>bulkSelected.add(r.FilePath||r.Filename));else bulkFiltered.forEach(r=>bulkSelected.delete(r.FilePath||r.Filename));document.querySelectorAll('.bulk-cb').forEach(c=>c.checked=cb.checked);syncBulkSelUI();}
+function clearBulkSel(){ bulkSelected.clear(); document.querySelectorAll('.bulk-cb').forEach(c=>c.checked=false); const h=document.getElementById('bulk-sel-all');if(h){h.checked=false;h.indeterminate=false;} syncBulkSelUI(); }
+function syncBulkSelUI(){
+  const cbs=[...document.querySelectorAll('.bulk-cb')];
+  const hdr=document.getElementById('bulk-sel-all');
+  if(hdr){const n=cbs.filter(c=>c.checked).length;hdr.checked=cbs.length>0&&n===cbs.length;hdr.indeterminate=n>0&&n<cbs.length;}
+  document.getElementById('bulk-sel-count').textContent=bulkSelected.size+' selected';
+  document.getElementById('bulk-gen-btn').disabled=bulkSelected.size===0||!document.getElementById('bulk-action-sel').value;
+}
+document.addEventListener('change',e=>{ if(e.target.id==='bulk-action-sel') syncBulkSelUI(); });
+
+function generateBulkRelay(){
+  const action=document.getElementById('bulk-action-sel').value;
+  if(!action||!bulkSelected.size) return;
+  const targets=DATA.filter(r=>bulkSelected.has(r.FilePath||r.Filename));
+  const actionLabels={'move-active':'Move → 01 Active Contracts','move-unsigned':'Move → 02 Unsigned Contracts','move-archived':'Move → 03 Archived Contracts','move-expired':'Move → 04 Expired Contracts','mark-active':'Mark Status = active','mark-expired':'Mark Status = expired'};
+  const fields=['ContractLocation','VendorFolder','Filename','FilePath','DocType','Status'];
+  const blocks=targets.map((r,i)=>{
+    const detail=fields.map(f=>f+': '+(r[f]||'')).join(' | ');
+    let instr='';
+    if(action.startsWith('move-')){
+      const dest={'move-active':'01 Active Contracts','move-unsigned':'02 Unsigned Contracts','move-archived':'03 Archived Contracts','move-expired':'04 Expired Contracts'}[action];
+      instr=`Move from "${r.ContractLocation}" to "${dest}". Move file on disk and update contract-catalog.csv: ContractLocation → "${dest}".`;
+    } else {
+      const st={'mark-active':'active','mark-expired':'expired'}[action];
+      instr=`Update contract-catalog.csv: Status → "${st}" for this row.`;
+    }
+    return `${i+1}. ${detail}\n   Action: ${instr}`;
+  }).join('\n\n');
+  const text=`Bulk Action: ${actionLabels[action]}\n${targets.length} contracts:\n\n${blocks}`;
+  document.getElementById('bulk-relay-wrap').style.display='block';
+  document.getElementById('bulk-relay-output').textContent=text;
+  document.getElementById('bulk-relay-output').scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 
-function buildOwnerReq(){
-  const targets=getOwnerTargets();
-  if(!targets.length)return;
-  const action=ownerActionType;
-  const isMulti=targets.length>1;
-  // Read form values once; apply to every target
-  const fv={isMulti:isMulti};
-  if(action==='manage'){
-    fv.doScan=document.getElementById('m-scan')?.checked;
-    fv.newType=(document.getElementById('m-type')?.value||'').trim();
-    fv.newName=(document.getElementById('m-name')?.value||'').trim();
-    fv.dest=document.getElementById('m-loc')?.value||'';
-  }else if(action==='reclassify'){
-    fv.newType=document.getElementById('drawer-reclassify-val')?.value||'';
-  }else if(action==='rename'){
-    fv.newName=(document.getElementById('drawer-rename-val')?.value||'').trim();
-  }else if(action==='move'){
-    fv.dest=document.getElementById('drawer-move-val')?.value||'';
-  }
-  const fields=['ContractLocation','VendorFolder','Filename','FilePath','DocType','SigningStatus','EffectiveDate','ExpirationDate','Notes'];
-  let text;
-  if(!isMulti){
-    const r=targets[0];
-    const instruction=buildSingleInstruction(r,action,fv);
-    const details=fields.map(function(k){return r[k]?'  '+k+': '+r[k]:null;}).filter(Boolean).join('\n');
-    text='Contract:\n'+details+'\n\nRequested action:\n'+instruction;
-  }else{
-    const titleMap={archive:'Archive',restore:'Restore',manage:'Manage',reclassify:'Reclassify',move:'Move',scan:'Scan',rename:'Rename'};
-    const blocks=targets.map(function(r,i){
-      const instruction=buildSingleInstruction(r,action,fv);
-      const details=fields.map(function(k){return r[k]?'    '+k+': '+r[k]:null;}).filter(Boolean).join('\n');
-      return (i+1)+'. Contract:\n'+details+'\n\n   Action: '+instruction;
-    }).join('\n\n---\n\n');
-    text='Bulk '+(titleMap[action]||action)+' — '+targets.length+' contracts:\n\n'+blocks;
-  }
-  const out=document.getElementById('drawer-output');
-  out.textContent=text;out.style.display='block';
-  document.getElementById('drawer-copy-btn').style.display='inline-flex';
+// ══════════════════════════════════════════════
+// MANAGE TAB — DEPLOY RELAY
+// ══════════════════════════════════════════════
+function generateDeployRelay(){
+  const cols=Object.keys(DATA[0]||{});
+  const quote=s=>'"'+String(s==null?'':s).replace(/"/g,'""')+'"';
+  const lines=[cols.map(quote).join(','),...DATA.map(r=>cols.map(c=>quote(r[c]||'')).join(','))];
+  const csvSnippet=lines.slice(0,3).join('\n')+'…\n('+DATA.length+' total rows)';
+  const path=String.raw`C:\Users\jrudy\OneDrive - Diakonia Group, LLC\Contract Management - SharePoint\Tools\contract-catalog.csv`;
+  const text=`Deploy: Save contract-catalog.csv and push to GitHub\n\n1. Write the following CSV to disk (full content attached separately):\n   Path: ${path}\n   Row count: ${DATA.length}\n   First rows (header + 2 data):\n${csvSnippet}\n\n2. After writing:\n   cd "${path.replace(/\\[^\\]+$/,'')}"\n   git add contract-catalog.csv\n   git commit -m "catalog update ${ts()}"\n   git push origin main\n   git log --oneline -3\n\n3. Report: confirm file written (byte count) and git log output.`;
+  document.getElementById('deploy-relay-wrap').style.display='block';
+  document.getElementById('deploy-relay-output').textContent=text;
 }
 
-function copyOwnerReq(){
-  navigator.clipboard.writeText(document.getElementById('drawer-output').textContent).then(function(){
-    const btn=document.getElementById('drawer-copy-btn');
-    btn.textContent='Copied!';setTimeout(function(){btn.textContent='Copy to Clipboard';},1500);
+// ══════════════════════════════════════════════
+// IMPORT CSV
+// ══════════════════════════════════════════════
+function handleImportDrop(e){
+  e.preventDefault(); document.getElementById('import-dz').classList.remove('drag');
+  const f=e.dataTransfer.files[0]; if(f) processImport(f);
+}
+function handleImportSelect(e){ const f=e.target.files[0]; if(f) processImport(f); e.target.value=''; }
+function processImport(file){
+  const status=document.getElementById('import-status');
+  if(!file.name.endsWith('.csv')){status.className='upload-status err';status.textContent='⚠ Must be a .csv file';return;}
+  const reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      const rows=parseCSV(e.target.result);
+      if(!rows.length) throw new Error('No data rows found');
+      DATA.length=0; rows.forEach(r=>DATA.push(r));
+      refreshDaysUntil();
+      status.className='upload-status ok';
+      status.textContent=`✅ Loaded ${rows.length.toLocaleString()} records from ${file.name}`;
+      buildStats(); buildFilters(); go();
+      document.getElementById('hdr-pill').textContent=DATA.length.toLocaleString()+' contracts';
+    }catch(err){status.className='upload-status err';status.textContent='⚠ '+err.message;}
+  };
+  reader.readAsText(file);
+}
+
+// ══════════════════════════════════════════════
+// RELAY COPY
+// ══════════════════════════════════════════════
+function copyRelay(id,btn){
+  navigator.clipboard.writeText(document.getElementById(id).textContent).then(()=>{
+    btn.textContent='✓ Copied!';
+    setTimeout(()=>{ btn.innerHTML='<svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path stroke-linecap="round" stroke-linejoin="round" d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg> Copy to Clipboard'; },2000);
   });
 }
 
-// ── Init ──
+// ══════════════════════════════════════════════
+// ADMIN AUTH
+// ══════════════════════════════════════════════
+const OWNER_HASH='049282c64821fee3faa9f7247396798f6282acbf14d19ceb9e655c316ab81962';
+async function sha256(msg){
+  const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(msg));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+function showAdminLogin(){
+  document.getElementById('admin-overlay').classList.add('show');
+  setTimeout(()=>document.getElementById('admin-pwd').focus(),80);
+}
+function closeAdminLogin(){
+  document.getElementById('admin-overlay').classList.remove('show');
+  document.getElementById('admin-pwd').value='';
+  document.getElementById('modal-err').style.display='none';
+}
+async function adminLogin(){
+  const hash=await sha256(document.getElementById('admin-pwd').value);
+  if(hash===OWNER_HASH){
+    adminUnlocked=true;
+    closeAdminLogin();
+    const tab=document.getElementById('manage-tab');
+    tab.classList.remove('locked'); tab.classList.add('unlocked');
+    document.getElementById('manage-tab-label').textContent='🔓 Manage';
+    switchTab('manage');
+  } else {
+    document.getElementById('modal-err').style.display='block';
+    document.getElementById('admin-pwd').value='';
+    document.getElementById('admin-pwd').focus();
+  }
+}
+function adminLock(){
+  adminUnlocked=false;
+  const tab=document.getElementById('manage-tab');
+  tab.classList.remove('unlocked'); tab.classList.add('locked');
+  document.getElementById('manage-tab-label').textContent='Manage';
+  switchTab('catalog');
+}
+
+// ══════════════════════════════════════════════
+// KEYBOARD SHORTCUTS
+// ══════════════════════════════════════════════
+document.addEventListener('keydown',ev=>{
+  if(ev.key==='/'&&document.activeElement!==document.getElementById('q')){ev.preventDefault();document.getElementById('q').focus();}
+  if(ev.key==='Escape'&&document.activeElement===document.getElementById('q')){clearSearch();document.getElementById('q').blur();}
+  if(ev.key==='Escape') closeAdminLogin();
+});
+
+// ══════════════════════════════════════════════
+// CSV PARSER
+// ══════════════════════════════════════════════
+function parseCSV(text){
+  const lines=text.split(/\r?\n/);
+  if(!lines.length) return [];
+  const headers=parseCSVRow(lines[0]);
+  const rows=[];
+  for(let i=1;i<lines.length;i++){
+    const line=lines[i].trim(); if(!line) continue;
+    const vals=parseCSVRow(line);
+    const obj={}; headers.forEach((h,j)=>obj[h.trim()]=vals[j]||'');
+    rows.push(obj);
+  }
+  return rows;
+}
+function parseCSVRow(line){
+  const result=[]; let cur='',inQ=false;
+  for(let i=0;i<line.length;i++){
+    const c=line[i];
+    if(c==='"'){if(inQ&&line[i+1]==='"'){cur+='"';i++;}else inQ=!inQ;}
+    else if(c===','&&!inQ){result.push(cur);cur='';}
+    else cur+=c;
+  }
+  result.push(cur); return result;
+}
+
+// ══════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════
 function refreshDaysUntil(){
-  DATA.forEach(r=>{const d=daysTo(r.ExpirationDate);r.DaysUntilExpiration=d===null?'':String(d);});
+  DATA.forEach(r=>{
+    const d=daysTo(r.ExpirationDate);
+    r.DaysUntilExpiration=d===null?'':String(d);
+  });
 }
 function init(){
   refreshDaysUntil();
-  document.getElementById('hdr-count').textContent = DATA.length.toLocaleString() + ' contracts';
+  document.getElementById('hdr-pill').textContent=DATA.length.toLocaleString()+' contracts';
+  document.getElementById('footer-note').textContent='Catalog loaded '+new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
   buildStats();
   buildFilters();
   go();
 }
-var csvUrl = new URL('contract-catalog.csv?t=' + Date.now(), window.location.href).href;
-fetch(csvUrl, {cache:'no-store'})
-  .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.text(); })
-  .then(function(text){ DATA = parseCSV(text); init(); })
-  .catch(function(err){
-    console.error('CSV load error:', err, 'URL:', csvUrl);
-    document.getElementById('hdr-count').textContent = 'Load error';
-    var isLocal = window.location.protocol === 'file:';
-    document.getElementById('stats').innerHTML =
-      '<div style="grid-column:1/-1;padding:20px;background:#fee2e2;border:1px solid #fca5a5;border-radius:8px;color:#991b1b;font-size:13px;line-height:1.6">' +
-      (isLocal
-        ? '⚠ Cannot load CSV from a local file. Open this page via your <strong>SharePoint URL</strong>, or use <strong>Admin → Import CSV</strong> to load data manually.'
-        : '⚠ Failed to load data.<br><strong>Attempted URL:</strong> ' + csvUrl + '<br>Verify that <code>contract-catalog.csv</code> is in the same SharePoint folder as this HTML file.') +
-      '</div>';
+
+const csvUrl=new URL('contract-catalog.csv?t='+Date.now(),window.location.href).href;
+fetch(csvUrl,{cache:'no-store'})
+  .then(r=>{if(!r.ok) throw new Error('HTTP '+r.status); return r.text();})
+  .then(text=>{DATA=parseCSV(text);init();})
+  .catch(err=>{
+    document.getElementById('hdr-pill').textContent='Load error';
+    const isLocal=window.location.protocol==='file:';
+    document.getElementById('stats-row').innerHTML=
+      '<div style="grid-column:1/-1;padding:16px;background:var(--red-bg);border:1px solid rgba(220,38,38,.3);border-radius:var(--radius-lg);color:var(--red-text);font-size:13px;line-height:1.7">'
+      +(isLocal
+        ? '⚠ Cannot load CSV from a local file. Open via SharePoint URL, or use <strong>Manage → Import CSV</strong> to load data manually.'
+        : '⚠ Failed to load <code>contract-catalog.csv</code>. Verify the file is in the same SharePoint folder as this HTML file.')
+      +'</div>';
   });
 </script>
-
-<div id="admin-overlay">
-  <div class="admin-modal">
-    <h3>🔒 Owner Access</h3>
-    <p>Enter the owner password to manage the catalog.</p>
-    <input type="password" id="admin-pwd" placeholder="Password" onkeydown="if(event.key==='Enter')adminLogin()"/>
-    <div class="err" id="admin-err">Incorrect password.</div>
-    <div class="btn-row">
-      <button class="btn btn-cancel" onclick="closeAdminLogin()">Cancel</button>
-      <button class="btn btn-primary" onclick="adminLogin()">Unlock</button>
-    </div>
-  </div>
-</div>
-<div id="tab-admin">
-  <!-- Owner catalog view -->
-  <div class="search-bar" style="margin-bottom:12px">
-    <div class="search-row">
-      <div class="search-wrap">
-        <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path stroke-linecap="round" d="M21 21l-4.35-4.35"/></svg>
-        <input type="text" id="own-q" placeholder="Search counterparty or filename&hellip;" oninput="goOwner()" aria-label="Owner search"/>
-        <button class="clear-btn" id="own-clear-btn" onclick="clearOwnerSearch()" title="Clear">&times;</button>
-      </div>
-    </div>
-    <div class="filters" id="own-filter-bar"></div>
-  </div>
-
-  <div class="table-wrap">
-    <div class="table-meta">
-      <span id="own-meta"></span>
-    </div>
-    <div style="overflow-x:auto">
-      <table>
-        <thead><tr id="own-thead-row"></tr></thead>
-        <tbody id="own-tbody"></tbody>
-      </table>
-    </div>
-    <div id="own-empty" class="empty" style="display:none">
-      <h3>No contracts found</h3>
-      <p style="font-size:13px;color:var(--text4)">Try a different search term.</p>
-    </div>
-  </div>
-
-</div>
-<div id="tab-owner-admin">
-  <div style="display:flex;flex-direction:column;gap:12px;max-width:900px;padding:20px 24px">
-    <div class="admin-section">
-      <h3>&#128202; Catalog Status</h3>
-      <p>Current snapshot loaded in this session.</p>
-      <div id="admin-stats-row"></div>
-    </div>
-    <div class="admin-section">
-      <h3>&#128194; Import Updated CSV</h3>
-      <p>Drop a new <code>contract-catalog.csv</code> to reload instantly.</p>
-      <div class="drop-zone" id="drop-zone" onclick="document.getElementById('csv-file-input').click()" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="handleDrop(event)">
-        <div class="icon">&#128196;</div>
-        <p>Click or drag &amp; drop CSV here</p>
-      </div>
-      <input type="file" id="csv-file-input" accept=".csv" style="display:none" onchange="handleFileSelect(event)"/>
-      <div class="upload-status" id="upload-status"></div>
-      <div id="csv-preview" style="overflow-x:auto;max-height:200px;overflow-y:auto;margin-top:8px"></div>
-    </div>
-    <div class="admin-section">
-      <h3>&#128640; Save &amp; Deploy</h3>
-      <p>Saves the current catalog to disk and pushes to GitHub. Azure updates in ~1 minute. Requires the local scanner server to be running.</p>
-      <button class="deploy-btn" id="deploy-btn" onclick="saveDeploy()">&#128640; Save &amp; Deploy to Azure</button>
-      <div class="deploy-status" id="deploy-status"></div>
-    </div>
-    <div class="admin-section">
-      <h3>&#128260; Sync from Salesforce SoR</h3>
-      <p>Copies new or updated files from the Salesforce system of record into <code>01 Active Contracts</code>. Never moves or deletes. Run the scanner afterward to update the catalog.</p>
-      <div style="font-size:12px;color:var(--text3);background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:8px 12px;margin-bottom:12px;line-height:1.7">
-        <strong>Source:</strong> diakoniagroupllc.sharepoint.com/sites/SalesforceContracts/Active Contracts<br>
-        <strong>Dest:</strong> 01 Active Contracts\ (local OneDrive sync)
-      </div>
-      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:10px">
-        <button class="deploy-btn" id="sync-btn" onclick="runSync(false)">&#128260; Run Sync</button>
-        <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer">
-          <input type="checkbox" id="sync-dry" style="accent-color:var(--blue);width:14px;height:14px"> Dry run (preview only)
-        </label>
-      </div>
-      <div class="deploy-status" id="sync-status"></div>
-      <div id="sync-log" style="display:none;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:10px 12px;font-family:monospace;font-size:11px;white-space:pre-wrap;max-height:300px;overflow-y:auto;line-height:1.6;color:var(--text2);margin-top:10px"></div>
-    </div>
-    <div class="admin-section">
-      <h3>&#128193; Create Vendor Folder</h3>
-      <p>Create a new vendor folder within a contract location. Requires the local scanner server to be running.</p>
-      <div style="display:flex;flex-direction:column;gap:10px;max-width:500px">
-        <div>
-          <label style="font-size:12px;color:var(--text3);display:block;margin-bottom:4px;font-weight:500">Folder name (vendor / counterparty)</label>
-          <input type="text" id="new-folder-name" placeholder="e.g., Acme Corporation" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;background:var(--surface);color:var(--text);outline:none"/>
-        </div>
-        <div>
-          <label style="font-size:12px;color:var(--text3);display:block;margin-bottom:4px;font-weight:500">Location</label>
-          <select id="new-folder-loc" style="padding:8px 10px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;background:var(--surface);color:var(--text);min-width:220px">
-            <option value="01 Active Contracts">01 Active Contracts</option>
-            <option value="02 Unsigned Contracts">02 Unsigned Contracts</option>
-            <option value="03 Archived Contracts">03 Archived Contracts</option>
-            <option value="04 Expired Contracts">04 Expired Contracts</option>
-          </select>
-        </div>
-        <div>
-          <button class="deploy-btn" onclick="createFolder()">&#128193; Create Folder</button>
-        </div>
-      </div>
-      <div class="deploy-status" id="create-folder-status"></div>
-    </div>
-    <div class="admin-section">
-      <h3>&#8679; Upload Contract File</h3>
-      <p>Upload a contract file to a vendor folder on disk. Requires the local scanner server to be running.</p>
-      <div style="display:flex;flex-direction:column;gap:10px;max-width:500px;margin-bottom:12px">
-        <div>
-          <label style="font-size:12px;color:var(--text3);display:block;margin-bottom:4px;font-weight:500">Destination location</label>
-          <select id="upload-loc" style="padding:8px 10px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;background:var(--surface);color:var(--text);min-width:220px">
-            <option value="01 Active Contracts">01 Active Contracts</option>
-            <option value="02 Unsigned Contracts">02 Unsigned Contracts</option>
-            <option value="03 Archived Contracts">03 Archived Contracts</option>
-            <option value="04 Expired Contracts">04 Expired Contracts</option>
-          </select>
-        </div>
-        <div>
-          <label style="font-size:12px;color:var(--text3);display:block;margin-bottom:4px;font-weight:500">Vendor folder</label>
-          <input list="upload-vendor-list" id="upload-vendor" placeholder="Type or pick existing…" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;background:var(--surface);color:var(--text);outline:none"/>
-          <datalist id="upload-vendor-list"></datalist>
-        </div>
-      </div>
-      <div class="drop-zone" id="upload-drop-zone" onclick="document.getElementById('upload-file-input').click()" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="handleUploadDrop(event)">
-        <div class="icon">&#8679;</div>
-        <p id="upload-drop-label">Click or drag &amp; drop file here</p>
-      </div>
-      <input type="file" id="upload-file-input" style="display:none" onchange="handleUploadSelect(event)"/>
-      <div id="upload-file-info" style="display:none;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:8px 12px;font-size:12px;font-family:monospace;color:var(--text2);margin-top:8px"></div>
-      <div style="margin-top:10px">
-        <button class="deploy-btn" id="upload-file-btn" onclick="uploadFile()">&#8679; Upload File</button>
-      </div>
-      <div class="deploy-status" id="upload-file-status"></div>
-    </div>
-    <div class="admin-section">
-      <h3>&#128228; Move Expired to Archive</h3>
-      <p>Moves all contracts where the expiration date has passed from <code>01 Active Contracts</code> to <code>04 Expired Contracts</code> on disk and updates the catalog. Requires the local scanner server to be running.</p>
-      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:8px 12px;font-size:13px;margin-bottom:12px;line-height:1.6" id="move-expired-count">Calculating…</div>
-      <button class="deploy-btn" id="move-expired-btn" onclick="moveExpired()" style="background:#d97706">&#128228; Move Expired Contracts</button>
-      <div class="deploy-status" id="move-expired-status"></div>
-    </div>
-    <div class="admin-section">
-      <h3>&#128190; Export</h3>
-      <p>Download to replace in your <code>Tools\</code> folder.</p>
-      <div class="admin-export-row">
-        <button class="btn btn-primary" onclick="exportHTML()">&#8595; Download index.html</button>
-        <button class="btn btn-secondary" onclick="exportCSVAdmin()">&#8595; Download CSV</button>
-      </div>
-    </div>
-    <div class="admin-section" style="border-color:rgba(239,68,68,.3)">
-      <h3 style="color:#ef4444">&#128275; Session</h3>
-      <div class="admin-export-row">
-        <button class="btn btn-danger" onclick="adminLock()">Lock &amp; Exit</button>
-      </div>
-    </div>
-  </div>
-</div>
-<div id="owner-drawer">
-  <div class="drawer-header">
-    <span class="drawer-title" id="drawer-title">Owner Action</span>
-    <button class="drawer-close" onclick="closeOwnerDrawer()">&times;</button>
-  </div>
-  <div class="drawer-contract-info" id="drawer-contract-info"></div>
-  <div class="drawer-form" id="drawer-form"></div>
-  <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:12px">
-    <button class="btn" style="background:var(--blue);color:#fff;border:none;padding:7px 16px" onclick="buildOwnerReq()">Build Request</button>
-    <button class="btn btn-secondary" id="drawer-copy-btn" onclick="copyOwnerReq()" style="display:none">Copy to Clipboard</button>
-    <button class="btn" onclick="closeOwnerDrawer()">Close</button>
-  </div>
-  <div id="drawer-output" class="drawer-output" style="display:none"></div>
-</div>
-<script>
-const OWNER_HASH='049282c64821fee3faa9f7247396798f6282acbf14d19ceb9e655c316ab81962';
-let adminUnlocked=false;
-async function sha256(msg){const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(msg));return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');}
-function showAdminLogin(){if(adminUnlocked){switchTab('admin');return;}document.getElementById('admin-overlay').classList.add('show');setTimeout(()=>document.getElementById('admin-pwd').focus(),100);}
-function closeAdminLogin(){document.getElementById('admin-overlay').classList.remove('show');document.getElementById('admin-pwd').value='';document.getElementById('admin-err').style.display='none';}
-async function adminLogin(){
-  const hash=await sha256(document.getElementById('admin-pwd').value);
-  if(hash===OWNER_HASH){adminUnlocked=true;closeAdminLogin();document.getElementById('admin-tab').classList.add('unlocked');document.getElementById('admin-tab').textContent='🔓 Owner';document.getElementById('owner-admin-tab').classList.add('unlocked');const _hb=document.getElementById('owner-hdr-btn');_hb.classList.add('unlocked');_hb.textContent='🔓';_hb.title='Owner mode active — click to lock';_hb.onclick=adminLock;switchTab('admin');}
-  else{document.getElementById('admin-err').style.display='block';document.getElementById('admin-pwd').value='';document.getElementById('admin-pwd').focus();}
-}
-function adminLock(){adminUnlocked=false;document.getElementById('admin-tab').classList.remove('unlocked');document.getElementById('admin-tab').textContent='🔒 Owner';document.getElementById('owner-admin-tab').classList.remove('unlocked');const _hb=document.getElementById('owner-hdr-btn');_hb.classList.remove('unlocked');_hb.textContent='🔒';_hb.title='Owner access';_hb.onclick=showAdminLogin;document.getElementById('tab-admin').style.display='none';document.getElementById('tab-owner-admin').style.display='none';switchTab('catalog');}
-const _origSwitchTab=switchTab;
-switchTab=function(tab){
-  if(tab==='admin'||tab==='owner-admin'){
-    if(!adminUnlocked){showAdminLogin();return;}
-    document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
-    ['catalog','expiring','portfolio','coverage','activity'].forEach(t=>{const el=document.getElementById('tab-'+t);if(el)el.style.display='none';});
-    document.getElementById('tab-admin').style.display=tab==='admin'?'block':'none';
-    document.getElementById('tab-owner-admin').style.display=tab==='owner-admin'?'block':'none';
-    if(tab==='admin')goOwner();else renderAdminStats();
-    return;
-  }
-  document.getElementById('tab-admin').style.display='none';
-  document.getElementById('tab-owner-admin').style.display='none';
-  _origSwitchTab(tab);
-};
-function renderAdminStats(){const signed=DATA.filter(r=>r.SigningStatus==='Signed').length;const active=DATA.filter(r=>r.ContractLocation==='01 Active Contracts').length;const types=[...new Set(DATA.map(r=>r.DocType))].length;document.getElementById('admin-stats-row').innerHTML=`<div class="admin-stat"><strong>${DATA.length}</strong>Total</div><div class="admin-stat"><strong>${signed}</strong>Signed</div><div class="admin-stat"><strong>${active}</strong>Active</div><div class="admin-stat"><strong>${types}</strong>Doc Types</div>`;populateVendorList();updateMoveExpiredCount();}
-function handleDrop(e){e.preventDefault();document.getElementById('drop-zone').classList.remove('drag');const file=e.dataTransfer.files[0];if(file)processCSV(file);}
-function handleFileSelect(e){const file=e.target.files[0];if(file)processCSV(file);e.target.value='';}
-function processCSV(file){
-  const status=document.getElementById('upload-status');const preview=document.getElementById('csv-preview');
-  if(!file.name.endsWith('.csv')){status.className='upload-status err';status.textContent='⚠ Must be a .csv';return;}
-  const reader=new FileReader();
-  reader.onload=function(e){try{const rows=parseCSV(e.target.result);if(!rows.length)throw new Error('No data rows');DATA.length=0;rows.forEach(r=>DATA.push(r));refreshDaysUntil();status.className='upload-status ok';status.textContent=`✅ Loaded ${rows.length} records`;const cols=['ContractLocation','VendorFolder','Filename','DocType','SigningStatus'];preview.innerHTML=`<table class="preview-table"><thead><tr>${cols.map(c=>`<th>${c}</th>`).join('')}</tr></thead><tbody>${rows.slice(0,5).map(r=>`<tr>${cols.map(c=>`<td>${e_(r[c]||'')}</td>`).join('')}</tr>`).join('')}</tbody></table>`;renderAdminStats();buildStats();buildFilters();go();}catch(err){status.className='upload-status err';status.textContent='⚠ '+err.message;}};
-  reader.readAsText(file);
-}
-function e_(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
-function parseCSV(text){const lines=text.split(/\r?\n/);if(!lines.length)return[];const headers=parseCSVRow(lines[0]);const rows=[];for(let i=1;i<lines.length;i++){const line=lines[i].trim();if(!line)continue;const vals=parseCSVRow(line);const obj={};headers.forEach((h,j)=>obj[h]=vals[j]||'');rows.push(obj);}return rows;}
-function parseCSVRow(line){const result=[];let cur='';let inQ=false;for(let i=0;i<line.length;i++){const c=line[i];if(c==='"'){if(inQ&&line[i+1]==='"'){cur+='"';i++;}else{inQ=!inQ;}}else if(c===','&&!inQ){result.push(cur);cur='';}else cur+=c;}result.push(cur);return result;}
-function saveDeploy(){
-  if(!DATA.length)return;
-  const btn=document.getElementById('deploy-btn');
-  const status=document.getElementById('deploy-status');
-  btn.disabled=true;
-  status.className='deploy-status show pending';
-  status.textContent='Saving to local server...';
-  // Serialize DATA as QUOTE_ALL CSV
-  const cols=Object.keys(DATA[0]);
-  const quote=s=>'"'+String(s==null?'':s).replace(/"/g,'""')+'"';
-  const lines=[cols.map(quote).join(','),...DATA.map(r=>cols.map(c=>quote(r[c]||'')).join(','))];
-  const csvText=lines.join('\r\n')+'\r\n';
-  fetch('http://localhost:5000/api/save-catalog',{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({csv:csvText})
-  })
-  .then(function(r){return r.json().then(function(d){return{ok:r.ok&&d.ok,output:d.output};});})
-  .then(function(d){
-    btn.disabled=false;
-    if(d.ok){
-      status.className='deploy-status show ok';
-      status.textContent='✅ Pushed to GitHub. Azure will update in ~1 minute.\n'+d.output;
-    } else {
-      status.className='deploy-status show '+(d.output&&d.output.includes('up to date')?'ok':'err');
-      status.textContent=(d.output&&d.output.includes('up to date')?'✅ ':'⚠ ')+d.output;
-    }
-  })
-  .catch(function(err){
-    btn.disabled=false;
-    status.className='deploy-status show err';
-    status.textContent='⚠ Could not reach local server (http://localhost:5000). Make sure the scanner server is running.';
-  });
-}
-function exportHTML(){const dataJS='let DATA='+JSON.stringify(DATA)+';';const src=document.documentElement.outerHTML;const updated=src.replace(/let DATA\s*=\s*\[[\s\S]*?\];/,dataJS);const blob=new Blob([updated],{type:'text/html'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='index.html';a.click();}
-function runSync(forceDry){
-  const dry = forceDry || document.getElementById('sync-dry').checked;
-  const btn = document.getElementById('sync-btn');
-  const status = document.getElementById('sync-status');
-  const logEl = document.getElementById('sync-log');
-  btn.disabled = true;
-  btn.textContent = '⏳ Syncing…';
-  status.className = 'deploy-status show pending';
-  status.textContent = 'Connecting to Salesforce SoR…';
-  logEl.textContent = '';
-  logEl.style.display = 'block';
-  fetch('http://localhost:5000/api/sync-sor', {
-    method: 'POST',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({dry_run: dry})
-  }).then(function(resp){
-    const reader = resp.body.getReader();
-    const dec = new TextDecoder();
-    let buf = '';
-    function read(){return reader.read().then(function(chunk){
-      if(chunk.done){
-        btn.disabled = false; btn.textContent = '🔄 Run Sync';
-        return;
-      }
-      buf += dec.decode(chunk.value, {stream:true});
-      const parts = buf.split('\n\n'); buf = parts.pop();
-      for(const part of parts){
-        if(!part.startsWith('data: ')) continue;
-        const pay = part.slice(6);
-        try{
-          const obj = JSON.parse(pay);
-          if(obj && obj.__done__ !== undefined){
-            btn.disabled = false; btn.textContent = '🔄 Run Sync';
-            if(obj.rc === 0){
-              status.className = 'deploy-status show ok';
-              status.textContent = '✅ Sync complete.';
-            } else {
-              status.className = 'deploy-status show err';
-              status.textContent = '⚠ Sync ended with errors — see log above.';
-            }
-            return;
-          }
-          const line = typeof obj === 'string' ? obj : JSON.stringify(obj);
-          logEl.textContent += line + '\n';
-          // Update status with last non-empty line
-          if(line.trim()) status.textContent = line.trim();
-        }catch(e){ logEl.textContent += pay + '\n'; }
-        logEl.scrollTop = logEl.scrollHeight;
-      }
-      return read();
-    });}
-    return read();
-  }).catch(function(){
-    btn.disabled = false; btn.textContent = '🔄 Run Sync';
-    status.className = 'deploy-status show err';
-    status.textContent = '⚠ Could not reach local server (http://localhost:5000). Make sure the scanner server is running.';
-  });
-}
-function exportCSVAdmin(){if(!DATA.length)return;const cols=Object.keys(DATA[0]);const rows=[cols.join(','),...DATA.map(r=>cols.map(v=>{const s=String(r[v]||'');return s.includes(',')||s.includes('"')?'"'+s.replace(/"/g,'""')+'"':s;}).join(','))];const blob=new Blob([rows.join('\n')],{type:'text/csv'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='contract-catalog-fixed.csv';a.click();}
-// ── Create Folder ──
-function createFolder(){
-  var name=(document.getElementById('new-folder-name').value||'').trim();
-  var loc=document.getElementById('new-folder-loc').value;
-  var status=document.getElementById('create-folder-status');
-  if(!name){status.className='deploy-status show err';status.textContent='⚠ Enter a folder name.';return;}
-  status.className='deploy-status show pending';status.textContent='Creating folder…';
-  fetch('http://localhost:5000/api/create-folder',{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({location:loc,folder_name:name})
-  })
-  .then(function(r){return r.json().then(function(d){return{ok:r.ok&&d.ok,msg:d.message||d.error||''};});})
-  .then(function(d){
-    if(d.ok){
-      status.className='deploy-status show ok';
-      status.textContent='✅ Created: '+loc+'\\'+name;
-      document.getElementById('new-folder-name').value='';
-    }else{
-      status.className='deploy-status show err';
-      status.textContent='⚠ '+(d.msg||'Server error');
-    }
-  })
-  .catch(function(){
-    status.className='deploy-status show err';
-    status.textContent='⚠ Could not reach local server (http://localhost:5000). Make sure the scanner server is running.';
-  });
-}
-// ── Upload File ──
-var uploadSelectedFile=null;
-function handleUploadDrop(e){
-  e.preventDefault();
-  document.getElementById('upload-drop-zone').classList.remove('drag');
-  var file=e.dataTransfer.files[0];
-  if(file)setUploadFile(file);
-}
-function handleUploadSelect(e){
-  var file=e.target.files[0];
-  if(file)setUploadFile(file);
-  e.target.value='';
-}
-function setUploadFile(file){
-  uploadSelectedFile=file;
-  document.getElementById('upload-drop-label').textContent=file.name;
-  var info=document.getElementById('upload-file-info');
-  info.style.display='block';
-  info.textContent=file.name+' ('+Math.round(file.size/1024)+' KB)';
-}
-function populateVendorList(){
-  var vendors=[...new Set(DATA.map(function(r){return r.VendorFolder;}).filter(Boolean))].sort();
-  var dl=document.getElementById('upload-vendor-list');
-  if(dl)dl.innerHTML=vendors.map(function(v){return'<option value="'+e_(v)+'"/>';}).join('');
-}
-function uploadFile(){
-  var loc=document.getElementById('upload-loc').value;
-  var vendor=(document.getElementById('upload-vendor').value||'').trim();
-  var status=document.getElementById('upload-file-status');
-  var btn=document.getElementById('upload-file-btn');
-  if(!uploadSelectedFile){status.className='deploy-status show err';status.textContent='⚠ Select a file first.';return;}
-  if(!vendor){status.className='deploy-status show err';status.textContent='⚠ Enter a vendor folder name.';return;}
-  status.className='deploy-status show pending';status.textContent='Uploading…';
-  btn.disabled=true;
-  var form=new FormData();
-  form.append('file',uploadSelectedFile,uploadSelectedFile.name);
-  form.append('location',loc);
-  form.append('vendor_folder',vendor);
-  fetch('http://localhost:5000/api/upload-file',{method:'POST',body:form})
-  .then(function(r){return r.json().then(function(d){return{ok:r.ok&&d.ok,msg:d.message||d.error||''};});})
-  .then(function(d){
-    btn.disabled=false;
-    if(d.ok){
-      status.className='deploy-status show ok';
-      status.textContent='✅ Uploaded: '+loc+'\\'+vendor+'\\'+uploadSelectedFile.name;
-      uploadSelectedFile=null;
-      document.getElementById('upload-drop-label').textContent='Click or drag & drop file here';
-      document.getElementById('upload-file-info').style.display='none';
-    }else{
-      status.className='deploy-status show err';
-      status.textContent='⚠ '+(d.msg||'Server error');
-    }
-  })
-  .catch(function(){
-    btn.disabled=false;
-    status.className='deploy-status show err';
-    status.textContent='⚠ Could not reach local server (http://localhost:5000). Make sure the scanner server is running.';
-  });
-}
-// ── Move Expired ──
-function updateMoveExpiredCount(){
-  var el=document.getElementById('move-expired-count');if(!el)return;
-  var allExp=DATA.filter(function(r){var d=daysTo(r.ExpirationDate);return d!==null&&d<=0;});
-  var eligible=allExp.filter(function(r){return r.ContractLocation==='01 Active Contracts';});
-  if(!allExp.length){el.textContent='No expired contracts found.';el.style.whiteSpace='';return;}
-  var byLoc={};
-  allExp.forEach(function(r){var loc=r.ContractLocation||'(none)';byLoc[loc]=(byLoc[loc]||0)+1;});
-  var lines=[allExp.length+' total expired across all folders:'];
-  Object.keys(byLoc).sort().forEach(function(loc){lines.push('• '+byLoc[loc]+' in “'+loc+'”'+(loc==='01 Active Contracts'?' → eligible to move':''));});
-  if(!eligible.length)lines.push('Nothing to move — no expired contracts remain in “01 Active Contracts”.');
-  el.textContent=lines.join('\n');el.style.whiteSpace='pre-line';
-}
-function moveExpired(){
-  var btn=document.getElementById('move-expired-btn');
-  var status=document.getElementById('move-expired-status');
-  var n=DATA.filter(function(r){var d=daysTo(r.ExpirationDate);return d!==null&&d<=0&&r.ContractLocation==='01 Active Contracts';}).length;
-  if(!n){status.className='deploy-status show ok';status.textContent='No expired contracts to move.';return;}
-  if(!confirm('Move '+n+' expired contract(s) from "01 Active Contracts" to "04 Expired Contracts" on disk and update the catalog?'))return;
-  status.className='deploy-status show pending';status.textContent='Moving '+n+' contracts…';
-  btn.disabled=true;
-  fetch('http://localhost:5000/api/move-expired',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({})})
-  .then(function(r){return r.json().then(function(d){return{ok:r.ok&&d.ok,moved:d.moved||0,skipped:d.skipped||0,errors:d.errors||[]};});})
-  .then(function(d){
-    btn.disabled=false;
-    if(d.ok){
-      var msg='✅ Moved '+d.moved+' contract(s) to "04 Expired Contracts".';
-      if(d.skipped)msg+=' Skipped: '+d.skipped+'.';
-      if(d.errors&&d.errors.length)msg+='\nErrors: '+d.errors.join('; ');
-      status.className='deploy-status show ok';status.textContent=msg;
-      // Reload CSV to reflect changes
-      var csvUrl=new URL('contract-catalog.csv?t='+Date.now(),window.location.href).href;
-      fetch(csvUrl,{cache:'no-store'}).then(function(r){return r.text();}).then(function(text){
-        var fresh=parseCSV(text);DATA.length=0;fresh.forEach(function(r){DATA.push(r);});
-        refreshDaysUntil();buildStats();buildFilters();go();renderAdminStats();
-      }).catch(function(){});
-    }else{
-      status.className='deploy-status show err';
-      status.textContent='⚠ '+(d.errors&&d.errors.length?d.errors.join('; '):'Server error');
-    }
-  })
-  .catch(function(){
-    btn.disabled=false;
-    status.className='deploy-status show err';
-    status.textContent='⚠ Could not reach local server (http://localhost:5000). Make sure the scanner server is running.';
-  });
-}
-</script>
-
 </body>
 </html>

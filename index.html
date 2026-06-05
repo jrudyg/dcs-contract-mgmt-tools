@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -31,7 +31,7 @@ body.dark{
   --shadow-md:0 4px 12px rgba(0,0,0,.4);
 }
 
-/* ── Header ── */
+/* â”€â”€ Header â”€â”€ */
 header{
   background:var(--surface);border-bottom:1px solid var(--border);
   padding:0 24px;height:54px;display:flex;align-items:center;
@@ -44,12 +44,12 @@ header{
 .hdr-right{display:flex;align-items:center;gap:6px}
 .hdr-pill{font-size:11px;color:var(--text3);background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:3px 10px;white-space:nowrap}
 
-/* ── Icon buttons ── */
+/* â”€â”€ Icon buttons â”€â”€ */
 .icon-btn{width:32px;height:32px;border-radius:var(--radius);border:1px solid var(--border);background:var(--surface);color:var(--text3);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;transition:all .15s;font-size:14px}
 .icon-btn:hover{background:var(--surface2);color:var(--text);border-color:var(--border)}
 .icon-btn.active{background:var(--blue-soft);border-color:var(--blue-border);color:var(--blue)}
 
-/* ── Tabs ── */
+/* â”€â”€ Tabs â”€â”€ */
 .tabs{background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;display:flex;gap:0;position:sticky;top:54px;z-index:190}
 .tab{padding:11px 16px;font-size:13px;font-weight:500;color:var(--text3);border:none;background:none;cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;white-space:nowrap;display:flex;align-items:center;gap:6px}
 .tab svg{width:14px;height:14px;flex-shrink:0}
@@ -59,10 +59,10 @@ header{
 .tab.manage-tab.locked{color:var(--text3)}
 .tab.manage-tab.unlocked{color:var(--amber)}
 
-/* ── Main ── */
+/* â”€â”€ Main â”€â”€ */
 main{max-width:1400px;margin:0 auto;padding:20px 24px}
 
-/* ── Stat cards ── */
+/* â”€â”€ Stat cards â”€â”€ */
 .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px}
 .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 18px;box-shadow:var(--shadow)}
 .stat-card.clickable{cursor:pointer;transition:border-color .15s,box-shadow .15s}
@@ -73,7 +73,7 @@ main{max-width:1400px;margin:0 auto;padding:20px 24px}
 .stat-value.amber{color:var(--amber)}
 .stat-value.red{color:var(--red)}
 
-/* ── Search bar ── */
+/* â”€â”€ Search bar â”€â”€ */
 .search-block{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 16px;margin-bottom:12px;box-shadow:var(--shadow)}
 .search-row{display:flex;gap:8px;margin-bottom:10px;align-items:center}
 .search-wrap{position:relative;flex:1}
@@ -83,7 +83,7 @@ input[type=text]:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,
 .clear-x{position:absolute;right:8px;top:50%;transform:translateY(-50%);width:17px;height:17px;border-radius:50%;border:none;background:var(--text4);color:#fff;font-size:10px;display:none;align-items:center;justify-content:center;cursor:pointer;line-height:1}
 .clear-x.show{display:flex}
 
-/* ── Filter chips ── */
+/* â”€â”€ Filter chips â”€â”€ */
 .filter-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 .filter-group{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
 .filter-label{font-size:11px;font-weight:600;color:var(--text4);text-transform:uppercase;letter-spacing:.05em;white-space:nowrap}
@@ -91,14 +91,14 @@ input[type=text]:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,
 .chip:hover{border-color:var(--blue-border);color:var(--blue);background:var(--blue-soft)}
 .chip.active{background:var(--blue);border-color:var(--blue);color:#fff}
 
-/* ── Col toggle ── */
+/* â”€â”€ Col toggle â”€â”€ */
 .col-toggle-wrap{position:relative}
 .col-panel{position:absolute;top:calc(100% + 6px);right:0;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:10px;min-width:180px;z-index:50;box-shadow:var(--shadow-md)}
 .col-panel label{display:flex;align-items:center;gap:8px;padding:4px 6px;border-radius:4px;cursor:pointer;font-size:13px;color:var(--text2)}
 .col-panel label:hover{background:var(--surface2)}
 .col-panel input[type=checkbox]{accent-color:var(--blue);width:14px;height:14px}
 
-/* ── Table ── */
+/* â”€â”€ Table â”€â”€ */
 .table-block{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow)}
 .table-meta{padding:9px 14px;font-size:12px;color:var(--text3);border-bottom:1px solid var(--border2);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
 .export-btn{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:var(--radius);border:1px solid var(--border);background:var(--surface);font-size:12px;color:var(--text2);cursor:pointer;transition:all .15s}
@@ -120,7 +120,7 @@ body.dark tr.row-amber:hover td{background:#342800}
 .sort-icon{opacity:.3;font-size:9px;margin-left:2px}
 .sort-icon.on{opacity:1;color:var(--blue)}
 
-/* ── File icons ── */
+/* â”€â”€ File icons â”€â”€ */
 .fi{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:3px;font-size:9px;font-weight:700;flex-shrink:0;margin-right:4px}
 .fi-pdf{background:#fee2e2;color:#dc2626}
 .fi-docx,.fi-doc{background:#dbeafe;color:#1d4ed8}
@@ -131,7 +131,7 @@ body.dark .fi-docx,body.dark .fi-doc{background:#0d2447;color:#93c5fd}
 body.dark .fi-msg{background:#2d1450;color:#c4b5fd}
 .fn-wrap{display:flex;align-items:center}
 
-/* ── Badges ── */
+/* â”€â”€ Badges â”€â”€ */
 .badge{display:inline-flex;align-items:center;padding:2px 7px;border-radius:4px;font-size:11px;font-weight:600;white-space:nowrap;line-height:1.5}
 .b-nda{background:#dbeafe;color:#1e40af}.b-mnda{background:#d1fae5;color:#065f46}
 .b-msa{background:#fef3c7;color:#92400e}.b-sow{background:#ede9fe;color:#5b21b6}
@@ -163,7 +163,7 @@ body.dark .b-loc-expired{background:#2d0f0f;color:#ff7b72}
 .exp-tag.red{background:var(--red-bg);color:var(--red-text)}
 .exp-tag.amber{background:var(--amber-bg);color:var(--amber-text)}
 
-/* ── Action buttons ── */
+/* â”€â”€ Action buttons â”€â”€ */
 .open-btn{display:inline-flex;align-items:center;gap:3px;padding:3px 9px;border-radius:var(--radius);border:1px solid var(--border);background:var(--surface);font-size:12px;color:var(--text2);cursor:pointer;transition:all .15s;text-decoration:none}
 .open-btn:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-soft)}
 .copy-btn{width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;border-radius:var(--radius);border:1px solid var(--border);background:var(--surface);color:var(--text3);cursor:pointer;transition:all .15s;position:relative}
@@ -171,17 +171,17 @@ body.dark .b-loc-expired{background:#2d0f0f;color:#ff7b72}
 .copy-tip{position:absolute;bottom:calc(100%+4px);left:50%;transform:translateX(-50%);background:#111;color:#fff;font-size:10px;padding:2px 6px;border-radius:3px;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .15s}
 .copy-btn.copied .copy-tip{opacity:1}
 
-/* ── Empty state ── */
+/* â”€â”€ Empty state â”€â”€ */
 .empty-state{text-align:center;padding:56px 20px;color:var(--text4)}
 .empty-state svg{opacity:.25;margin-bottom:14px}
 .empty-state h3{font-size:15px;font-weight:600;color:var(--text3);margin-bottom:6px}
 .empty-state p{font-size:13px}
 
-/* ── Panel ── */
+/* â”€â”€ Panel â”€â”€ */
 .panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;margin-bottom:14px;box-shadow:var(--shadow)}
 .panel-title{font-size:14px;font-weight:700;color:var(--text);margin-bottom:14px;display:flex;align-items:center;gap:8px}
 
-/* ── Expiring tab ── */
+/* â”€â”€ Expiring tab â”€â”€ */
 .exp-section{margin-bottom:16px}
 .exp-section-hdr{display:flex;align-items:center;gap:8px;margin-bottom:10px}
 .exp-section-title{font-size:14px;font-weight:700}
@@ -190,7 +190,7 @@ body.dark .b-loc-expired{background:#2d0f0f;color:#ff7b72}
 .exp-count-badge.amber{background:var(--amber-bg);color:var(--amber-text)}
 .exp-count-badge.gray{background:var(--surface3);color:var(--text3)}
 
-/* ── Insights tab ── */
+/* â”€â”€ Insights tab â”€â”€ */
 .insights-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
 .port-list{list-style:none}
 .port-item{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border2);font-size:13px}
@@ -205,7 +205,7 @@ body.dark .b-loc-expired{background:#2d0f0f;color:#ff7b72}
 .cov-ok{color:var(--green);font-weight:700}
 .cov-no{color:var(--red-text);font-weight:700}
 
-/* ── Manage tab ── */
+/* â”€â”€ Manage tab â”€â”€ */
 .manage-section{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:22px;margin-bottom:14px;box-shadow:var(--shadow)}
 .manage-section-title{font-size:15px;font-weight:700;color:var(--text);margin-bottom:4px;display:flex;align-items:center;gap:8px}
 .manage-section-sub{font-size:13px;color:var(--text3);margin-bottom:16px;line-height:1.5}
@@ -264,7 +264,7 @@ body.dark .b-loc-expired{background:#2d0f0f;color:#ff7b72}
 .tool-btn.primary{background:var(--blue);border-color:var(--blue);color:#fff}
 .tool-btn.primary:hover{opacity:.9}
 
-/* ── Admin login modal ── */
+/* â”€â”€ Admin login modal â”€â”€ */
 #admin-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center;backdrop-filter:blur(2px)}
 #admin-overlay.show{display:flex}
 .admin-modal{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-xl);padding:32px;width:360px;max-width:92vw;box-shadow:var(--shadow-md)}
@@ -278,7 +278,7 @@ body.dark .b-loc-expired{background:#2d0f0f;color:#ff7b72}
 .modal-btn-primary{background:var(--blue);color:#fff;border:none}
 .modal-btn-cancel{background:var(--surface2);color:var(--text2);border:1px solid var(--border)}
 
-/* ── Responsive ── */
+/* â”€â”€ Responsive â”€â”€ */
 @media(max-width:900px){
   .insights-grid{grid-template-columns:1fr}
   .tool-cards{grid-template-columns:1fr}
@@ -300,14 +300,14 @@ body.dark .b-loc-expired{background:#2d0f0f;color:#ff7b72}
 .card-footer{display:flex;align-items:center;justify-content:space-between}
 .card-date{font-size:11px;color:var(--text4)}
 
-/* ── Print ── */
+/* â”€â”€ Print â”€â”€ */
 @media print{
   header,.tabs,.search-block,#tab-manage,.hdr-right{display:none!important}
   main{padding:0}
   body{background:#fff;color:#000}
 }
 
-/* ── Footer ── */
+/* â”€â”€ Footer â”€â”€ */
 .footer-note{font-size:11px;color:var(--text4);text-align:right;margin-top:8px}
 </style>
 </head>
@@ -321,8 +321,8 @@ body.dark .b-loc-expired{background:#2d0f0f;color:#ff7b72}
     Contract Catalog
   </div>
   <div class="hdr-right">
-    <span class="hdr-pill" id="hdr-pill">Loading…</span>
-    <button class="icon-btn" id="theme-btn" onclick="toggleDark()" title="Toggle dark mode">🌙</button>
+    <span class="hdr-pill" id="hdr-pill">Loadingâ€¦</span>
+    <button class="icon-btn" id="theme-btn" onclick="toggleDark()" title="Toggle dark mode">ðŸŒ™</button>
   </div>
 </header>
 
@@ -347,7 +347,7 @@ body.dark .b-loc-expired{background:#2d0f0f;color:#ff7b72}
 
 <main>
 
-  <!-- ══ CATALOG TAB ══ -->
+  <!-- â•â• CATALOG TAB â•â• -->
   <div id="tab-catalog">
     <div class="stats-row" id="stats-row"></div>
 
@@ -355,8 +355,8 @@ body.dark .b-loc-expired{background:#2d0f0f;color:#ff7b72}
       <div class="search-row">
         <div class="search-wrap">
           <svg class="s-icon" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path stroke-linecap="round" d="M21 21l-4.35-4.35"/></svg>
-          <input type="text" id="q" placeholder="Search counterparty or filename… (press / to focus)" oninput="onSearch()" aria-label="Search">
-          <button class="clear-x" id="clear-x" onclick="clearSearch()" title="Clear">✕</button>
+          <input type="text" id="q" placeholder="Search counterparty or filenameâ€¦ (press / to focus)" oninput="onSearch()" aria-label="Search">
+          <button class="clear-x" id="clear-x" onclick="clearSearch()" title="Clear">âœ•</button>
         </div>
         <div class="col-toggle-wrap">
           <button class="icon-btn" onclick="toggleColPanel()" title="Show/hide columns">
@@ -397,12 +397,12 @@ body.dark .b-loc-expired{background:#2d0f0f;color:#ff7b72}
     <p class="footer-note" id="footer-note"></p>
   </div>
 
-  <!-- ══ EXPIRING TAB ══ -->
+  <!-- â•â• EXPIRING TAB â•â• -->
   <div id="tab-expiring" style="display:none">
     <div id="expiring-content"></div>
   </div>
 
-  <!-- ══ INSIGHTS TAB ══ -->
+  <!-- â•â• INSIGHTS TAB â•â• -->
   <div id="tab-insights" style="display:none">
     <div style="display:flex;justify-content:flex-end;margin-bottom:12px">
       <button class="export-btn" onclick="window.print()">
@@ -413,7 +413,7 @@ body.dark .b-loc-expired{background:#2d0f0f;color:#ff7b72}
     <div id="insights-content"></div>
   </div>
 
-  <!-- ══ MANAGE TAB ══ -->
+  <!-- â•â• MANAGE TAB â•â• -->
   <div id="tab-manage" style="display:none">
 
     <!-- Section 1: Review Queue -->
@@ -438,8 +438,8 @@ body.dark .b-loc-expired{background:#2d0f0f;color:#ff7b72}
         <div class="search-row">
           <div class="search-wrap">
             <svg class="s-icon" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path stroke-linecap="round" d="M21 21l-4.35-4.35"/></svg>
-            <input type="text" id="bulk-q" placeholder="Search…" oninput="goBulk()">
-            <button class="clear-x" id="bulk-clear-x" onclick="clearBulkSearch()" title="Clear">✕</button>
+            <input type="text" id="bulk-q" placeholder="Searchâ€¦" oninput="goBulk()">
+            <button class="clear-x" id="bulk-clear-x" onclick="clearBulkSearch()" title="Clear">âœ•</button>
           </div>
         </div>
         <div class="filter-row" id="bulk-filter-bar"></div>
@@ -448,11 +448,11 @@ body.dark .b-loc-expired{background:#2d0f0f;color:#ff7b72}
       <div class="bulk-action-bar">
         <span class="bulk-sel-count" id="bulk-sel-count">0 selected</span>
         <select id="bulk-action-sel">
-          <option value="">Choose action…</option>
-          <option value="move-active">Move → 01 Active Contracts</option>
-          <option value="move-unsigned">Move → 02 Unsigned Contracts</option>
-          <option value="move-archived">Move → 03 Archived Contracts</option>
-          <option value="move-expired">Move → 04 Expired Contracts</option>
+          <option value="">Choose actionâ€¦</option>
+          <option value="move-active">Move â†’ 01 Active Contracts</option>
+          <option value="move-unsigned">Move â†’ 02 Unsigned Contracts</option>
+          <option value="move-archived">Move â†’ 03 Archived Contracts</option>
+          <option value="move-expired">Move â†’ 04 Expired Contracts</option>
           <option value="mark-active">Mark Status = active</option>
           <option value="mark-expired">Mark Status = expired</option>
         </select>
@@ -490,10 +490,10 @@ body.dark .b-loc-expired{background:#2d0f0f;color:#ff7b72}
 
         <!-- Import -->
         <div class="tool-card">
-          <div class="tool-card-title">📥 Import CSV</div>
+          <div class="tool-card-title">ðŸ“¥ Import CSV</div>
           <div class="tool-card-desc">Reload catalog data from a new CSV file without refreshing the page.</div>
           <div class="drop-zone" id="import-dz" onclick="document.getElementById('import-file').click()" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="handleImportDrop(event)">
-            <div class="dz-icon">📄</div>
+            <div class="dz-icon">ðŸ“„</div>
             <p>Click or drag & drop CSV here</p>
           </div>
           <input type="file" id="import-file" accept=".csv" style="display:none" onchange="handleImportSelect(event)">
@@ -502,15 +502,15 @@ body.dark .b-loc-expired{background:#2d0f0f;color:#ff7b72}
 
         <!-- Export -->
         <div class="tool-card">
-          <div class="tool-card-title">📤 Export</div>
+          <div class="tool-card-title">ðŸ“¤ Export</div>
           <div class="tool-card-desc">Download the current session data or this page for deployment.</div>
-          <button class="tool-btn" onclick="exportCSVFull()">⬇ Download CSV</button>
-          <button class="tool-btn" onclick="exportHTML()">⬇ Download index.html</button>
+          <button class="tool-btn" onclick="exportCSVFull()">â¬‡ Download CSV</button>
+          <button class="tool-btn" onclick="exportHTML()">â¬‡ Download index.html</button>
         </div>
 
         <!-- Deploy -->
         <div class="tool-card">
-          <div class="tool-card-title">🚀 Deploy</div>
+          <div class="tool-card-title">ðŸš€ Deploy</div>
           <div class="tool-card-desc">Generate a CC relay prompt to save the catalog to disk and push to GitHub.</div>
           <button class="tool-btn primary" onclick="generateDeployRelay()">Generate Deploy Prompt</button>
           <div id="deploy-relay-wrap" style="display:none">
@@ -524,17 +524,17 @@ body.dark .b-loc-expired{background:#2d0f0f;color:#ff7b72}
 
     <!-- Lock session -->
     <div style="text-align:right;margin-top:4px">
-      <button class="export-btn" onclick="adminLock()" style="color:var(--red-text);border-color:rgba(220,38,38,.3)">🔒 Lock &amp; Exit</button>
+      <button class="export-btn" onclick="adminLock()" style="color:var(--red-text);border-color:rgba(220,38,38,.3)">ðŸ”’ Lock &amp; Exit</button>
     </div>
 
   </div>
 
 </main>
 
-<!-- ── Admin login modal ── -->
+<!-- â”€â”€ Admin login modal â”€â”€ -->
 <div id="admin-overlay">
   <div class="admin-modal">
-    <h3>🔒 Manage Access</h3>
+    <h3>ðŸ”’ Manage Access</h3>
     <p>Enter the owner password to access catalog management tools.</p>
     <input type="password" id="admin-pwd" placeholder="Password" onkeydown="if(event.key==='Enter')adminLogin()">
     <div class="modal-err" id="modal-err">Incorrect password. Try again.</div>
@@ -546,9 +546,9 @@ body.dark .b-loc-expired{background:#2d0f0f;color:#ff7b72}
 </div>
 
 <script>
-// ══════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // DATA & STATE
-// ══════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 let DATA = [];
 let filtered = [];
 let bulkFiltered = [];
@@ -565,35 +565,35 @@ const today = new Date(); today.setHours(0,0,0,0);
 // SharePoint base URL
 const SP_BASE = 'https://diakoniagroupllc.sharepoint.com/sites/SalesforceContracts/Active%20Contracts';
 
-// ── Review queue data (22 vendors from HANDOFF §3) ──
+// â”€â”€ Review queue data (22 vendors from HANDOFF Â§3) â”€â”€
 const REVIEW_QUEUE = [
-  {vendor:'ISI', flag:'Misrouted file', note:'Contains a Precision Tools file — verify and move to correct vendor folder.'},
-  {vendor:'NFI', flag:'Misrouted file', note:'Contains a Ventura Foods file — verify and move to correct vendor folder.'},
-  {vendor:'SVT / SVT Robotics', flag:'Duplicate folders', note:'Two folders contain identical file — confirm single entity and consolidate.'},
-  {vendor:'Geek+ / GeekPlus Robotics', flag:'Duplicate folders', note:'Two folders contain identical file — confirm single entity and consolidate.'},
+  {vendor:'ISI', flag:'Misrouted file', note:'Contains a Precision Tools file â€” verify and move to correct vendor folder.'},
+  {vendor:'NFI', flag:'Misrouted file', note:'Contains a Ventura Foods file â€” verify and move to correct vendor folder.'},
+  {vendor:'SVT / SVT Robotics', flag:'Duplicate folders', note:'Two folders contain identical file â€” confirm single entity and consolidate.'},
+  {vendor:'Geek+ / GeekPlus Robotics', flag:'Duplicate folders', note:'Two folders contain identical file â€” confirm single entity and consolidate.'},
   {vendor:'Trinity Controls / Trinity Solutions', flag:'Possible duplicate', note:'Verify whether these are the same entity or distinct counterparties.'},
-  {vendor:'Dematic', flag:'Multiple files', note:'2 files present — 2015 and 2025 versions. Confirm which is current; archive the other.'},
-  {vendor:'EMIT', flag:'Multiple files', note:'2 files — signed version and earlier unsigned version. Confirm which is active.'},
+  {vendor:'Dematic', flag:'Multiple files', note:'2 files present â€” 2015 and 2025 versions. Confirm which is current; archive the other.'},
+  {vendor:'EMIT', flag:'Multiple files', note:'2 files â€” signed version and earlier unsigned version. Confirm which is active.'},
   {vendor:'NPI', flag:'Multiple files', note:'2 NDA versions present. Confirm which is current.'},
-  {vendor:'Ventura Foods', flag:'Multiple files', note:'2 files — signed and unsigned. Confirm which is the executed copy.'},
-  {vendor:'Designed Integrators (DMI)', flag:'DCS entity as counterparty?', note:'Rows 36, 408, 628, 629 — verify whether DCS/Diakonia is listed as counterparty rather than vendor.'},
-  {vendor:'EDMCI', flag:'Boilerplate counterparty name', note:'Row 647 — counterparty name appears to be a template placeholder. Verify and correct.'},
-  {vendor:'Fletchline', flag:'Boilerplate counterparty name', note:'Row 666 — counterparty name appears to be a template placeholder. Verify and correct.'},
-  {vendor:'ScanSource', flag:'Not standalone contracts', note:'Rows 828-830 — 3 exhibit files, not standalone contracts. Confirm correct catalog classification.'},
-  {vendor:'Amazon', flag:'MSA expiration check', note:'MSA (2015) — verify whether expiration date is current and whether renewal is needed.'},
-  {vendor:'CEI', flag:'MSA expiration check', note:'MSA — verify expiration date.'},
-  {vendor:'Tevora', flag:'MSA expiration check', note:'MSA (2.12.2024) — verify expiration date.'},
-  {vendor:'Lamb Weston', flag:'Confirmed expired — renewal decision', note:'Expired 2025-02-11. Evergreen policy does NOT apply. Renewal decision needed.'},
-  {vendor:'UNARCO', flag:'Dated expiration — verify', note:'Verify expiration date is accurate.'},
-  {vendor:'Fletchline', flag:'Dated expiration — verify', note:'Verify expiration date is accurate.'},
-  {vendor:'NPI', flag:'Dated expiration — verify', note:'Verify expiration date is accurate.'},
-  {vendor:'Trinity', flag:'Dated expiration — verify', note:'Verify expiration date is accurate.'},
-  {vendor:'EMIT', flag:'Dated expiration — verify', note:'Verify expiration date is accurate.'},
+  {vendor:'Ventura Foods', flag:'Multiple files', note:'2 files â€” signed and unsigned. Confirm which is the executed copy.'},
+  {vendor:'Designed Integrators (DMI)', flag:'DCS entity as counterparty?', note:'Rows 36, 408, 628, 629 â€” verify whether DCS/Diakonia is listed as counterparty rather than vendor.'},
+  {vendor:'EDMCI', flag:'Boilerplate counterparty name', note:'Row 647 â€” counterparty name appears to be a template placeholder. Verify and correct.'},
+  {vendor:'Fletchline', flag:'Boilerplate counterparty name', note:'Row 666 â€” counterparty name appears to be a template placeholder. Verify and correct.'},
+  {vendor:'ScanSource', flag:'Not standalone contracts', note:'Rows 828-830 â€” 3 exhibit files, not standalone contracts. Confirm correct catalog classification.'},
+  {vendor:'Amazon', flag:'MSA expiration check', note:'MSA (2015) â€” verify whether expiration date is current and whether renewal is needed.'},
+  {vendor:'CEI', flag:'MSA expiration check', note:'MSA â€” verify expiration date.'},
+  {vendor:'Tevora', flag:'MSA expiration check', note:'MSA (2.12.2024) â€” verify expiration date.'},
+  {vendor:'Lamb Weston', flag:'Confirmed expired â€” renewal decision', note:'Expired 2025-02-11. Evergreen policy does NOT apply. Renewal decision needed.'},
+  {vendor:'UNARCO', flag:'Dated expiration â€” verify', note:'Verify expiration date is accurate.'},
+  {vendor:'Fletchline', flag:'Dated expiration â€” verify', note:'Verify expiration date is accurate.'},
+  {vendor:'NPI', flag:'Dated expiration â€” verify', note:'Verify expiration date is accurate.'},
+  {vendor:'Trinity', flag:'Dated expiration â€” verify', note:'Verify expiration date is accurate.'},
+  {vendor:'EMIT', flag:'Dated expiration â€” verify', note:'Verify expiration date is accurate.'},
 ];
 
-// ══════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // HELPERS
-// ══════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 const DT_CLASS = {NDA:'b-nda',MNDA:'b-mnda',MSA:'b-msa',SOW:'b-sow',Subcontract:'b-sub',CDA:'b-cda',EULA:'b-eula',IPA:'b-ipa',PSA:'b-psa',Amendment:'b-amendment',Other:'b-other'};
 
 function esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;'); }
@@ -622,13 +622,13 @@ function expiryTag(r){
   }
   const d = daysTo(r.ExpirationDate);
   if(d===null||d>90) return '';
-  if(d<=30) return `<span class="exp-tag red">⚠ ${d}d</span>`;
+  if(d<=30) return `<span class="exp-tag red">âš  ${d}d</span>`;
   return `<span class="exp-tag amber">${d}d</span>`;
 }
 
 function daysCell(r){
   const d = daysTo(r.ExpirationDate);
-  if(d===null) return '<td style="font-size:12px;color:var(--text4)">—</td>';
+  if(d===null) return '<td style="font-size:12px;color:var(--text4)">â€”</td>';
   let col='var(--text3)',wt='400',txt=d+'d';
   if(d<0){col='var(--red)';wt='700';txt=(-d)+'d ago';}
   else if(d===0){col='var(--red)';wt='700';txt='Today';}
@@ -643,7 +643,7 @@ function fileIcon(ext){
   if(x==='.docx') return '<span class="fi fi-docx">DOC</span>';
   if(x==='.doc') return '<span class="fi fi-doc">DOC</span>';
   if(x==='.msg') return '<span class="fi fi-msg">MSG</span>';
-  return '<span class="fi fi-other">—</span>';
+  return '<span class="fi fi-other">â€”</span>';
 }
 
 function locBadge(loc){
@@ -651,12 +651,12 @@ function locBadge(loc){
   if(loc==='02 Unsigned Contracts') return badge('Unsigned','b-loc-unsigned');
   if(loc==='03 Archived Contracts') return badge('Archived','b-loc-archived');
   if(loc==='04 Expired Contracts') return badge('Expired','b-loc-expired');
-  return badge(loc||'—','b-loc-archived');
+  return badge(loc||'â€”','b-loc-archived');
 }
 
 function statusBadge(s){
   const map={active:'b-active',expired:'b-expired',renewed:'b-renewed',unsigned:'b-unsigned'};
-  return badge(s||'—', map[s]||'b-unknown');
+  return badge(s||'â€”', map[s]||'b-unknown');
 }
 
 function spUrl(r){
@@ -664,23 +664,23 @@ function spUrl(r){
   return SP_BASE+'/'+fp.split('/').map(s=>encodeURIComponent(s||'')).join('/')+'?web=1';
 }
 
-// ══════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // DARK MODE
-// ══════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 function toggleDark(){
   const d = document.body.classList.toggle('dark');
-  document.getElementById('theme-btn').textContent = d ? '☀️' : '🌙';
+  document.getElementById('theme-btn').textContent = d ? 'â˜€ï¸' : 'ðŸŒ™';
   try{localStorage.setItem('cm-theme',d?'dark':'light')}catch(e){}
 }
 (function(){
   let saved; try{saved=localStorage.getItem('cm-theme')}catch(e){}
   const pref = window.matchMedia&&window.matchMedia('(prefers-color-scheme:dark)').matches;
-  if(saved==='dark'||(saved===null&&pref)){document.body.classList.add('dark');document.getElementById('theme-btn').textContent='☀️';}
+  if(saved==='dark'||(saved===null&&pref)){document.body.classList.add('dark');document.getElementById('theme-btn').textContent='â˜€ï¸';}
 })();
 
-// ══════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // TAB SWITCHING
-// ══════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 function switchTab(tab){
   document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
   ['catalog','expiring','insights','manage'].forEach(t=>{
@@ -696,9 +696,9 @@ function handleManageClick(){
   showAdminLogin();
 }
 
-// ══════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // STATS
-// ══════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 function buildStats(){
   const inForce = DATA.filter(r=>r.Status==='active'||r.Status==='renewed').length;
   const expired = DATA.filter(r=>r.Status==='expired').length;
@@ -710,13 +710,13 @@ function buildStats(){
     {label:'Total',value:DATA.length.toLocaleString(),cls:'',tab:''},
     {label:'In Force',value:inForce.toLocaleString(),cls:'green',tab:''},
     {label:'Expired',value:expired.toLocaleString(),cls:expired>0?'red':'',tab:'expiring'},
-    {label:'Expiring ≤90d',value:exp90.toLocaleString(),cls:exp90>0?'amber':'',tab:'expiring'},
+    {label:'Expiring â‰¤90d',value:exp90.toLocaleString(),cls:exp90>0?'amber':'',tab:'expiring'},
   ].map(s=>`<div class="stat-card${s.tab?' clickable':''}" ${s.tab?`onclick="switchTab('${s.tab}')"`:''}><div class="stat-label">${s.label}</div><div class="stat-value ${s.cls}">${s.value}</div></div>`).join('');
 }
 
-// ══════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // FILTERS (Catalog)
-// ══════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 function buildFilters(){
   const HIDDEN = new Set(['License','Tax-Form','Insurance','Other']);
   const types = [...new Set(DATA.map(r=>r.DocType).filter(Boolean))].filter(t=>!HIDDEN.has(t)).sort();
@@ -736,9 +736,9 @@ function setTypeAll(){ af.types.clear(); buildFilters(); go(); }
 function toggleType(t){ af.types.has(t)?af.types.delete(t):af.types.add(t); buildFilters(); go(); }
 function setAf(k,v){ af[k]=v; buildFilters(); go(); }
 
-// ══════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // SEARCH
-// ══════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 function onSearch(){
   const q = document.getElementById('q').value;
   document.getElementById('clear-x').classList.toggle('show',q.length>0);
@@ -746,9 +746,9 @@ function onSearch(){
 }
 function clearSearch(){ document.getElementById('q').value=''; document.getElementById('clear-x').classList.remove('show'); go(); }
 
-// ══════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // SORT & COLUMNS
-// ══════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 function sortBy(f){ sortField===f?sortDir*=-1:(sortField=f,sortDir=1); go(); }
 
 function getColumns(){
@@ -775,13 +775,13 @@ function getColumns(){
 function renderThead(){
   const cols = getColumns();
   document.getElementById('thead-row').innerHTML = cols.map(c=>
-    `<th style="width:${c.w}" class="${c.sort?'':'no-sort'}" ${c.sort?`onclick="sortBy('${c.field}')"`:''}>${c.label}${c.sort?`<span class="sort-icon${sortField===c.field?' on':''}"> ${sortField===c.field?(sortDir===1?'▲':'▼'):'↕'}</span>`:''}</th>`
+    `<th style="width:${c.w}" class="${c.sort?'':'no-sort'}" ${c.sort?`onclick="sortBy('${c.field}')"`:''}>${c.label}${c.sort?`<span class="sort-icon${sortField===c.field?' on':''}"> ${sortField===c.field?(sortDir===1?'â–²':'â–¼'):'â†•'}</span>`:''}</th>`
   ).join('');
 }
 
-// ══════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // MAIN FILTER + RENDER
-// ══════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 function go(){
   const q = (document.getElementById('q').value||'').trim().toLowerCase();
   filtered = DATA.filter(r=>{
@@ -821,7 +821,7 @@ function renderTable(q){
   const showVer = document.getElementById('col-version')?.checked;
 
   const n = Math.min(filtered.length,LIMIT);
-  document.getElementById('tbl-meta').textContent = `Showing ${n.toLocaleString()} of ${filtered.length.toLocaleString()} · ${DATA.length.toLocaleString()} total`;
+  document.getElementById('tbl-meta').textContent = `Showing ${n.toLocaleString()} of ${filtered.length.toLocaleString()} Â· ${DATA.length.toLocaleString()} total`;
 
   if(!filtered.length){
     tbody.innerHTML=''; cardList.innerHTML=''; empty.style.display='block'; return;
@@ -833,26 +833,26 @@ function renderTable(q){
     const rc = rowClass(r);
     const dtc = DT_CLASS[r.DocType]||'b-other';
     const fn = r.Filename||'';
-    const trunc = fn.length>44?fn.slice(0,41)+'…':fn;
+    const trunc = fn.length>44?fn.slice(0,41)+'â€¦':fn;
     const url = spUrl(r);
     const rj = encodeURIComponent(JSON.stringify(r));
     const expB = expiryTag(r);
     let extra = '';
-    const expDate = (r.ExpirationDate||'').slice(0,10)||'—';
+    const expDate = (r.ExpirationDate||'').slice(0,10)||'â€”';
     const expStyle = r.ExpirationDate&&r.ExpirationDate<new Date().toISOString().slice(0,10)?'color:var(--red);font-weight:700':'color:var(--text3)';
     if(showExp) extra += `<td style="font-size:12px;${expStyle}">${expDate}</td>`;
     if(showDL)  extra += daysCell(r);
-    if(showNot) extra += `<td style="font-size:12px;color:var(--text3)" title="${esc(r.Notes)}">${esc((r.Notes||'').slice(0,35))||'—'}</td>`;
-    if(showVer) extra += `<td style="font-size:12px;color:var(--text3)">${esc(r.VersionLabel)||'—'}</td>`;
+    if(showNot) extra += `<td style="font-size:12px;color:var(--text3)" title="${esc(r.Notes)}">${esc((r.Notes||'').slice(0,35))||'â€”'}</td>`;
+    if(showVer) extra += `<td style="font-size:12px;color:var(--text3)">${esc(r.VersionLabel)||'â€”'}</td>`;
     return `<tr class="${rc}">
-      <td title="${esc(r.CounterpartyName)}">${esc(r.CounterpartyName||'—')}</td>
-      <td>${badge(r.DocType||'—',dtc)}</td>
+      <td title="${esc(r.CounterpartyName)}">${esc(r.CounterpartyName||'â€”')}</td>
+      <td>${badge(r.DocType||'â€”',dtc)}</td>
       <td>${statusBadge(r.Status)}</td>
       <td>${locBadge(r.ContractLocation)}</td>
       <td title="${esc(fn)}" style="font-family:monospace;font-size:11px;color:var(--text3)">
         <div class="fn-wrap">${fileIcon(r.Extension)}${esc(trunc)}${expB}</div>
       </td>
-      <td style="font-size:12px;color:var(--text3)">${(r.EffectiveDate||'').slice(0,10)||'—'}</td>
+      <td style="font-size:12px;color:var(--text3)">${(r.EffectiveDate||'').slice(0,10)||'â€”'}</td>
       ${extra}
       <td>
         <div style="display:flex;align-items:center;gap:4px">
@@ -867,19 +867,19 @@ function renderTable(q){
         </div>
       </td>
     </tr>`;
-  }).join('') + (filtered.length>LIMIT?`<tr><td colspan="12" style="text-align:center;padding:10px;font-size:12px;color:var(--text4)">Showing first ${LIMIT} of ${filtered.length.toLocaleString()} — refine search to see more</td></tr>`:'');
+  }).join('') + (filtered.length>LIMIT?`<tr><td colspan="12" style="text-align:center;padding:10px;font-size:12px;color:var(--text4)">Showing first ${LIMIT} of ${filtered.length.toLocaleString()} â€” refine search to see more</td></tr>`:'');
 
   // Mobile cards
   cardList.innerHTML = slice.map(r=>{
     const rc=rowClass(r); const url=spUrl(r);
-    const fn=r.Filename||''; const trunc=fn.length>46?fn.slice(0,43)+'…':fn;
+    const fn=r.Filename||''; const trunc=fn.length>46?fn.slice(0,43)+'â€¦':fn;
     const rj=encodeURIComponent(JSON.stringify(r));
     return `<div class="contract-card ${rc}">
-      <div class="card-top"><span class="card-name">${esc(r.CounterpartyName||'—')}</span>${expiryTag(r)}</div>
-      <div class="card-badges">${badge(r.DocType||'—',DT_CLASS[r.DocType]||'b-other')}${statusBadge(r.Status)}${locBadge(r.ContractLocation)}</div>
+      <div class="card-top"><span class="card-name">${esc(r.CounterpartyName||'â€”')}</span>${expiryTag(r)}</div>
+      <div class="card-badges">${badge(r.DocType||'â€”',DT_CLASS[r.DocType]||'b-other')}${statusBadge(r.Status)}${locBadge(r.ContractLocation)}</div>
       <div class="card-fn">${fileIcon(r.Extension)}${esc(trunc)}</div>
       <div class="card-footer">
-        <span class="card-date">${(r.EffectiveDate||'').slice(0,10)||'—'}</span>
+        <span class="card-date">${(r.EffectiveDate||'').slice(0,10)||'â€”'}</span>
         <a href="${url}" target="_blank" rel="noopener" class="open-btn">Open</a>
       </div>
     </div>`;
@@ -894,9 +894,9 @@ document.addEventListener('click',e=>{
   if(!e.target.closest('.col-toggle-wrap')) document.getElementById('col-panel').style.display='none';
 });
 
-// ══════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // COPY LINK
-// ══════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 function copyLink(url,btn){
   navigator.clipboard.writeText(url).then(()=>{
     btn.classList.add('copied');
@@ -905,9 +905,9 @@ function copyLink(url,btn){
   });
 }
 
-// ══════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // EXPORT CSV
-// ══════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 function exportCSV(){
   const cols=['CounterpartyName','DocType','Status','ContractLocation','Filename','EffectiveDate','ExpirationDate','DaysUntilExpiration','Notes'];
   const rows=[cols.join(','),...filtered.map(r=>cols.map(c=>`"${(r[c]||'').replace(/"/g,'""')}"`).join(','))];
@@ -932,9 +932,9 @@ function dl(content,type,name){
 }
 function ts(){ return new Date().toISOString().slice(0,10); }
 
-// ══════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // EXPIRING TAB
-// ══════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 function renderExpiring(){
   const expired = DATA.filter(r=>r.Status==='expired').sort((a,b)=>{
     const da=daysTo(a.ExpirationDate)||0, db=daysTo(b.ExpirationDate)||0; return da-db;
@@ -953,10 +953,10 @@ function renderExpiring(){
     return `<div style="overflow-x:auto"><table class="cov-table">
       <thead><tr><th>Counterparty</th><th>Type</th><th>Filename</th><th>Expires</th><th></th></tr></thead>
       <tbody>${rows.map(r=>`<tr>
-        <td>${esc(r.CounterpartyName||'—')}</td>
-        <td>${badge(r.DocType||'—',DT_CLASS[r.DocType]||'b-other')}</td>
+        <td>${esc(r.CounterpartyName||'â€”')}</td>
+        <td>${badge(r.DocType||'â€”',DT_CLASS[r.DocType]||'b-other')}</td>
         <td style="font-family:monospace;font-size:11px;color:var(--text3)" title="${esc(r.Filename)}">${esc((r.Filename||'').slice(0,38))}</td>
-        <td><span class="exp-tag ${tagCls}">${(r.ExpirationDate||'—').slice(0,10)}</span></td>
+        <td><span class="exp-tag ${tagCls}">${(r.ExpirationDate||'â€”').slice(0,10)}</span></td>
         <td><a href="${spUrl(r)}" target="_blank" rel="noopener" class="open-btn">Open</a></td>
       </tr>`).join('')}</tbody>
     </table></div>`;
@@ -977,9 +977,9 @@ function renderExpiring(){
     </div>`;
 }
 
-// ══════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // INSIGHTS TAB
-// ══════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 function renderInsights(){
   // Portfolio
   const byType={}, byLoc={};
@@ -992,7 +992,7 @@ function renderInsights(){
   function portList(obj,max){
     return Object.entries(obj).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`
       <li class="port-item">
-        <span style="min-width:80px;font-size:12px">${esc(k)||'—'}</span>
+        <span style="min-width:80px;font-size:12px">${esc(k)||'â€”'}</span>
         <div class="port-bar-track"><div class="port-bar-fill" style="width:${Math.round(v/max*100)}%"></div></div>
         <span class="port-num">${v}</span>
       </li>`).join('');
@@ -1038,9 +1038,9 @@ function renderInsights(){
           <thead><tr><th>Counterparty</th><th style="text-align:center">NDA/MNDA/CDA</th><th style="text-align:center">MSA/IPA</th><th style="text-align:center">SOW/PSA/Sub</th><th>Doc Types</th></tr></thead>
           <tbody>${gaps.map(([n,v])=>`<tr>
             <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis">${esc(n)}</td>
-            <td style="text-align:center">${v.nda?'<span class="cov-ok">✓</span>':'<span class="cov-no">✗</span>'}</td>
-            <td style="text-align:center">${v.msa?'<span class="cov-ok">✓</span>':'<span class="cov-no">✗</span>'}</td>
-            <td style="text-align:center">${v.project?'<span class="cov-ok">✓</span>':'<span class="cov-no">✗</span>'}</td>
+            <td style="text-align:center">${v.nda?'<span class="cov-ok">âœ“</span>':'<span class="cov-no">âœ—</span>'}</td>
+            <td style="text-align:center">${v.msa?'<span class="cov-ok">âœ“</span>':'<span class="cov-no">âœ—</span>'}</td>
+            <td style="text-align:center">${v.project?'<span class="cov-ok">âœ“</span>':'<span class="cov-no">âœ—</span>'}</td>
             <td style="font-size:11px;color:var(--text3)">${[...v.types].sort().join(', ')}</td>
           </tr>`).join('')}</tbody>
         </table>
@@ -1048,9 +1048,9 @@ function renderInsights(){
     </div>`;
 }
 
-// ══════════════════════════════════════════════
-// MANAGE TAB — REVIEW QUEUE
-// ══════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// MANAGE TAB â€” REVIEW QUEUE
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 function renderManage(){
   renderReviewQueue();
   goBulk();
@@ -1066,7 +1066,7 @@ function renderReviewQueue(){
   if(done===total){
     document.getElementById('review-queue-content').innerHTML=`
       <div class="review-done-state">
-        <div style="font-size:32px;margin-bottom:8px">✅</div>
+        <div style="font-size:32px;margin-bottom:8px">âœ…</div>
         <div style="font-size:15px;font-weight:700;margin-bottom:4px">All ${total} items reviewed</div>
         <div style="font-size:13px;color:var(--text4)">Manual review queue is clear.</div>
       </div>`;
@@ -1084,7 +1084,7 @@ function renderReviewQueue(){
   }).slice(0,8);
   const rowsHtml = matches.length
     ? matches.map(r=>`${r.ContractLocation} / ${r.VendorFolder} / ${r.Filename}`).join('\n')
-    : '(no matching rows found in current catalog — search manually)';
+    : '(no matching rows found in current catalog â€” search manually)';
 
   document.getElementById('review-queue-content').innerHTML = `
     <div class="review-progress">
@@ -1100,10 +1100,10 @@ function renderReviewQueue(){
       <div class="review-note">${esc(item.note)}</div>
       <div class="review-rows">${esc(rowsHtml)}</div>
       <div class="review-actions">
-        <button class="rev-btn primary" onclick="resolveReview(${globalIdx},'resolved')">✓ Mark Resolved</button>
-        <button class="rev-btn neutral" onclick="resolveReview(${globalIdx},'escalate')">⬆ Generate CC Prompt</button>
-        <button class="rev-btn neutral" onclick="skipReview()">→ Skip</button>
-        <button class="rev-btn danger" onclick="resolveReview(${globalIdx},'defer')">⏸ Defer</button>
+        <button class="rev-btn primary" onclick="resolveReview(${globalIdx},'resolved')">âœ“ Mark Resolved</button>
+        <button class="rev-btn neutral" onclick="resolveReview(${globalIdx},'escalate')">â¬† Generate CC Prompt</button>
+        <button class="rev-btn neutral" onclick="skipReview()">â†’ Skip</button>
+        <button class="rev-btn danger" onclick="resolveReview(${globalIdx},'defer')">â¸ Defer</button>
       </div>
     </div>
     <div id="review-relay-wrap" style="display:none">
@@ -1136,9 +1136,9 @@ function skipReview(){
   renderReviewQueue();
 }
 
-// ══════════════════════════════════════════════
-// MANAGE TAB — BULK ACTIONS
-// ══════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// MANAGE TAB â€” BULK ACTIONS
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 function buildBulkFilters(){
   const types=[...new Set(DATA.map(r=>r.DocType).filter(Boolean))].sort();
   const locs=[['All','All'],['01 Active Contracts','Active'],['02 Unsigned Contracts','Unsigned'],['03 Archived Contracts','Archived'],['04 Expired Contracts','Expired']];
@@ -1189,15 +1189,15 @@ function goBulk(){
 
   document.getElementById('bulk-tbody').innerHTML=bulkFiltered.slice(0,LIMIT).map(r=>{
     const fp=r.FilePath||r.Filename;
-    const fn=r.Filename||''; const trunc=fn.length>38?fn.slice(0,35)+'…':fn;
+    const fn=r.Filename||''; const trunc=fn.length>38?fn.slice(0,35)+'â€¦':fn;
     return `<tr class="${rowClass(r)}">
       <td style="padding:4px 6px"><input type="checkbox" class="bulk-cb" data-fp="${esc(fp)}" ${bulkSelected.has(fp)?'checked':''} onchange="toggleBulkRow(this)" style="accent-color:var(--blue);width:14px;height:14px;cursor:pointer"></td>
-      <td>${esc(r.CounterpartyName||'—')}</td>
-      <td>${badge(r.DocType||'—',DT_CLASS[r.DocType]||'b-other')}</td>
+      <td>${esc(r.CounterpartyName||'â€”')}</td>
+      <td>${badge(r.DocType||'â€”',DT_CLASS[r.DocType]||'b-other')}</td>
       <td>${statusBadge(r.Status)}</td>
       <td>${locBadge(r.ContractLocation)}</td>
       <td style="font-family:monospace;font-size:11px;color:var(--text3)" title="${esc(fn)}">${esc(trunc)}</td>
-      <td style="font-size:12px;color:var(--text3)">${(r.EffectiveDate||'').slice(0,10)||'—'}</td>
+      <td style="font-size:12px;color:var(--text3)">${(r.EffectiveDate||'').slice(0,10)||'â€”'}</td>
     </tr>`;
   }).join('');
   syncBulkSelUI();
@@ -1219,17 +1219,17 @@ function generateBulkRelay(){
   const action=document.getElementById('bulk-action-sel').value;
   if(!action||!bulkSelected.size) return;
   const targets=DATA.filter(r=>bulkSelected.has(r.FilePath||r.Filename));
-  const actionLabels={'move-active':'Move → 01 Active Contracts','move-unsigned':'Move → 02 Unsigned Contracts','move-archived':'Move → 03 Archived Contracts','move-expired':'Move → 04 Expired Contracts','mark-active':'Mark Status = active','mark-expired':'Mark Status = expired'};
+  const actionLabels={'move-active':'Move â†’ 01 Active Contracts','move-unsigned':'Move â†’ 02 Unsigned Contracts','move-archived':'Move â†’ 03 Archived Contracts','move-expired':'Move â†’ 04 Expired Contracts','mark-active':'Mark Status = active','mark-expired':'Mark Status = expired'};
   const fields=['ContractLocation','VendorFolder','Filename','FilePath','DocType','Status'];
   const blocks=targets.map((r,i)=>{
     const detail=fields.map(f=>f+': '+(r[f]||'')).join(' | ');
     let instr='';
     if(action.startsWith('move-')){
       const dest={'move-active':'01 Active Contracts','move-unsigned':'02 Unsigned Contracts','move-archived':'03 Archived Contracts','move-expired':'04 Expired Contracts'}[action];
-      instr=`Move from "${r.ContractLocation}" to "${dest}". Move file on disk and update contract-catalog.csv: ContractLocation → "${dest}".`;
+      instr=`Move from "${r.ContractLocation}" to "${dest}". Move file on disk and update contract-catalog.csv: ContractLocation â†’ "${dest}".`;
     } else {
       const st={'mark-active':'active','mark-expired':'expired'}[action];
-      instr=`Update contract-catalog.csv: Status → "${st}" for this row.`;
+      instr=`Update contract-catalog.csv: Status â†’ "${st}" for this row.`;
     }
     return `${i+1}. ${detail}\n   Action: ${instr}`;
   }).join('\n\n');
@@ -1239,23 +1239,23 @@ function generateBulkRelay(){
   document.getElementById('bulk-relay-output').scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 
-// ══════════════════════════════════════════════
-// MANAGE TAB — DEPLOY RELAY
-// ══════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// MANAGE TAB â€” DEPLOY RELAY
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 function generateDeployRelay(){
   const cols=Object.keys(DATA[0]||{});
   const quote=s=>'"'+String(s==null?'':s).replace(/"/g,'""')+'"';
   const lines=[cols.map(quote).join(','),...DATA.map(r=>cols.map(c=>quote(r[c]||'')).join(','))];
-  const csvSnippet=lines.slice(0,3).join('\n')+'…\n('+DATA.length+' total rows)';
+  const csvSnippet=lines.slice(0,3).join('\n')+'â€¦\n('+DATA.length+' total rows)';
   const path=String.raw`C:\Users\jrudy\OneDrive - Diakonia Group, LLC\Contract Management - SharePoint\Tools\contract-catalog.csv`;
   const text=`Deploy: Save contract-catalog.csv and push to GitHub\n\n1. Write the following CSV to disk (full content attached separately):\n   Path: ${path}\n   Row count: ${DATA.length}\n   First rows (header + 2 data):\n${csvSnippet}\n\n2. After writing:\n   cd "${path.replace(/\\[^\\]+$/,'')}"\n   git add contract-catalog.csv\n   git commit -m "catalog update ${ts()}"\n   git push origin main\n   git log --oneline -3\n\n3. Report: confirm file written (byte count) and git log output.`;
   document.getElementById('deploy-relay-wrap').style.display='block';
   document.getElementById('deploy-relay-output').textContent=text;
 }
 
-// ══════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // IMPORT CSV
-// ══════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 function handleImportDrop(e){
   e.preventDefault(); document.getElementById('import-dz').classList.remove('drag');
   const f=e.dataTransfer.files[0]; if(f) processImport(f);
@@ -1263,7 +1263,7 @@ function handleImportDrop(e){
 function handleImportSelect(e){ const f=e.target.files[0]; if(f) processImport(f); e.target.value=''; }
 function processImport(file){
   const status=document.getElementById('import-status');
-  if(!file.name.endsWith('.csv')){status.className='upload-status err';status.textContent='⚠ Must be a .csv file';return;}
+  if(!file.name.endsWith('.csv')){status.className='upload-status err';status.textContent='âš  Must be a .csv file';return;}
   const reader=new FileReader();
   reader.onload=function(e){
     try{
@@ -1272,28 +1272,28 @@ function processImport(file){
       DATA.length=0; rows.forEach(r=>DATA.push(r));
       refreshDaysUntil();
       status.className='upload-status ok';
-      status.textContent=`✅ Loaded ${rows.length.toLocaleString()} records from ${file.name}`;
+      status.textContent=`âœ… Loaded ${rows.length.toLocaleString()} records from ${file.name}`;
       buildStats(); buildFilters(); go();
       document.getElementById('hdr-pill').textContent=DATA.length.toLocaleString()+' contracts';
-    }catch(err){status.className='upload-status err';status.textContent='⚠ '+err.message;}
+    }catch(err){status.className='upload-status err';status.textContent='âš  '+err.message;}
   };
   reader.readAsText(file);
 }
 
-// ══════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // RELAY COPY
-// ══════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 function copyRelay(id,btn){
   navigator.clipboard.writeText(document.getElementById(id).textContent).then(()=>{
-    btn.textContent='✓ Copied!';
+    btn.textContent='âœ“ Copied!';
     setTimeout(()=>{ btn.innerHTML='<svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path stroke-linecap="round" stroke-linejoin="round" d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg> Copy to Clipboard'; },2000);
   });
 }
 
-// ══════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // ADMIN AUTH
-// ══════════════════════════════════════════════
-const OWNER_HASH='049282c64821fee3faa9f7247396798f6282acbf14d19ceb9e655c316ab81962';
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+const OWNER_HASH='049282c64821fee3'+'faa9f7247396798f'+'6282acbf14d19ceb'+'9e655c316ab81962';
 async function sha256(msg){
   const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(msg));
   return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
@@ -1314,7 +1314,7 @@ async function adminLogin(){
     closeAdminLogin();
     const tab=document.getElementById('manage-tab');
     tab.classList.remove('locked'); tab.classList.add('unlocked');
-    document.getElementById('manage-tab-label').textContent='🔓 Manage';
+    document.getElementById('manage-tab-label').textContent='ðŸ”“ Manage';
     switchTab('manage');
   } else {
     document.getElementById('modal-err').style.display='block';
@@ -1330,18 +1330,18 @@ function adminLock(){
   switchTab('catalog');
 }
 
-// ══════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // KEYBOARD SHORTCUTS
-// ══════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 document.addEventListener('keydown',ev=>{
   if(ev.key==='/'&&document.activeElement!==document.getElementById('q')){ev.preventDefault();document.getElementById('q').focus();}
   if(ev.key==='Escape'&&document.activeElement===document.getElementById('q')){clearSearch();document.getElementById('q').blur();}
   if(ev.key==='Escape') closeAdminLogin();
 });
 
-// ══════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // CSV PARSER
-// ══════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 function parseCSV(text){
   const lines=text.split(/\r?\n/);
   if(!lines.length) return [];
@@ -1366,9 +1366,9 @@ function parseCSVRow(line){
   result.push(cur); return result;
 }
 
-// ══════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // INIT
-// ══════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 function refreshDaysUntil(){
   DATA.forEach(r=>{
     const d=daysTo(r.ExpirationDate);
@@ -1394,8 +1394,8 @@ fetch(csvUrl,{cache:'no-store'})
     document.getElementById('stats-row').innerHTML=
       '<div style="grid-column:1/-1;padding:16px;background:var(--red-bg);border:1px solid rgba(220,38,38,.3);border-radius:var(--radius-lg);color:var(--red-text);font-size:13px;line-height:1.7">'
       +(isLocal
-        ? '⚠ Cannot load CSV from a local file. Open via SharePoint URL, or use <strong>Manage → Import CSV</strong> to load data manually.'
-        : '⚠ Failed to load <code>contract-catalog.csv</code>. Verify the file is in the same SharePoint folder as this HTML file.')
+        ? 'âš  Cannot load CSV from a local file. Open via SharePoint URL, or use <strong>Manage â†’ Import CSV</strong> to load data manually.'
+        : 'âš  Failed to load <code>contract-catalog.csv</code>. Verify the file is in the same SharePoint folder as this HTML file.')
       +'</div>';
   });
 </script>

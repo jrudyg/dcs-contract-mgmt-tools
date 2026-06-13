@@ -1,0 +1,1410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>In-Process Contracts</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f0f2f5;--surface:#ffffff;--surface2:#f7f8fa;--surface3:#eef0f3;
+  --border:#dde1e8;--border2:#eaecf0;
+  --text:#111827;--text2:#374151;--text3:#6b7280;--text4:#9ca3af;
+  --blue:#2563eb;--blue-soft:#eff6ff;--blue-border:#93c5fd;
+  --green:#059669;--green-bg:#d1fae5;--green-text:#065f46;
+  --amber:#b45309;--amber-bg:#fef3c7;--amber-text:#78350f;
+  --red:#dc2626;--red-bg:#fee2e2;--red-text:#991b1b;
+  --radius:6px;--radius-lg:10px;--radius-xl:14px;
+  --shadow:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.04);
+  --shadow-md:0 4px 12px rgba(0,0,0,.08),0 2px 4px rgba(0,0,0,.04);
+}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;font-size:14px;background:var(--bg);color:var(--text);min-height:100vh}
+body.dark{
+  --bg:#0d1117;--surface:#161b22;--surface2:#1c2128;--surface3:#21262d;
+  --border:#30363d;--border2:#21262d;
+  --text:#e6edf3;--text2:#c9d1d9;--text3:#8b949e;--text4:#484f58;
+  --blue:#58a6ff;--blue-soft:#0d1b2e;--blue-border:#388bfd;
+  --green-bg:#033a20;--green-text:#56d364;
+  --amber-bg:#2d1b00;--amber-text:#e3b341;
+  --red-bg:#2d0f0f;--red-text:#ff7b72;
+  --shadow:0 1px 3px rgba(0,0,0,.3);
+  --shadow-md:0 4px 12px rgba(0,0,0,.4);
+}
+
+/* ── Header ── */
+header{
+  background:var(--surface);border-bottom:1px solid var(--border);
+  padding:0 24px;height:54px;display:flex;align-items:center;
+  justify-content:space-between;position:sticky;top:0;z-index:200;
+  box-shadow:var(--shadow);
+}
+.logo{display:flex;align-items:center;gap:10px;font-size:15px;font-weight:700;letter-spacing:-.2px}
+.logo-mark{width:28px;height:28px;background:var(--blue);border-radius:7px;display:flex;align-items:center;justify-content:center}
+.logo-mark svg{color:#fff}
+.hdr-right{display:flex;align-items:center;gap:6px}
+.hdr-pill{font-size:11px;color:var(--text3);background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:3px 10px;white-space:nowrap}
+
+/* ── Icon buttons ── */
+.icon-btn{width:32px;height:32px;border-radius:var(--radius);border:1px solid var(--border);background:var(--surface);color:var(--text3);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;transition:all .15s;font-size:14px}
+.icon-btn:hover{background:var(--surface2);color:var(--text);border-color:var(--border)}
+.icon-btn.active{background:var(--blue-soft);border-color:var(--blue-border);color:var(--blue)}
+
+/* ── Tabs ── */
+.tabs{background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;display:flex;gap:0;position:sticky;top:54px;z-index:190}
+.tab{padding:11px 16px;font-size:13px;font-weight:500;color:var(--text3);border:none;background:none;cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;white-space:nowrap;display:flex;align-items:center;gap:6px}
+.tab svg{width:14px;height:14px;flex-shrink:0}
+.tab:hover{color:var(--text)}
+.tab.active{color:var(--blue);border-bottom-color:var(--blue)}
+.tab.manage-tab{margin-left:auto}
+.tab.manage-tab.locked{color:var(--text3)}
+.tab.manage-tab.unlocked{color:var(--amber)}
+
+/* ── Main ── */
+main{max-width:1400px;margin:0 auto;padding:20px 24px}
+
+/* ── Stat cards ── */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 18px;box-shadow:var(--shadow)}
+.stat-card.clickable{cursor:pointer;transition:border-color .15s,box-shadow .15s}
+.stat-card.clickable:hover{border-color:var(--blue);box-shadow:var(--shadow-md)}
+.stat-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);margin-bottom:5px}
+.stat-value{font-size:26px;font-weight:700;letter-spacing:-.5px;color:var(--text);line-height:1}
+.stat-value.green{color:var(--green)}
+.stat-value.amber{color:var(--amber)}
+.stat-value.red{color:var(--red)}
+
+/* ── Search bar ── */
+.search-block{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 16px;margin-bottom:12px;box-shadow:var(--shadow)}
+.search-row{display:flex;gap:8px;margin-bottom:10px;align-items:center}
+.search-wrap{position:relative;flex:1}
+.search-wrap .s-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text4);pointer-events:none}
+input[type=text]{width:100%;padding:8px 32px 8px 34px;border:1px solid var(--border);border-radius:var(--radius);font-size:14px;color:var(--text);background:var(--surface);outline:none;transition:border-color .15s;font-family:inherit}
+input[type=text]:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.08)}
+.clear-x{position:absolute;right:8px;top:50%;transform:translateY(-50%);width:17px;height:17px;border-radius:50%;border:none;background:var(--text4);color:#fff;font-size:10px;display:none;align-items:center;justify-content:center;cursor:pointer;line-height:1}
+.clear-x.show{display:flex}
+
+/* ── Filter chips ── */
+.filter-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.filter-group{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.filter-label{font-size:11px;font-weight:600;color:var(--text4);text-transform:uppercase;letter-spacing:.05em;white-space:nowrap}
+.chip{padding:3px 10px;border-radius:20px;border:1px solid var(--border);background:var(--surface);font-size:12px;font-weight:500;color:var(--text2);cursor:pointer;transition:all .15s;white-space:nowrap;line-height:1.6}
+.chip:hover{border-color:var(--blue-border);color:var(--blue);background:var(--blue-soft)}
+.chip.active{background:var(--blue);border-color:var(--blue);color:#fff}
+
+/* ── Table ── */
+.table-block{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow)}
+.table-meta{padding:9px 14px;font-size:12px;color:var(--text3);border-bottom:1px solid var(--border2);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+table{width:100%;border-collapse:collapse;table-layout:fixed}
+th{padding:8px 10px;text-align:left;font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;background:var(--surface2);border-bottom:1px solid var(--border);cursor:pointer;user-select:none;white-space:nowrap}
+th.no-sort{cursor:default}
+td{padding:7px 10px;border-bottom:1px solid var(--border2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tbody tr{cursor:pointer}
+tr:hover td{background:var(--surface2)}
+.sort-icon{opacity:.3;font-size:9px;margin-left:2px}
+.sort-icon.on{opacity:1;color:var(--blue)}
+
+/* ── Badges ── */
+.badge{display:inline-flex;align-items:center;padding:2px 7px;border-radius:4px;font-size:11px;font-weight:600;white-space:nowrap;line-height:1.5}
+.b-nda{background:#dbeafe;color:#1e40af}.b-mnda{background:#d1fae5;color:#065f46}
+.b-msa{background:#fef3c7;color:#92400e}.b-sow{background:#ede9fe;color:#5b21b6}
+.b-sub{background:#fee2e2;color:#991b1b}.b-cda,.b-other{background:var(--surface3);color:var(--text2)}
+.b-eula,.b-ipa,.b-psa{background:#fce7f3;color:#9d174d}.b-amendment{background:#ffedd5;color:#9a3412}
+body.dark .b-nda{background:#0d2447;color:#93c5fd}
+body.dark .b-mnda{background:#023320;color:#56d364}
+body.dark .b-msa{background:#2d1b00;color:#e3b341}
+body.dark .b-sow{background:#1a0e3d;color:#c4b5fd}
+body.dark .b-sub{background:#2d0f0f;color:#ff7b72}
+body.dark .b-cda,body.dark .b-other{background:var(--surface3);color:var(--text3)}
+
+/* ── Position / leverage / stage pills ── */
+.pos-pill{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600;white-space:nowrap}
+.pos-AGGRESSIVE{background:var(--red-bg);color:var(--red-text)}
+.pos-BALANCED{background:var(--blue-soft);color:var(--blue)}
+.pos-ACCOMMODATING{background:var(--green-bg);color:var(--green-text)}
+.pos-default{background:var(--surface3);color:var(--text3)}
+.stage-pill{display:inline-flex;align-items:center;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;background:var(--surface3);color:var(--text2);white-space:nowrap}
+
+/* ── Empty state ── */
+.empty-state{text-align:center;padding:56px 20px;color:var(--text4)}
+.empty-state svg{opacity:.25;margin-bottom:14px}
+.empty-state h3{font-size:15px;font-weight:600;color:var(--text3);margin-bottom:6px}
+.empty-state p{font-size:13px}
+
+/* ── Placeholder panels (Stages 3 & 4) ── */
+.placeholder{background:var(--surface);border:1px dashed var(--border);border-radius:var(--radius-lg);padding:48px 20px;text-align:center;color:var(--text4);box-shadow:var(--shadow)}
+.placeholder h3{font-size:15px;font-weight:600;color:var(--text3);margin-bottom:6px}
+.placeholder p{font-size:13px}
+
+/* ── Responsive ── */
+@media(max-width:900px){
+  .stats-row{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:600px){
+  main{padding:12px}
+}
+
+/* ── Print ── */
+@media print{
+  header,.tabs,.search-block,.hdr-right{display:none!important}
+  main{padding:0}
+  body{background:#fff;color:#000}
+}
+
+/* ── Detail drawer (Stage 2) ── */
+.drawer-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);opacity:0;visibility:hidden;transition:opacity .2s,visibility .2s;z-index:300}
+.drawer-overlay.open{opacity:1;visibility:visible}
+.drawer{position:fixed;top:0;right:0;height:100vh;width:520px;max-width:94vw;background:var(--surface);border-left:1px solid var(--border);box-shadow:var(--shadow-md);transform:translateX(100%);transition:transform .25s ease;z-index:301;display:flex;flex-direction:column}
+.drawer.open{transform:translateX(0)}
+.drawer-hdr{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:18px 20px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--surface);z-index:2}
+.drawer-hdr-main{min-width:0}
+.drawer-hdr-title{font-size:16px;font-weight:700;letter-spacing:-.2px;color:var(--text);margin-bottom:6px;overflow-wrap:anywhere}
+.drawer-hdr-sub{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.drawer-close{flex-shrink:0;width:30px;height:30px;border-radius:var(--radius);border:1px solid var(--border);background:var(--surface);color:var(--text3);cursor:pointer;font-size:16px;line-height:1;display:inline-flex;align-items:center;justify-content:center;transition:all .15s}
+.drawer-close:hover{background:var(--surface2);color:var(--text);border-color:var(--border)}
+.drawer-body{padding:18px 20px;overflow-y:auto;flex:1}
+.drawer-section{margin-bottom:22px}
+.drawer-section-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);margin-bottom:10px}
+.drawer-empty{font-size:13px;color:var(--text4);padding:8px 0;line-height:1.6}
+
+/* BATNA banner */
+.batna-banner{border-radius:var(--radius-lg);padding:12px 14px;border:1px solid var(--border)}
+.batna-strength{font-size:13px;font-weight:700;margin-bottom:3px}
+.batna-note{font-size:12px;line-height:1.5;opacity:.9}
+.batna-Strong{background:var(--green-bg);color:var(--green-text);border-color:transparent}
+.batna-Balanced{background:var(--blue-soft);color:var(--blue);border-color:var(--blue-border)}
+.batna-Weak{background:var(--amber-bg);color:var(--amber-text);border-color:transparent}
+.batna-default{background:var(--surface2);color:var(--text2)}
+
+/* Rounds timeline */
+.round-item{position:relative;padding:0 0 14px 22px;border-left:1px solid var(--border);margin-left:5px}
+.round-item:last-child{border-left-color:transparent;padding-bottom:0}
+.round-dot{position:absolute;left:-5px;top:2px;width:10px;height:10px;border-radius:50%;border:2px solid var(--surface)}
+.round-dot.sent{background:var(--blue)}
+.round-dot.received{background:var(--amber)}
+.round-top{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin-bottom:2px}
+.round-n{font-size:12px;font-weight:700;color:var(--text)}
+.round-dir{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;padding:1px 6px;border-radius:3px}
+.round-dir.sent{background:var(--blue-soft);color:var(--blue)}
+.round-dir.received{background:var(--amber-bg);color:var(--amber-text)}
+.round-date{font-size:11px;color:var(--text4)}
+.round-obj{font-size:13px;font-weight:600;color:var(--text2);margin-bottom:2px}
+.round-note{font-size:12px;color:var(--text3);line-height:1.5}
+.round-file{font-size:11px;font-family:monospace;color:var(--text4);margin-top:2px;overflow-wrap:anywhere}
+
+/* Objectives register */
+.obj-tier-hdr{font-size:12px;font-weight:700;color:var(--text2);margin:12px 0 6px;display:flex;align-items:center;gap:6px}
+.obj-tier-hdr:first-child{margin-top:0}
+.obj-tier-tag{display:inline-flex;align-items:center;padding:1px 7px;border-radius:4px;font-size:10px;font-weight:700;letter-spacing:.04em}
+.obj-tier-T1{background:var(--red-bg);color:var(--red-text)}
+.obj-tier-T2{background:var(--amber-bg);color:var(--amber-text)}
+.obj-tier-T3{background:var(--green-bg);color:var(--green-text)}
+.obj-row{display:flex;align-items:flex-start;gap:10px;padding:8px 10px;border:1px solid var(--border2);border-radius:var(--radius);margin-bottom:6px;border-left-width:3px}
+.obj-row.tier-T1{border-left-color:var(--red)}
+.obj-row.tier-T2{border-left-color:var(--amber)}
+.obj-row.tier-T3{border-left-color:var(--green)}
+.obj-main{flex:1;min-width:0}
+.obj-risk{font-size:13px;font-weight:600;color:var(--text);margin-bottom:2px}
+.obj-goal{font-size:12px;color:var(--text3);line-height:1.5}
+.obj-goal .arrow{color:var(--text4);margin-right:4px}
+.obj-ref{font-size:10px;font-family:monospace;color:var(--text4);margin-top:3px}
+.obj-right{flex-shrink:0}
+.outcome-pill{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:.03em;white-space:nowrap}
+.outcome-PENDING{background:var(--amber-bg);color:var(--amber-text)}
+.outcome-WON,.outcome-MUTUAL{background:var(--green-bg);color:var(--green-text)}
+.outcome-ACCEPTED{background:var(--blue-soft);color:var(--blue)}
+.outcome-LOST{background:var(--red-bg);color:var(--red-text)}
+.outcome-default{background:var(--surface3);color:var(--text3)}
+
+/* ── Drawer action forms (Stage 3b) ── */
+.drawer-actions-section{border-top:1px solid var(--border);padding-top:16px}
+.drawer-action-btns{display:flex;gap:8px;flex-wrap:wrap}
+.drawer-action-form{border-top:1px solid var(--border2);margin-top:12px;padding-top:12px}
+.drawer-action-form .form-grid{grid-template-columns:1fr}
+.drawer-action-form .form-grid.two{grid-template-columns:1fr 1fr}
+
+/* ── Folders & Files tree (Stage 3) ── */
+.folder-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);margin-bottom:10px;box-shadow:var(--shadow);overflow:hidden}
+.folder-hdr{display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer;user-select:none}
+.folder-hdr:hover{background:var(--surface2)}
+.folder-caret{flex-shrink:0;color:var(--text4);transition:transform .15s;font-size:11px}
+.folder-card.open .folder-caret{transform:rotate(90deg)}
+.folder-ic{flex-shrink:0;color:var(--amber)}
+.folder-meta{flex:1;min-width:0}
+.folder-name{font-size:14px;font-weight:700;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.folder-cp{font-size:12px;color:var(--text3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.folder-count{font-size:11px;color:var(--text4);background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:2px 8px;white-space:nowrap}
+.folder-open-link{font-size:11px;color:var(--blue);text-decoration:none;white-space:nowrap;flex-shrink:0}
+.folder-open-link:hover{text-decoration:underline}
+.folder-body{display:none;padding:4px 14px 12px 14px;border-top:1px solid var(--border2)}
+.folder-card.open .folder-body{display:block}
+.subfolder{margin-top:10px}
+.subfolder-hdr{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text3);display:flex;align-items:center;gap:6px;margin-bottom:5px}
+.subfolder-hdr .sf-ic{color:var(--text4)}
+.file-row{display:flex;align-items:center;gap:8px;padding:5px 8px;border-radius:var(--radius);font-size:12px}
+.file-row:hover{background:var(--surface2)}
+.file-name{flex:1;min-width:0;font-family:monospace;font-size:11px;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.file-empty{font-size:11px;color:var(--text4);font-style:italic;padding:4px 8px}
+
+/* ── Tools / action cards (Stage 3) ── */
+.action-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;margin-bottom:14px;box-shadow:var(--shadow);max-width:680px}
+.action-card-title{font-size:15px;font-weight:700;color:var(--text);margin-bottom:4px;display:flex;align-items:center;gap:8px}
+.action-card-sub{font-size:13px;color:var(--text3);margin-bottom:16px;line-height:1.5}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
+.form-field{display:flex;flex-direction:column;gap:4px}
+.form-field.full{grid-column:1/-1}
+.form-field label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--text3)}
+.form-field input,.form-field select{padding:8px 10px;border:1px solid var(--border);border-radius:var(--radius);font-size:14px;background:var(--surface);color:var(--text);outline:none;font-family:inherit;width:100%}
+.form-field input:focus,.form-field select:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.08)}
+.btn-primary{padding:9px 18px;border-radius:var(--radius);border:none;background:var(--blue);color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
+.btn-primary:hover{opacity:.9}
+
+/* ── CC relay output (reused from index.html styling) ── */
+.relay-output{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:12px;font-family:monospace;font-size:12px;white-space:pre-wrap;max-height:320px;overflow-y:auto;line-height:1.6;color:var(--text2);margin-top:14px}
+.relay-copy-btn{margin-top:8px;display:inline-flex;align-items:center;gap:5px;padding:6px 14px;border-radius:var(--radius);border:1px solid var(--border);background:var(--surface);font-size:12px;font-weight:600;cursor:pointer;color:var(--text2)}
+.relay-copy-btn:hover{border-color:var(--blue);color:var(--blue)}
+.relay-mode-tag{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;background:var(--blue-soft);color:var(--blue);margin-left:8px}
+
+/* ── Header cross-link (Stage 4) ── */
+.hdr-link{font-size:11px;font-weight:600;color:var(--blue);background:var(--blue-soft);border:1px solid var(--blue-border);border-radius:20px;padding:3px 10px;text-decoration:none;white-space:nowrap}
+.hdr-link:hover{background:var(--blue);color:#fff}
+
+/* ── Manage tab (Stage 4) ── */
+.tab.manage-tab.unlocked .manage-lbl{color:var(--amber)}
+.manage-section{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;margin-bottom:14px;box-shadow:var(--shadow)}
+.manage-section-title{font-size:15px;font-weight:700;color:var(--text);margin-bottom:4px;display:flex;align-items:center;gap:8px}
+.manage-section-sub{font-size:13px;color:var(--text3);margin-bottom:14px;line-height:1.5}
+.manage-danger{border-color:rgba(220,38,38,.4)}
+.btn-danger{padding:9px 18px;border-radius:var(--radius);border:1px solid var(--red);background:var(--surface);color:var(--red);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
+.btn-danger:hover{background:var(--red-bg)}
+.bulk-rows{max-height:260px;overflow-y:auto;border:1px solid var(--border2);border-radius:var(--radius);padding:6px 8px;margin-bottom:12px}
+.bulk-rows label{display:flex;align-items:center;gap:8px;padding:4px 6px;border-radius:4px;font-size:13px;cursor:pointer}
+.bulk-rows label:hover{background:var(--surface2)}
+.bulk-rows input[type=checkbox]{accent-color:var(--blue);width:14px;height:14px}
+
+/* ── Admin login modal (copied from index.html) ── */
+#admin-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center;backdrop-filter:blur(2px)}
+#admin-overlay.show{display:flex}
+.admin-modal{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-xl);padding:32px;width:360px;max-width:92vw;box-shadow:var(--shadow-md)}
+.admin-modal h3{font-size:17px;font-weight:700;margin-bottom:4px}
+.admin-modal p{font-size:13px;color:var(--text3);margin-bottom:20px}
+.admin-modal input[type=password]{width:100%;border:1px solid var(--border);border-radius:var(--radius);padding:9px 12px;font-size:14px;background:var(--surface2);color:var(--text);margin-bottom:8px;font-family:inherit;outline:none}
+.admin-modal input[type=password]:focus{border-color:var(--blue)}
+.modal-err{color:var(--red);font-size:12px;margin-bottom:10px;display:none}
+.modal-btns{display:flex;gap:8px;justify-content:flex-end}
+.modal-btns button{padding:8px 18px;border-radius:var(--radius);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
+.modal-btn-primary{background:var(--blue);color:#fff;border:none}
+.modal-btn-cancel{background:var(--surface2);color:var(--text2);border:1px solid var(--border)}
+
+/* ── Footer ── */
+.footer-note{font-size:11px;color:var(--text4);text-align:right;margin-top:8px}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-mark">
+      <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+    </div>
+    In-Process Contracts
+  </div>
+  <div class="hdr-right">
+    <span class="hdr-pill" id="hdr-pill">Loading…</span>
+    <a class="hdr-link" href="index.html" title="Open the main Contract Catalog">Catalog ↗</a>
+    <button class="icon-btn" id="theme-btn" onclick="toggleDark()" title="Toggle dark mode">🌙</button>
+  </div>
+</header>
+
+<nav class="tabs">
+  <button class="tab active" data-tab="pipeline" onclick="switchTab('pipeline')">
+    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
+    Pipeline
+  </button>
+  <button class="tab" data-tab="folders" onclick="switchTab('folders')">
+    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"/></svg>
+    Folders &amp; Files
+  </button>
+  <button class="tab" data-tab="tools" onclick="switchTab('tools')">
+    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><circle cx="12" cy="12" r="3"/></svg>
+    Tools
+  </button>
+  <button class="tab manage-tab locked" id="manage-tab" data-tab="manage" onclick="handleManageClick()">
+    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+    <span class="manage-lbl" id="manage-tab-label">Manage</span>
+  </button>
+</nav>
+
+<main>
+
+  <!-- ══ PIPELINE TAB ══ -->
+  <div id="tab-pipeline">
+    <div class="stats-row" id="stats-row"></div>
+
+    <div class="search-block">
+      <div class="search-row">
+        <div class="search-wrap">
+          <svg class="s-icon" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path stroke-linecap="round" d="M21 21l-4.35-4.35"/></svg>
+          <input type="text" id="q" placeholder="Search counterparty or filename… (press / to focus)" oninput="onSearch()" aria-label="Search">
+          <button class="clear-x" id="clear-x" onclick="clearSearch()" title="Clear">✕</button>
+        </div>
+      </div>
+      <div class="filter-row" id="filter-bar"></div>
+    </div>
+
+    <div class="table-block">
+      <div class="table-meta">
+        <span id="tbl-meta"></span>
+      </div>
+      <div style="overflow-x:auto">
+        <table>
+          <thead><tr id="thead-row"></tr></thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+      <div id="empty-state" class="empty-state" style="display:none">
+        <svg width="36" height="36" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.2"><circle cx="11" cy="11" r="8"/><path stroke-linecap="round" d="M21 21l-4.35-4.35"/></svg>
+        <h3>No in-process contracts found</h3>
+        <p id="empty-msg">Try adjusting your filters or search term.</p>
+      </div>
+    </div>
+    <p class="footer-note" id="footer-note"></p>
+  </div>
+
+  <!-- ══ FOLDERS & FILES TAB ══ -->
+  <div id="tab-folders" style="display:none">
+    <!-- Stage 3: tree derived from CATALOG, rendered by renderFolders() -->
+    <div id="folders-content"></div>
+  </div>
+
+  <!-- ══ TOOLS TAB ══ -->
+  <div id="tab-tools" style="display:none">
+    <!-- Stage 3: action cards, rendered by renderTools() -->
+    <div id="tools-content"></div>
+  </div>
+
+  <!-- ══ MANAGE TAB (Stage 4 — SHA-256 gated) ══ -->
+  <div id="tab-manage" style="display:none">
+    <!-- Populated by renderManage() once unlocked -->
+    <div id="manage-content"></div>
+  </div>
+
+</main>
+
+<!-- ── Admin login modal (copied from index.html) ── -->
+<div id="admin-overlay">
+  <div class="admin-modal">
+    <h3>🔒 Manage Access</h3>
+    <p>Enter the owner password to access in-process management tools.</p>
+    <input type="password" id="admin-pwd" placeholder="Password" onkeydown="if(event.key==='Enter')adminLogin()">
+    <div class="modal-err" id="modal-err">Incorrect password. Try again.</div>
+    <div class="modal-btns">
+      <button class="modal-btn-cancel" onclick="closeAdminLogin()">Cancel</button>
+      <button class="modal-btn-primary" onclick="adminLogin()">Unlock</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ DETAIL DRAWER (Stage 2) ══ -->
+<div class="drawer-overlay" id="drawer-overlay" onclick="closeDrawer()"></div>
+<aside class="drawer" id="drawer" role="dialog" aria-modal="true" aria-label="Contract detail">
+  <div class="drawer-hdr">
+    <div class="drawer-hdr-main">
+      <div class="drawer-hdr-title" id="drawer-title">—</div>
+      <div class="drawer-hdr-sub" id="drawer-sub"></div>
+    </div>
+    <button class="drawer-close" onclick="closeDrawer()" title="Close" aria-label="Close">✕</button>
+  </div>
+  <div class="drawer-body" id="drawer-body"></div>
+</aside>
+
+<script>
+// ══════════════════════════════════════════════
+// DATA & STATE
+// ══════════════════════════════════════════════
+let CATALOG = [];        // rows from in-process-catalog.csv
+let DETAIL  = {};        // keyed by FilePath, from in-process-detail.json
+let filtered = [];
+let sortField = 'CounterpartyName', sortDir = 1;
+let af = { stage:'All', position:'All', leverage:'All' };
+
+// SharePoint base URL — points at the In-Process document library (05-In-Process).
+const SP_BASE = 'https://diakoniagroupllc.sharepoint.com/sites/ContractManagement/Shared%20Documents/05-In-Process';
+
+// ══════════════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════════════
+const DT_CLASS = {NDA:'b-nda',MNDA:'b-mnda',MSA:'b-msa',SOW:'b-sow',Subcontract:'b-sub',CDA:'b-cda',EULA:'b-eula',IPA:'b-ipa',PSA:'b-psa',Amendment:'b-amendment',Other:'b-other'};
+
+function esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;'); }
+function badge(t,c){ return `<span class="badge ${c}">${esc(t)}</span>`; }
+// CSV field quoting: wrap + double-up quotes only when the value contains a comma, quote, or newline.
+function csvCell(v){ const s=String(v==null?'':v); return /[",\n]/.test(s) ? '"'+s.replace(/"/g,'""')+'"' : s; }
+
+function posPill(p){
+  const k=(p||'').toUpperCase();
+  const cls=['AGGRESSIVE','BALANCED','ACCOMMODATING'].includes(k)?'pos-'+k:'pos-default';
+  return p?`<span class="pos-pill ${cls}">${esc(p)}</span>`:'—';
+}
+function stagePill(s){ return s?`<span class="stage-pill">${esc(s)}</span>`:'—'; }
+
+// SharePoint URL builder (same pattern as index.html), pointed at the in-process library.
+// SP_BASE already ends in "05-In-Process", so strip a leading "05-In-Process/" from the
+// FilePath to avoid doubling that segment.
+function spUrl(r){
+  let fp = r.FilePath || (r.VendorFolder+'/'+r.Filename);
+  fp = fp.replace(/^05-In-Process\//,'');
+  return SP_BASE+'/'+fp.split('/').map(s=>encodeURIComponent(s||'')).join('/')+'?web=1';
+}
+
+// Rows that should appear in the pipeline.
+// Production: hide all _-prefixed folders (templates, fixtures).
+function getVisible(){
+  return CATALOG.filter(r=>{
+    const vf = r.VendorFolder||'';
+    if(vf.startsWith('_')) return false;
+    return true;
+  });
+}
+
+// ══════════════════════════════════════════════
+// DARK MODE
+// ══════════════════════════════════════════════
+function toggleDark(){
+  const d = document.body.classList.toggle('dark');
+  document.getElementById('theme-btn').textContent = d ? '☀️' : '🌙';
+  try{localStorage.setItem('cm-theme',d?'dark':'light')}catch(e){}
+}
+(function(){
+  let saved; try{saved=localStorage.getItem('cm-theme')}catch(e){}
+  const pref = window.matchMedia&&window.matchMedia('(prefers-color-scheme:dark)').matches;
+  if(saved==='dark'||(saved===null&&pref)){document.body.classList.add('dark');document.getElementById('theme-btn').textContent='☀️';}
+})();
+
+// ══════════════════════════════════════════════
+// TAB SWITCHING
+// ══════════════════════════════════════════════
+function switchTab(tab){
+  document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
+  ['pipeline','folders','tools','manage'].forEach(t=>{
+    document.getElementById('tab-'+t).style.display = t===tab?'block':'none';
+  });
+  if(tab==='folders') renderFolders();
+  if(tab==='tools')   renderTools();
+  if(tab==='manage' && adminUnlocked) renderManage();
+}
+
+// ══════════════════════════════════════════════
+// STATS
+// ══════════════════════════════════════════════
+function buildStats(){
+  const rows = getVisible();
+  const total = rows.length;
+  const stages = new Set(rows.map(r=>r.Stage).filter(Boolean));
+  // T1 objectives open: across DETAIL where tier=T1 and outcome=PENDING (guard empty)
+  let t1open = 0;
+  Object.keys(DETAIL||{}).forEach(fp=>{
+    const objs = (DETAIL[fp] && DETAIL[fp].objectives) || [];
+    objs.forEach(o=>{ if(o && o.tier==='T1' && o.outcome==='PENDING') t1open++; });
+  });
+  document.getElementById('stats-row').innerHTML = [
+    {label:'Total In-Process',value:total.toLocaleString(),cls:''},
+    {label:'Stages',value:stages.size.toLocaleString(),cls:''},
+    {label:'T1 Objectives Open',value:t1open.toLocaleString(),cls:t1open>0?'amber':''},
+  ].map(s=>`<div class="stat-card"><div class="stat-label">${s.label}</div><div class="stat-value ${s.cls}">${s.value}</div></div>`).join('');
+}
+
+// ══════════════════════════════════════════════
+// FILTERS
+// ══════════════════════════════════════════════
+function distinct(field){ return [...new Set(getVisible().map(r=>r[field]).filter(Boolean))].sort(); }
+
+function buildFilters(){
+  function group(label,key,vals){
+    let h=`<div class="filter-group"><span class="filter-label">${label}</span>`;
+    h+=`<button class="chip${af[key]==='All'?' active':''}" onclick="setAf('${key}','All')">All</button>`;
+    h+=vals.map(v=>`<button class="chip${af[key]===v?' active':''}" onclick="setAf('${key}','${esc(v)}')">${esc(v)}</button>`).join('');
+    h+='</div>';
+    return h;
+  }
+  document.getElementById('filter-bar').innerHTML =
+    group('Stage','stage',distinct('Stage')) +
+    group('Position','position',distinct('Position')) +
+    group('Leverage','leverage',distinct('Leverage'));
+}
+function setAf(k,v){ af[k]=v; buildFilters(); go(); }
+
+// ══════════════════════════════════════════════
+// SEARCH
+// ══════════════════════════════════════════════
+function onSearch(){
+  const q = document.getElementById('q').value;
+  document.getElementById('clear-x').classList.toggle('show',q.length>0);
+  go();
+}
+function clearSearch(){ document.getElementById('q').value=''; document.getElementById('clear-x').classList.remove('show'); go(); }
+
+// ══════════════════════════════════════════════
+// SORT
+// ══════════════════════════════════════════════
+function sortBy(f){ sortField===f?sortDir*=-1:(sortField=f,sortDir=1); go(); }
+
+const COLUMNS = [
+  {label:'Counterparty',field:'CounterpartyName',w:'20%',sort:true},
+  {label:'Type',field:'DocType',w:'9%',sort:true},
+  {label:'Stage',field:'Stage',w:'12%',sort:true},
+  {label:'Position',field:'Position',w:'12%',sort:true},
+  {label:'Leverage',field:'Leverage',w:'12%',sort:true},
+  {label:'Round',field:'Round',w:'7%',sort:true},
+  {label:'Owner',field:'Owner',w:'10%',sort:true},
+  {label:'Last Activity',field:'LastActivity',w:'12%',sort:true},
+];
+
+function renderThead(){
+  document.getElementById('thead-row').innerHTML = COLUMNS.map(c=>
+    `<th style="width:${c.w}" class="${c.sort?'':'no-sort'}" ${c.sort?`onclick="sortBy('${c.field}')"`:''}>${c.label}${c.sort?`<span class="sort-icon${sortField===c.field?' on':''}"> ${sortField===c.field?(sortDir===1?'▲':'▼'):'↕'}</span>`:''}</th>`
+  ).join('');
+}
+
+// ══════════════════════════════════════════════
+// MAIN FILTER + RENDER
+// ══════════════════════════════════════════════
+function go(){
+  const q = (document.getElementById('q').value||'').trim().toLowerCase();
+  filtered = getVisible().filter(r=>{
+    if(af.stage!=='All'&&r.Stage!==af.stage) return false;
+    if(af.position!=='All'&&r.Position!==af.position) return false;
+    if(af.leverage!=='All'&&r.Leverage!==af.leverage) return false;
+    if(q){
+      const n=(r.CounterpartyName||'').toLowerCase();
+      const fn=(r.Filename||'').toLowerCase();
+      if(!n.includes(q)&&!fn.includes(q)) return false;
+    }
+    return true;
+  });
+  filtered.sort((a,b)=>{
+    if(sortField==='Round'){
+      const an=parseInt(a.Round,10)||0, bn=parseInt(b.Round,10)||0;
+      return (an-bn)*sortDir;
+    }
+    const av=(a[sortField]||'').toLowerCase(),bv=(b[sortField]||'').toLowerCase();
+    return av<bv?-sortDir:av>bv?sortDir:0;
+  });
+  renderThead();
+  renderTable();
+}
+
+function renderTable(){
+  const tbody = document.getElementById('tbody');
+  const empty = document.getElementById('empty-state');
+  const visTotal = getVisible().length;
+  document.getElementById('tbl-meta').textContent = `Showing ${filtered.length.toLocaleString()} of ${visTotal.toLocaleString()} in-process`;
+
+  if(!filtered.length){
+    tbody.innerHTML=''; empty.style.display='block'; return;
+  }
+  empty.style.display='none';
+
+  tbody.innerHTML = filtered.map(r=>{
+    const dtc = DT_CLASS[r.DocType]||'b-other';
+    const fp = r.FilePath||'';
+    return `<tr data-fp="${esc(fp)}" onclick="onRowClick(this)">
+      <td title="${esc(r.CounterpartyName)}">${esc(r.CounterpartyName||'—')}</td>
+      <td>${badge(r.DocType||'—',dtc)}</td>
+      <td>${stagePill(r.Stage)}</td>
+      <td>${posPill(r.Position)}</td>
+      <td style="font-size:12px;color:var(--text2)">${esc(r.Leverage)||'—'}</td>
+      <td style="font-size:12px;color:var(--text3)">${esc(r.Round)||'—'}</td>
+      <td style="font-size:12px;color:var(--text3)">${esc(r.Owner)||'—'}</td>
+      <td style="font-size:12px;color:var(--text3)">${(r.LastActivity||'').slice(0,10)||'—'}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════════
+// DETAIL DRAWER (Stage 2)
+// ══════════════════════════════════════════════
+// Row click → open the negotiation detail drawer for this FilePath.
+function onRowClick(tr){
+  openDrawer(tr.getAttribute('data-fp'));
+}
+
+function renderBatna(b){
+  if(!b || (!b.strength && !b.note)) return '';
+  const strength = b.strength || '';
+  const cls = ['Strong','Balanced','Weak'].includes(strength) ? 'batna-'+strength : 'batna-default';
+  return `<div class="drawer-section">
+    <div class="drawer-section-title">BATNA</div>
+    <div class="batna-banner ${cls}">
+      <div class="batna-strength">${esc(strength)||'—'}</div>
+      ${b.note?`<div class="batna-note">${esc(b.note)}</div>`:''}
+    </div>
+  </div>`;
+}
+
+function renderRounds(rounds){
+  const list = Array.isArray(rounds)?rounds.slice():[];
+  if(!list.length) return '';
+  list.sort((a,b)=>((a&&a.n)||0)-((b&&b.n)||0));
+  const items = list.map(r=>{
+    r=r||{};
+    const dir=(r.dir==='sent'||r.dir==='received')?r.dir:'';
+    return `<div class="round-item">
+      <span class="round-dot ${dir}"></span>
+      <div class="round-top">
+        <span class="round-n">Round ${esc(String(r.n!=null?r.n:'—'))}</span>
+        ${dir?`<span class="round-dir ${dir}">${dir}</span>`:''}
+        ${r.date?`<span class="round-date">${esc(r.date)}</span>`:''}
+      </div>
+      ${r.objective?`<div class="round-obj">${esc(r.objective)}</div>`:''}
+      ${r.note?`<div class="round-note">${esc(r.note)}</div>`:''}
+      ${r.file?`<div class="round-file">${esc(r.file)}</div>`:''}
+    </div>`;
+  }).join('');
+  return `<div class="drawer-section">
+    <div class="drawer-section-title">Rounds</div>
+    ${items}
+  </div>`;
+}
+
+function outcomePill(o){
+  const k=(o||'').toUpperCase();
+  const cls=['PENDING','WON','MUTUAL','ACCEPTED','LOST'].includes(k)?'outcome-'+k:'outcome-default';
+  return `<span class="outcome-pill ${cls}">${esc(o)||'—'}</span>`;
+}
+
+function renderObjectives(objs){
+  const list = Array.isArray(objs)?objs:[];
+  if(!list.length) return '';
+  let body='';
+  ['T1','T2','T3'].forEach(tier=>{
+    const inTier = list.filter(o=>o && o.tier===tier);
+    if(!inTier.length) return;
+    body += `<div class="obj-tier-hdr"><span class="obj-tier-tag obj-tier-${tier}">${tier}</span></div>`;
+    body += inTier.map(o=>`<div class="obj-row tier-${tier}">
+      <div class="obj-main">
+        <div class="obj-risk">${esc(o.risk)||'—'}</div>
+        ${o.goal?`<div class="obj-goal"><span class="arrow">→</span>${esc(o.goal)}</div>`:''}
+        ${o.pattern_ref?`<div class="obj-ref">pattern ${esc(o.pattern_ref)}</div>`:''}
+      </div>
+      <div class="obj-right">${outcomePill(o.outcome)}</div>
+    </div>`).join('');
+  });
+  // Any objectives without a recognized tier
+  const untiered = list.filter(o=>o && !['T1','T2','T3'].includes(o.tier));
+  if(untiered.length){
+    body += `<div class="obj-tier-hdr"><span class="obj-tier-tag obj-tier-T3">Other</span></div>`;
+    body += untiered.map(o=>`<div class="obj-row">
+      <div class="obj-main">
+        <div class="obj-risk">${esc(o.risk)||'—'}</div>
+        ${o.goal?`<div class="obj-goal"><span class="arrow">→</span>${esc(o.goal)}</div>`:''}
+        ${o.pattern_ref?`<div class="obj-ref">pattern ${esc(o.pattern_ref)}</div>`:''}
+      </div>
+      <div class="obj-right">${outcomePill(o.outcome)}</div>
+    </div>`).join('');
+  }
+  if(!body) return '';
+  return `<div class="drawer-section">
+    <div class="drawer-section-title">Objectives</div>
+    ${body}
+  </div>`;
+}
+
+// FilePath of the currently-open drawer (Stage 3b action handlers target this key).
+let CURRENT_FP = null;
+
+function openDrawer(fp){
+  CURRENT_FP = fp;
+  const d = (DETAIL||{})[fp];
+  // Header — fall back to catalog row for counterparty/doctype if detail missing.
+  const row = getVisible().find(r=>r.FilePath===fp) || {};
+  const cp = (d&&d.counterparty) || row.CounterpartyName || '—';
+  const dt = (d&&d.doctype) || row.DocType || '';
+  document.getElementById('drawer-title').textContent = cp;
+  document.getElementById('drawer-sub').innerHTML = dt?badge(dt,DT_CLASS[dt]||'b-other'):'';
+
+  const body = document.getElementById('drawer-body');
+  let html;
+  if(!d){
+    html = `<div class="drawer-empty">No negotiation detail recorded yet for this contract.</div>`;
+  } else {
+    html = renderBatna(d.batna) + renderRounds(d.rounds) + renderObjectives(d.objectives);
+    if(!html) html = `<div class="drawer-empty">No negotiation detail recorded yet for this contract.</div>`;
+  }
+  html += renderDrawerActions();  // Stage 3b — always available, even with no detail entry yet
+  body.innerHTML = html;
+  body.scrollTop = 0;
+  document.getElementById('drawer').classList.add('open');
+  document.getElementById('drawer-overlay').classList.add('open');
+}
+
+function closeDrawer(){
+  document.getElementById('drawer').classList.remove('open');
+  document.getElementById('drawer-overlay').classList.remove('open');
+}
+
+// ══════════════════════════════════════════════
+// DRAWER ACTIONS (Stage 3b) — Log Round + Update Objective
+// Both route through submitChange() (Mode A relay prompt).
+// ══════════════════════════════════════════════
+const OUTCOMES = ['PENDING','WON','MUTUAL','ACCEPTED','LOST'];
+const TIERS = ['T1','T2','T3'];
+
+function todayISO(){ return new Date().toISOString().slice(0,10); }
+
+// Counterparty/doctype for the open contract, falling back to the catalog row.
+function currentMeta(){
+  const d = (DETAIL||{})[CURRENT_FP] || {};
+  const row = getVisible().find(r=>r.FilePath===CURRENT_FP) || {};
+  return {
+    counterparty: d.counterparty || row.CounterpartyName || '',
+    doctype: d.doctype || row.DocType || ''
+  };
+}
+
+function renderDrawerActions(){
+  return `<div class="drawer-section drawer-actions-section">
+    <div class="drawer-section-title">Negotiation Actions</div>
+    <div class="drawer-action-btns">
+      <button class="btn-primary" onclick="toggleLogRoundForm()">＋ Log Round</button>
+      <button class="btn-primary" onclick="toggleUpdateObjForm()">✎ Update Objective</button>
+    </div>
+    <div id="log-round-form" style="display:none"></div>
+    <div id="update-obj-form" style="display:none"></div>
+    <div id="drawer-relay"></div>
+  </div>`;
+}
+
+// ── Log Round ──
+function toggleLogRoundForm(){
+  const el = document.getElementById('log-round-form');
+  document.getElementById('update-obj-form').style.display='none';
+  if(el.style.display!=='none'){ el.style.display='none'; return; }
+  el.innerHTML = `<div class="drawer-action-form">
+    <div class="form-grid two">
+      <div class="form-field">
+        <label for="lr-dir">Direction</label>
+        <select id="lr-dir"><option value="sent">sent</option><option value="received">received</option></select>
+      </div>
+      <div class="form-field">
+        <label for="lr-date">Date</label>
+        <input type="date" id="lr-date" value="${todayISO()}">
+      </div>
+      <div class="form-field full">
+        <label for="lr-obj">Objective</label>
+        <input type="text" id="lr-obj" placeholder="e.g. Response to pushback on liability cap">
+      </div>
+      <div class="form-field full">
+        <label for="lr-file">File (optional — in 02-rounds/)</label>
+        <input type="text" id="lr-file" placeholder="e.g. ACME_NDA_v2_redline.docx">
+      </div>
+      <div class="form-field full">
+        <label for="lr-note">Note</label>
+        <input type="text" id="lr-note" placeholder="Short note">
+      </div>
+    </div>
+    <button class="btn-primary" onclick="generateLogRound()">Generate</button>
+  </div>`;
+  el.style.display='block';
+}
+
+function generateLogRound(){
+  const d = (DETAIL||{})[CURRENT_FP] || {};
+  const rounds = Array.isArray(d.rounds) ? d.rounds : [];
+  // next n = max existing n + 1; if no rounds, start at 0
+  const nextN = rounds.length ? Math.max(...rounds.map(r=>(r&&typeof r.n==='number')?r.n:0))+1 : 0;
+  const dir = document.getElementById('lr-dir').value;
+  const date = document.getElementById('lr-date').value || todayISO();
+  const objective = document.getElementById('lr-obj').value.trim();
+  const file = document.getElementById('lr-file').value.trim();
+  const note = document.getElementById('lr-note').value.trim();
+  const meta = currentMeta();
+  const roundObj = { n: nextN, date, dir, objective, file, note };
+  const roundJson = JSON.stringify(roundObj, null, 2);
+
+  const relayText =
+`Log Round: ${meta.counterparty||CURRENT_FP} — Round ${nextN} (${dir})
+BASE PATH: ${IP_BASE_PATH}
+
+JSON key (CURRENT_FP): ${CURRENT_FP}
+
+Apply the following changes, then report back:
+
+1. Parse in-process-detail.json. Locate the entry keyed by:
+     "${CURRENT_FP}"
+   If that key does not exist, create it as:
+     { "counterparty": "${meta.counterparty}", "doctype": "${meta.doctype}", "rounds": [], "objectives": [] }
+
+2. Append this round object to that entry's rounds[] array:
+${roundJson}
+
+3. In in-process-catalog.csv, for the row whose FilePath === "${CURRENT_FP}", set:
+     Round = ${csvCell(nextN)}
+     LastActivity = ${csvCell(date)}
+   (Preserve UTF-8 BOM; do not rewrite the header or reorder columns.)
+
+4. Write in-process-detail.json back pretty-printed (indent=2, UTF-8 no BOM). Write the CSV back preserving its BOM.
+
+5. Report back: confirm the round was appended (new rounds length), the CSV row's Round/LastActivity updated, JSON still parses, and the CSV still has its BOM.`;
+
+  submitChange({ outEl:'drawer-relay', relayText });
+}
+
+// ── Update Objective ──
+function toggleUpdateObjForm(){
+  const el = document.getElementById('update-obj-form');
+  document.getElementById('log-round-form').style.display='none';
+  if(el.style.display!=='none'){ el.style.display='none'; return; }
+  const d = (DETAIL||{})[CURRENT_FP] || {};
+  const objs = Array.isArray(d.objectives) ? d.objectives : [];
+  const opts = objs.map((o,i)=>`<option value="${i}">${esc(((o.risk||'—')+' → '+(o.goal||'—')).slice(0,60))}</option>`).join('')
+    + `<option value="new">＋ New objective</option>`;
+  el.innerHTML = `<div class="drawer-action-form">
+    <div class="form-grid">
+      <div class="form-field full">
+        <label for="uo-sel">Objective</label>
+        <select id="uo-sel" onchange="onObjSelectChange()">${opts}</select>
+      </div>
+    </div>
+    <div id="uo-fields"></div>
+    <button class="btn-primary" onclick="generateUpdateObjective()">Generate</button>
+  </div>`;
+  el.style.display='block';
+  onObjSelectChange();
+}
+
+function onObjSelectChange(){
+  const sel = document.getElementById('uo-sel').value;
+  const d = (DETAIL||{})[CURRENT_FP] || {};
+  const objs = Array.isArray(d.objectives) ? d.objectives : [];
+  const tierOpts = (cur)=>TIERS.map(t=>`<option value="${t}"${cur===t?' selected':''}>${t}</option>`).join('');
+  const outOpts  = (cur)=>OUTCOMES.map(o=>`<option value="${o}"${cur===o?' selected':''}>${o}</option>`).join('');
+  let h;
+  if(sel==='new'){
+    h = `<div class="form-grid two">
+      <div class="form-field full"><label for="uo-risk">Risk</label><input type="text" id="uo-risk" placeholder="e.g. One-way indemnity"></div>
+      <div class="form-field full"><label for="uo-goal">Goal</label><input type="text" id="uo-goal" placeholder="e.g. Make mutual"></div>
+      <div class="form-field"><label for="uo-tier">Tier</label><select id="uo-tier">${tierOpts('T1')}</select></div>
+      <div class="form-field"><label for="uo-outcome">Outcome</label><select id="uo-outcome">${outOpts('PENDING')}</select></div>
+    </div>`;
+  } else {
+    const o = objs[parseInt(sel,10)] || {};
+    h = `<div class="form-grid two">
+      <div class="form-field full"><label for="uo-goal">Goal (editable)</label><input type="text" id="uo-goal" value="${esc(o.goal||'')}"></div>
+      <div class="form-field"><label for="uo-tier">Tier</label><select id="uo-tier">${tierOpts(o.tier||'')}</select></div>
+      <div class="form-field"><label for="uo-outcome">Outcome</label><select id="uo-outcome">${outOpts(o.outcome||'PENDING')}</select></div>
+    </div>`;
+  }
+  document.getElementById('uo-fields').innerHTML = h;
+}
+
+function generateUpdateObjective(){
+  const sel = document.getElementById('uo-sel').value;
+  const meta = currentMeta();
+  const tier = document.getElementById('uo-tier').value;
+  const outcome = document.getElementById('uo-outcome').value;
+  const goal = (document.getElementById('uo-goal')?.value||'').trim();
+  const date = todayISO();
+  let action, summary;
+
+  if(sel==='new'){
+    const risk = (document.getElementById('uo-risk')?.value||'').trim();
+    const objJson = JSON.stringify({ risk, goal, tier, outcome, pattern_ref:'' }, null, 2);
+    summary = `New objective (${tier}, ${outcome})`;
+    action =
+`2. Append this objective to that entry's objectives[] array:
+${objJson}`;
+  } else {
+    const idx = parseInt(sel,10);
+    summary = `Update objective[${idx}] → tier=${tier}, outcome=${outcome}`;
+    action =
+`2. In that entry's objectives[] array, update the object at index ${idx}:
+     - outcome = "${outcome}"
+     - tier = "${tier}"
+     - goal = "${goal}"
+   (Leave risk and pattern_ref unchanged.)`;
+  }
+
+  const relayText =
+`Update Objective: ${meta.counterparty||CURRENT_FP} — ${summary}
+BASE PATH: ${IP_BASE_PATH}
+
+JSON key (CURRENT_FP): ${CURRENT_FP}
+
+Apply the following changes, then report back:
+
+1. Parse in-process-detail.json. Locate the entry keyed by:
+     "${CURRENT_FP}"
+   If that key does not exist, create it as:
+     { "counterparty": "${meta.counterparty}", "doctype": "${meta.doctype}", "rounds": [], "objectives": [] }
+
+${action}
+
+3. In in-process-catalog.csv, for the row whose FilePath === "${CURRENT_FP}", set:
+     LastActivity = ${date}
+   (Preserve UTF-8 BOM; do not rewrite the header or reorder columns.)
+
+4. Write in-process-detail.json back pretty-printed (indent=2, UTF-8 no BOM). Write the CSV back preserving its BOM.
+
+5. Report back: confirm the objective change, the CSV row's LastActivity updated, JSON still parses, and the CSV still has its BOM.`;
+
+  submitChange({ outEl:'drawer-relay', relayText });
+}
+
+// ══════════════════════════════════════════════
+// FOLDERS & FILES TAB (Stage 3)
+// ══════════════════════════════════════════════
+const SUBFOLDERS = ['00-source','01-working','02-rounds','03-final'];
+
+// Which template subfolder a FilePath implies; default 00-source if undeterminable.
+function subfolderOf(fp){
+  const parts = (fp||'').split('/');
+  for(const p of parts){ if(SUBFOLDERS.includes(p)) return p; }
+  return '00-source';
+}
+
+function renderFolders(){
+  const rows = getVisible();
+  // Group by VendorFolder
+  const groups = {};
+  rows.forEach(r=>{ const k=r.VendorFolder||'(unfiled)'; (groups[k]=groups[k]||[]).push(r); });
+  const keys = Object.keys(groups).sort();
+
+  if(!keys.length){
+    document.getElementById('folders-content').innerHTML =
+      `<div class="placeholder"><h3>No folders</h3><p>No in-process contracts to display.</p></div>`;
+    return;
+  }
+
+  const html = keys.map((vf,gi)=>{
+    const items = groups[vf];
+    const cp = (items[0] && items[0].CounterpartyName) || '—';
+    const folderUrl = SP_BASE+'/'+encodeURIComponent(vf);
+    // Bucket files by subfolder
+    const buckets = {}; SUBFOLDERS.forEach(s=>buckets[s]=[]);
+    items.forEach(r=>{ buckets[subfolderOf(r.FilePath)].push(r); });
+    const sub = SUBFOLDERS.map(s=>{
+      const files = buckets[s];
+      const fileRows = files.length
+        ? files.map(r=>`<div class="file-row">
+            <span class="fi fi-other" style="width:18px;height:18px;font-size:8px">${esc((r.Filename||'').split('.').pop().slice(0,3).toUpperCase())||'·'}</span>
+            <span class="file-name" title="${esc(r.Filename)}">${esc(r.Filename||'—')}</span>
+            <a class="folder-open-link" href="${spUrl(r)}" target="_blank" rel="noopener">Open ↗</a>
+          </div>`).join('')
+        : `<div class="file-empty">— empty —</div>`;
+      return `<div class="subfolder">
+        <div class="subfolder-hdr"><span class="sf-ic">▸</span>${s}</div>
+        ${fileRows}
+      </div>`;
+    }).join('');
+    return `<div class="folder-card${gi===0?' open':''}" id="fc-${gi}">
+      <div class="folder-hdr" onclick="toggleFolder(${gi})">
+        <span class="folder-caret">▶</span>
+        <svg class="folder-ic" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"/></svg>
+        <div class="folder-meta">
+          <div class="folder-name">${esc(vf)}</div>
+          <div class="folder-cp">${esc(cp)}</div>
+        </div>
+        <span class="folder-count">${items.length} file${items.length===1?'':'s'}</span>
+        <a class="folder-open-link" href="${folderUrl}" target="_blank" rel="noopener" onclick="event.stopPropagation()">Open in SharePoint ↗</a>
+      </div>
+      <div class="folder-body">${sub}</div>
+    </div>`;
+  }).join('');
+  document.getElementById('folders-content').innerHTML = html;
+}
+
+function toggleFolder(i){
+  document.getElementById('fc-'+i).classList.toggle('open');
+}
+
+// ══════════════════════════════════════════════
+// WRITE ABSTRACTION (Stage 3)
+// ══════════════════════════════════════════════
+// Two write modes, selected by WRITE_MODE:
+//   'A' = CC relay (ACTIVE). Renders a paste-ready prompt for Claude Code to apply
+//         the change to disk + git. No direct write is attempted from the browser.
+//   'C' = MSAL/Microsoft Graph direct write (STUBBED). Activates only when Azure AD
+//         credentials (Tenant ID + Client ID) are supplied; until then it alerts.
+// To switch on direct writes later: set WRITE_MODE='C' and implement modeC_submit().
+const WRITE_MODE = 'A';
+const IP_BASE_PATH = String.raw`C:\Users\jrudy\OneDrive - Diakonia Group, LLC\Contract Management - SharePoint\Tools`;
+
+function submitChange(payload){
+  if(WRITE_MODE==='C') return modeC_submit(payload);
+  return modeA_submit(payload);
+}
+
+// Mode A — render a CC relay prompt + copy button into payload.outEl.
+function modeA_submit(payload){
+  const out = document.getElementById(payload.outEl);
+  out.innerHTML = `<div class="relay-output" id="${payload.outEl}-text">${esc(payload.relayText)}</div>
+    <button class="relay-copy-btn" onclick="copyRelay('${payload.outEl}-text',this)">
+      <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path stroke-linecap="round" stroke-linejoin="round" d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+      Copy to Clipboard
+    </button>`;
+  out.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+// Mode C — STUB. TODO: MSAL token -> Graph PUT to SharePoint. Requires AAD Tenant ID + Client ID.
+function modeC_submit(payload){
+  alert('SharePoint direct write not yet configured. Provide Azure AD Tenant ID + Client ID to enable.');
+}
+
+function copyRelay(id,btn){
+  navigator.clipboard.writeText(document.getElementById(id).textContent).then(()=>{
+    const orig=btn.innerHTML;
+    btn.textContent='✓ Copied!';
+    setTimeout(()=>{ btn.innerHTML=orig; },2000);
+  });
+}
+
+// ══════════════════════════════════════════════
+// TOOLS TAB (Stage 3)
+// ══════════════════════════════════════════════
+function renderTools(){
+  document.getElementById('tools-content').innerHTML = `
+    <div class="action-card">
+      <div class="action-card-title">📁 New Contract Workspace</div>
+      <div class="action-card-sub">Stamp a new per-contract folder from <code>_template</code> and register it in the catalog + detail files. Generates a CC relay prompt to apply on disk.</div>
+      <div class="form-grid">
+        <div class="form-field full">
+          <label for="nw-cp">Counterparty</label>
+          <input type="text" id="nw-cp" placeholder="e.g. ACME Corp">
+        </div>
+        <div class="form-field">
+          <label for="nw-doctype">DocType</label>
+          <select id="nw-doctype">
+            <option>NDA</option><option>MNDA</option><option>MSA</option><option>SOW</option><option>Subcontract</option><option>Amendment</option><option>Other</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label for="nw-position">Position</label>
+          <select id="nw-position">
+            <option>AGGRESSIVE</option><option selected>BALANCED</option><option>ACCOMMODATING</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label for="nw-leverage">Leverage</label>
+          <select id="nw-leverage">
+            <option>Strong</option><option selected>Balanced</option><option>Weak</option>
+          </select>
+        </div>
+      </div>
+      <button class="btn-primary" onclick="generateNewWorkspace()">Generate</button>
+      <div id="nw-relay"></div>
+    </div>`;
+}
+
+// Sanitize a counterparty name into a safe folder name:
+// trim, strip slashes/backslashes and "..", collapse whitespace.
+function sanitizeFolder(name){
+  return (name||'')
+    .replace(/[\/\\]/g,' ')
+    .replace(/\.\.+/g,'')
+    .replace(/[<>:"|?*]/g,'')
+    .replace(/\s+/g,' ')
+    .trim();
+}
+
+function generateNewWorkspace(){
+  const cpRaw = document.getElementById('nw-cp').value;
+  const cp = cpRaw.trim();
+  if(!cp){ alert('Enter a counterparty name first.'); return; }
+  const folder   = sanitizeFolder(cp);
+  const doctype  = document.getElementById('nw-doctype').value;
+  const position = document.getElementById('nw-position').value;
+  const leverage = document.getElementById('nw-leverage').value;
+  const fp = `05-In-Process/${folder}/00-source/`;
+  const today = new Date().toISOString().slice(0,10);
+
+  const csvRow = [cp,doctype,'Intake',position,leverage,'USER',today,today,'0',folder,'',fp,''].map(csvCell).join(',');
+  const detailEntry = JSON.stringify({
+    counterparty: cp, doctype, position, leverage,
+    batna:{strength:leverage,note:''},
+    rounds:[], objectives:[]
+  }, null, 2);
+
+  const relayText =
+`New Contract Workspace: ${cp}
+BASE PATH: ${IP_BASE_PATH}
+
+Sanitized folder name: ${folder}
+Target workspace: 05-In-Process/${folder}/
+
+Apply the following changes, then report back:
+
+1. Create the folder 05-In-Process/${folder}/ stamped from 05-In-Process/_template, i.e. create these four subfolders:
+     05-In-Process/${folder}/00-source/
+     05-In-Process/${folder}/01-working/
+     05-In-Process/${folder}/02-rounds/
+     05-In-Process/${folder}/03-final/
+
+2. Append ONE row to in-process-catalog.csv (preserve UTF-8 with BOM; do not rewrite the header):
+     ${csvRow}
+   Column order: CounterpartyName,DocType,Stage,Position,Leverage,Owner,DateReceived,LastActivity,Round,VendorFolder,Filename,FilePath,Notes
+
+3. Add ONE keyed entry to in-process-detail.json (valid JSON merge — parse, add the key, write back pretty-printed indent=2, UTF-8 no BOM):
+   Key: "05-In-Process/${folder}/00-source/"
+   Value:
+${detailEntry}
+
+4. Report: confirm the 4 subfolders exist, the CSV row count (+1) and that the file still has its BOM, and that in-process-detail.json parses with the new key present.`;
+
+  submitChange({ outEl:'nw-relay', relayText });
+}
+
+// ══════════════════════════════════════════════
+// MANAGE TAB (Stage 4) — SHA-256 gate + destructive actions
+// ══════════════════════════════════════════════
+let adminUnlocked = false;
+
+// OWNER_HASH + sha256() copied VERBATIM from index.html (identical owner password).
+const OWNER_HASH='049282c64821fee3'+'faa9f7247396798f'+'6282acbf14d19ceb'+'9e655c316ab81962';
+async function sha256(msg){
+  const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(msg));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+
+function handleManageClick(){
+  if(adminUnlocked){ switchTab('manage'); return; }
+  showAdminLogin();
+}
+function showAdminLogin(){
+  document.getElementById('admin-overlay').classList.add('show');
+  setTimeout(()=>document.getElementById('admin-pwd').focus(),80);
+}
+function closeAdminLogin(){
+  document.getElementById('admin-overlay').classList.remove('show');
+  document.getElementById('admin-pwd').value='';
+  document.getElementById('modal-err').style.display='none';
+}
+async function adminLogin(){
+  const hash=await sha256(document.getElementById('admin-pwd').value);
+  if(hash===OWNER_HASH){
+    adminUnlocked=true;
+    closeAdminLogin();
+    const tab=document.getElementById('manage-tab');
+    tab.classList.remove('locked'); tab.classList.add('unlocked');
+    document.getElementById('manage-tab-label').textContent='🔓 Manage';
+    switchTab('manage');
+  } else {
+    document.getElementById('modal-err').style.display='block';
+    document.getElementById('admin-pwd').value='';
+    document.getElementById('admin-pwd').focus();
+  }
+}
+function adminLock(){
+  adminUnlocked=false;
+  const tab=document.getElementById('manage-tab');
+  tab.classList.remove('unlocked'); tab.classList.add('locked');
+  document.getElementById('manage-tab-label').textContent='Manage';
+  switchTab('pipeline');
+}
+
+const STAGE_OPTIONS = ['Intake','In Review','Negotiation','Internal Review','Counterparty Review','Executed-Ready','On Hold'];
+
+function renderManage(){
+  const rows = getVisible();
+  const opts = rows.map((r,i)=>`<option value="${esc(r.FilePath)}">${esc((r.CounterpartyName||'—')+'  ·  '+(r.VendorFolder||''))}</option>`).join('')
+    || `<option value="">(no in-process contracts)</option>`;
+  const checks = rows.length
+    ? rows.map((r,i)=>`<label><input type="checkbox" class="bulk-cb" value="${esc(r.FilePath)}"> ${esc(r.CounterpartyName||'—')} <span style="color:var(--text4)">· ${esc(r.VendorFolder||'')}</span></label>`).join('')
+    : `<div class="file-empty">No in-process contracts.</div>`;
+  const stageSel = STAGE_OPTIONS.map(s=>`<option>${s}</option>`).join('');
+
+  document.getElementById('manage-content').innerHTML = `
+    <!-- (a) Promote to Active -->
+    <div class="manage-section">
+      <div class="manage-section-title">⬆ Promote to Active</div>
+      <div class="manage-section-sub">On execution, move the contract out of the in-process pipeline into <strong>01 Active Contracts</strong>, drop its in-process record, and add the executed copy to the main catalog (index.html).</div>
+      <div class="form-grid"><div class="form-field full">
+        <label for="pa-sel">Contract</label>
+        <select id="pa-sel">${opts}</select>
+      </div></div>
+      <button class="btn-primary" onclick="generatePromote()">Generate</button>
+      <div id="pa-relay"></div>
+    </div>
+
+    <!-- (b) Bulk Stage Change -->
+    <div class="manage-section">
+      <div class="manage-section-title">≡ Bulk Stage Change</div>
+      <div class="manage-section-sub">Select rows, choose a new Stage, and generate one relay prompt that updates Stage + LastActivity for all selected.</div>
+      <div class="bulk-rows">${checks}</div>
+      <div class="form-grid two">
+        <div class="form-field"><label for="bs-stage">New Stage</label><select id="bs-stage">${stageSel}</select></div>
+      </div>
+      <button class="btn-primary" onclick="generateBulkStage()">Generate</button>
+      <div id="bs-relay"></div>
+    </div>
+
+    <!-- (c) Go-Live Teardown -->
+    <div class="manage-section manage-danger">
+      <div class="manage-section-title">🧹 Go-Live Teardown</div>
+      <div class="manage-section-sub">Generate a relay prompt to remove the disposable test fixtures (<code>_test-acme-nda</code>) from disk, the catalog, and the detail file. The production filter that hides <code>_</code>-prefixed folders is already active in this build.</div>
+      <button class="btn-danger" onclick="generateTeardown()">Remove test fixtures &amp; enable production filter</button>
+      <div id="td-relay"></div>
+    </div>
+
+    <div style="text-align:right;margin-top:4px">
+      <button class="btn-danger" onclick="adminLock()">🔒 Lock &amp; Exit</button>
+    </div>`;
+}
+
+// (a) Promote to Active
+function generatePromote(){
+  const fp = document.getElementById('pa-sel').value;
+  if(!fp){ alert('No contract selected.'); return; }
+  const r = getVisible().find(x=>x.FilePath===fp) || {};
+  const vendor = r.VendorFolder||'';
+  const cp = r.CounterpartyName||fp;
+  const doctype = r.DocType||'';
+  const relayText =
+`Promote to Active: ${cp}
+BASE PATH: ${IP_BASE_PATH}
+
+In-process JSON key / FilePath: ${fp}
+Vendor folder: ${vendor}
+
+Apply the following changes, then report back:
+
+1. Move the contract folder "05-In-Process/${vendor}/" (and contents) to "01 Active Contracts/${vendor}/" on disk.
+
+2. Remove the row whose FilePath === "${fp}" from in-process-catalog.csv (preserve UTF-8 BOM; keep the header; do not reorder columns).
+
+3. Remove the key "${fp}" from in-process-detail.json (valid JSON merge — parse, delete the key, write back indent=2, UTF-8 no BOM). The in-process negotiation record is thereby archived.
+
+4. Add the executed copy to the MAIN contract catalog (contract-catalog.csv, the one index.html reads): a new row for counterparty "${cp}", DocType "${doctype}", ContractLocation "01 Active Contracts", Status "active". (Per workflow: in-process → Active on execution.)
+
+5. Report back: confirm folder moved, in-process CSV row removed (+BOM intact), in-process JSON key removed (+parses), and the main catalog row added.`;
+  submitChange({ outEl:'pa-relay', relayText });
+}
+
+// (b) Bulk Stage Change
+function generateBulkStage(){
+  const fps = [...document.querySelectorAll('.bulk-cb:checked')].map(cb=>cb.value);
+  if(!fps.length){ alert('Select at least one contract.'); return; }
+  const newStage = document.getElementById('bs-stage').value;
+  const date = todayISO();
+  const list = fps.map((fp,i)=>{
+    const r = getVisible().find(x=>x.FilePath===fp) || {};
+    return `   ${i+1}. ${r.CounterpartyName||'—'} — FilePath "${fp}"`;
+  }).join('\n');
+  const relayText =
+`Bulk Stage Change → "${newStage}"
+BASE PATH: ${IP_BASE_PATH}
+
+Apply to in-process-catalog.csv (preserve UTF-8 BOM; keep header; do not reorder columns). For each row below, matched by FilePath, set:
+     Stage = ${csvCell(newStage)}
+     LastActivity = ${csvCell(date)}
+
+Rows (${fps.length}):
+${list}
+
+Then write the CSV back preserving its BOM, and report back: confirm how many rows were updated and that the BOM is intact.`;
+  submitChange({ outEl:'bs-relay', relayText });
+}
+
+// (c) Go-Live Teardown
+function generateTeardown(){
+  const relayText =
+`Go-Live Teardown: remove disposable test fixtures
+BASE PATH: ${IP_BASE_PATH}
+
+Apply the following changes, then report back:
+
+1. Delete the folder "05-In-Process/_test-acme-nda/" and all of its contents.
+
+2. Remove every row whose VendorFolder === "_test-acme-nda" from in-process-catalog.csv (preserve UTF-8 BOM; keep the header; do not reorder columns).
+
+3. Remove every key beginning with "05-In-Process/_test-acme-nda/" from in-process-detail.json (valid JSON merge — parse, delete the key(s), write back indent=2, UTF-8 no BOM).
+
+4. Report back: confirm the folder no longer exists, the CSV fixture row(s) removed (+BOM intact, header intact), and in-process-detail.json parses with the fixture key(s) gone.`;
+  submitChange({ outEl:'td-relay', relayText });
+}
+
+// ══════════════════════════════════════════════
+// KEYBOARD SHORTCUTS
+// ══════════════════════════════════════════════
+document.addEventListener('keydown',ev=>{
+  if(ev.key==='/'&&document.activeElement!==document.getElementById('q')){ev.preventDefault();document.getElementById('q').focus();}
+  if(ev.key==='Escape'){
+    const searchFocused = document.activeElement===document.getElementById('q');
+    if(searchFocused){ clearSearch(); document.getElementById('q').blur(); }
+    else { closeDrawer(); closeAdminLogin(); }
+  }
+});
+
+// ══════════════════════════════════════════════
+// CSV PARSER (verbatim from index.html)
+// ══════════════════════════════════════════════
+function parseCSV(text){
+  const lines=text.split(/\r?\n/);
+  if(!lines.length) return [];
+  const headers=parseCSVRow(lines[0]);
+  const rows=[];
+  for(let i=1;i<lines.length;i++){
+    const line=lines[i].trim(); if(!line) continue;
+    const vals=parseCSVRow(line);
+    const obj={}; headers.forEach((h,j)=>obj[h.trim()]=vals[j]||'');
+    rows.push(obj);
+  }
+  return rows;
+}
+function parseCSVRow(line){
+  const result=[]; let cur='',inQ=false;
+  for(let i=0;i<line.length;i++){
+    const c=line[i];
+    if(c==='"'){if(inQ&&line[i+1]==='"'){cur+='"';i++;}else inQ=!inQ;}
+    else if(c===','&&!inQ){result.push(cur);cur='';}
+    else cur+=c;
+  }
+  result.push(cur); return result;
+}
+
+// ══════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════
+function init(){
+  const n = getVisible().length;
+  document.getElementById('hdr-pill').textContent = n.toLocaleString()+' in-process';
+  document.getElementById('footer-note').textContent='In-process loaded '+new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
+  buildStats();
+  buildFilters();
+  go();
+}
+
+function showLoadError(){
+  document.getElementById('hdr-pill').textContent='Load error';
+  const isLocal=window.location.protocol==='file:';
+  document.getElementById('stats-row').innerHTML=
+    '<div style="grid-column:1/-1;padding:16px;background:var(--red-bg);border:1px solid rgba(220,38,38,.3);border-radius:var(--radius-lg);color:var(--red-text);font-size:13px;line-height:1.7">'
+    +(isLocal
+      ? '⚠ Cannot load data from a local file. Open via SharePoint URL so the browser can fetch <code>in-process-catalog.csv</code> and <code>in-process-detail.json</code>.'
+      : '⚠ Failed to load <code>in-process-catalog.csv</code>. Verify the file is in the same SharePoint folder as this HTML file.')
+    +'</div>';
+}
+
+// ── Data load: two fetches, both cache-busted (same pattern as index.html) ──
+const csvUrl  = new URL('in-process-catalog.csv?t='+Date.now(),window.location.href).href;
+const jsonUrl = new URL('in-process-detail.json?t='+Date.now(),window.location.href).href;
+
+// Detail JSON is non-fatal: soft-fail to {} so the page still renders.
+const detailFetch = fetch(jsonUrl,{cache:'no-store'})
+  .then(r=>{ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
+  .catch(err=>{ console.warn('in-process-detail.json failed to load:',err); return {}; });
+
+// Catalog CSV is required: failure shows the graceful error panel.
+const catalogFetch = fetch(csvUrl,{cache:'no-store'})
+  .then(r=>{ if(!r.ok) throw new Error('HTTP '+r.status); return r.text(); });
+
+Promise.all([catalogFetch,detailFetch])
+  .then(([csvText,detailObj])=>{
+    CATALOG = parseCSV(csvText);
+    DETAIL  = detailObj || {};
+    init();
+  })
+  .catch(err=>{ console.error(err); showLoadError(); });
+</script>
+</body>
+</html>

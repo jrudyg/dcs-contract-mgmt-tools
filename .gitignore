@@ -5,6 +5,7 @@ _anonymized/
 *.contract.txt
 anonymization/samples/
 anonymization/mapping.json
+anonymization/output/
 .claude/
 TRAIN*/
 contract-catalog/

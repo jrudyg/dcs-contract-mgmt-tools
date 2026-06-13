@@ -113,3 +113,25 @@ Defined authoritatively in `CONTRACT-RULES.md`. Key points:
 `sort-contracts.py` always skips: files in Archived, files with no `SigningStatus`, VendorFolder starting with `00 ` or containing "template", filenames containing "template" or "redline".
 
 Run `scan-contract.py --prune` after any batch file deletion or reorganization to remove orphaned catalog rows.
+
+---
+
+## Session Protocol
+
+These rules apply to every CC session in this repo.
+
+### 1 — Session start checklist
+- Read `kb\LEARNINGS.md` and `NEAR_TERM_ENHANCEMENTS.md` before beginning any task.
+
+### 2 — Report channel
+- All task output appends to the **repo-root** `CC_REPORT.md` (not `Tools\CC_REPORT.md` — that file does not exist).
+- Every append uses a timestamped header: `## <task-id> Phase <X> — <description> — YYYY-MM-DD`.
+- Include raw command output for every verify step; never claim a step complete without printing evidence.
+
+### 3 — Evidence rule
+- Raw output (grep counts, git log lines, file reads) is required for every claim of completion.
+- A skipped append or failed write reported as "done" is the #1 recurring defect in this workstream.
+
+### 4 — Session close
+- Append a session summary entry to `kb\SESSION_LOG.md` before ending the session.
+- Include: commits pushed (with hashes), catalog state (row count, distribution), and any open items.

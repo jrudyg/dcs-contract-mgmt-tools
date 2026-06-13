@@ -1,1 +1,10 @@
 *.bak
+*.bak2
+*.bak_*
+_anonymized/
+*.contract.txt
+anonymization/samples/
+.claude/
+TRAIN*/
+contract-catalog/
+backlog_triage.csv

@@ -321,7 +321,7 @@ body.dark .b-loc-expired{background:#2d0f0f;color:#ff7b72}
     Contract Catalog
   </div>
   <div class="hdr-right">
-    <span class="hdr-pill" id="hdr-pill">Loading&hellip;</span>
+    <span class="hdr-pill" id="hdr-pill">Loading…</span>
     <button class="icon-btn" id="theme-btn" onclick="toggleDark()" title="Toggle dark mode">ðŸŒ™</button>
   </div>
 </header>
@@ -355,7 +355,7 @@ body.dark .b-loc-expired{background:#2d0f0f;color:#ff7b72}
       <div class="search-row">
         <div class="search-wrap">
           <svg class="s-icon" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path stroke-linecap="round" d="M21 21l-4.35-4.35"/></svg>
-          <input type="text" id="q" placeholder="Search counterparty or filename&hellip; (press / to focus)" oninput="onSearch()" aria-label="Search">
+          <input type="text" id="q" placeholder="Search counterparty or filename… (press / to focus)" oninput="onSearch()" aria-label="Search">
           <button class="clear-x" id="clear-x" onclick="clearSearch()" title="Clear">âœ•</button>
         </div>
         <div class="col-toggle-wrap">
@@ -438,7 +438,7 @@ body.dark .b-loc-expired{background:#2d0f0f;color:#ff7b72}
         <div class="search-row">
           <div class="search-wrap">
             <svg class="s-icon" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path stroke-linecap="round" d="M21 21l-4.35-4.35"/></svg>
-            <input type="text" id="bulk-q" placeholder="Search&hellip;" oninput="goBulk()">
+            <input type="text" id="bulk-q" placeholder="Search…" oninput="goBulk()">
             <button class="clear-x" id="bulk-clear-x" onclick="clearBulkSearch()" title="Clear">âœ•</button>
           </div>
         </div>
@@ -448,7 +448,7 @@ body.dark .b-loc-expired{background:#2d0f0f;color:#ff7b72}
       <div class="bulk-action-bar">
         <span class="bulk-sel-count" id="bulk-sel-count">0 selected</span>
         <select id="bulk-action-sel">
-          <option value="">Choose action&hellip;</option>
+          <option value="">Choose action…</option>
           <option value="move-active">Move &#8594; 01 Active Contracts</option>
           <option value="move-unsigned">Move &#8594; 02 Unsigned Contracts</option>
           <option value="move-archived">Move &#8594; 03 Archived Contracts</option>
@@ -565,30 +565,30 @@ const today = new Date(); today.setHours(0,0,0,0);
 // SharePoint base URL
 const SP_BASE = 'https://diakoniagroupllc.sharepoint.com/sites/SalesforceContracts/Active%20Contracts';
 
-// â”€â”€ Review queue data (22 vendors from HANDOFF Â§3) â”€â”€
+// â”€â”€ Review queue data (22 vendors from HANDOFF §3) â”€â”€
 const REVIEW_QUEUE = [
-  {vendor:'ISI', flag:'Misrouted file', note:'Contains a Precision Tools file &mdash; verify and move to correct vendor folder.'},
-  {vendor:'NFI', flag:'Misrouted file', note:'Contains a Ventura Foods file &mdash; verify and move to correct vendor folder.'},
-  {vendor:'SVT / SVT Robotics', flag:'Duplicate folders', note:'Two folders contain identical file &mdash; confirm single entity and consolidate.'},
-  {vendor:'Geek+ / GeekPlus Robotics', flag:'Duplicate folders', note:'Two folders contain identical file &mdash; confirm single entity and consolidate.'},
+  {vendor:'ISI', flag:'Misrouted file', note:'Contains a Precision Tools file — verify and move to correct vendor folder.'},
+  {vendor:'NFI', flag:'Misrouted file', note:'Contains a Ventura Foods file — verify and move to correct vendor folder.'},
+  {vendor:'SVT / SVT Robotics', flag:'Duplicate folders', note:'Two folders contain identical file — confirm single entity and consolidate.'},
+  {vendor:'Geek+ / GeekPlus Robotics', flag:'Duplicate folders', note:'Two folders contain identical file — confirm single entity and consolidate.'},
   {vendor:'Trinity Controls / Trinity Solutions', flag:'Possible duplicate', note:'Verify whether these are the same entity or distinct counterparties.'},
-  {vendor:'Dematic', flag:'Multiple files', note:'2 files present &mdash; 2015 and 2025 versions. Confirm which is current; archive the other.'},
-  {vendor:'EMIT', flag:'Multiple files', note:'2 files &mdash; signed version and earlier unsigned version. Confirm which is active.'},
+  {vendor:'Dematic', flag:'Multiple files', note:'2 files present — 2015 and 2025 versions. Confirm which is current; archive the other.'},
+  {vendor:'EMIT', flag:'Multiple files', note:'2 files — signed version and earlier unsigned version. Confirm which is active.'},
   {vendor:'NPI', flag:'Multiple files', note:'2 NDA versions present. Confirm which is current.'},
-  {vendor:'Ventura Foods', flag:'Multiple files', note:'2 files &mdash; signed and unsigned. Confirm which is the executed copy.'},
-  {vendor:'Designed Integrators (DMI)', flag:'DCS entity as counterparty?', note:'Rows 36, 408, 628, 629 &mdash; verify whether DCS/Diakonia is listed as counterparty rather than vendor.'},
-  {vendor:'EDMCI', flag:'Boilerplate counterparty name', note:'Row 647 &mdash; counterparty name appears to be a template placeholder. Verify and correct.'},
-  {vendor:'Fletchline', flag:'Boilerplate counterparty name', note:'Row 666 &mdash; counterparty name appears to be a template placeholder. Verify and correct.'},
-  {vendor:'ScanSource', flag:'Not standalone contracts', note:'Rows 828-830 &mdash; 3 exhibit files, not standalone contracts. Confirm correct catalog classification.'},
-  {vendor:'Amazon', flag:'MSA expiration check', note:'MSA (2015) &mdash; verify whether expiration date is current and whether renewal is needed.'},
-  {vendor:'CEI', flag:'MSA expiration check', note:'MSA &mdash; verify expiration date.'},
-  {vendor:'Tevora', flag:'MSA expiration check', note:'MSA (2.12.2024) &mdash; verify expiration date.'},
-  {vendor:'Lamb Weston', flag:'Confirmed expired &mdash; renewal decision', note:'Expired 2025-02-11. Evergreen policy does NOT apply. Renewal decision needed.'},
-  {vendor:'UNARCO', flag:'Dated expiration &mdash; verify', note:'Verify expiration date is accurate.'},
-  {vendor:'Fletchline', flag:'Dated expiration &mdash; verify', note:'Verify expiration date is accurate.'},
-  {vendor:'NPI', flag:'Dated expiration &mdash; verify', note:'Verify expiration date is accurate.'},
-  {vendor:'Trinity', flag:'Dated expiration &mdash; verify', note:'Verify expiration date is accurate.'},
-  {vendor:'EMIT', flag:'Dated expiration &mdash; verify', note:'Verify expiration date is accurate.'},
+  {vendor:'Ventura Foods', flag:'Multiple files', note:'2 files — signed and unsigned. Confirm which is the executed copy.'},
+  {vendor:'Designed Integrators (DMI)', flag:'DCS entity as counterparty?', note:'Rows 36, 408, 628, 629 — verify whether DCS/Diakonia is listed as counterparty rather than vendor.'},
+  {vendor:'EDMCI', flag:'Boilerplate counterparty name', note:'Row 647 — counterparty name appears to be a template placeholder. Verify and correct.'},
+  {vendor:'Fletchline', flag:'Boilerplate counterparty name', note:'Row 666 — counterparty name appears to be a template placeholder. Verify and correct.'},
+  {vendor:'ScanSource', flag:'Not standalone contracts', note:'Rows 828-830 — 3 exhibit files, not standalone contracts. Confirm correct catalog classification.'},
+  {vendor:'Amazon', flag:'MSA expiration check', note:'MSA (2015) — verify whether expiration date is current and whether renewal is needed.'},
+  {vendor:'CEI', flag:'MSA expiration check', note:'MSA — verify expiration date.'},
+  {vendor:'Tevora', flag:'MSA expiration check', note:'MSA (2.12.2024) — verify expiration date.'},
+  {vendor:'Lamb Weston', flag:'Confirmed expired — renewal decision', note:'Expired 2025-02-11. Evergreen policy does NOT apply. Renewal decision needed.'},
+  {vendor:'UNARCO', flag:'Dated expiration — verify', note:'Verify expiration date is accurate.'},
+  {vendor:'Fletchline', flag:'Dated expiration — verify', note:'Verify expiration date is accurate.'},
+  {vendor:'NPI', flag:'Dated expiration — verify', note:'Verify expiration date is accurate.'},
+  {vendor:'Trinity', flag:'Dated expiration — verify', note:'Verify expiration date is accurate.'},
+  {vendor:'EMIT', flag:'Dated expiration — verify', note:'Verify expiration date is accurate.'},
 ];
 
 // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
@@ -628,7 +628,7 @@ function expiryTag(r){
 
 function daysCell(r){
   const d = daysTo(r.ExpirationDate);
-  if(d===null) return '<td style="font-size:12px;color:var(--text4)">&mdash;</td>';
+  if(d===null) return '<td style="font-size:12px;color:var(--text4)">—</td>';
   let col='var(--text3)',wt='400',txt=d+'d';
   if(d<0){col='var(--red)';wt='700';txt=(-d)+'d ago';}
   else if(d===0){col='var(--red)';wt='700';txt='Today';}
@@ -643,7 +643,7 @@ function fileIcon(ext){
   if(x==='.docx') return '<span class="fi fi-docx">DOC</span>';
   if(x==='.doc') return '<span class="fi fi-doc">DOC</span>';
   if(x==='.msg') return '<span class="fi fi-msg">MSG</span>';
-  return '<span class="fi fi-other">&mdash;</span>';
+  return '<span class="fi fi-other">—</span>';
 }
 
 function locBadge(loc){
@@ -651,12 +651,12 @@ function locBadge(loc){
   if(loc==='02 Unsigned Contracts') return badge('Unsigned','b-loc-unsigned');
   if(loc==='03 Archived Contracts') return badge('Archived','b-loc-archived');
   if(loc==='04 Expired Contracts') return badge('Expired','b-loc-expired');
-  return badge(loc||'&mdash;','b-loc-archived');
+  return badge(loc||'—','b-loc-archived');
 }
 
 function statusBadge(s){
   const map={active:'b-active',expired:'b-expired',renewed:'b-renewed',unsigned:'b-unsigned'};
-  return badge(s||'&mdash;', map[s]||'b-unknown');
+  return badge(s||'—', map[s]||'b-unknown');
 }
 
 function spUrl(r){
@@ -821,7 +821,7 @@ function renderTable(q){
   const showVer = document.getElementById('col-version')?.checked;
 
   const n = Math.min(filtered.length,LIMIT);
-  document.getElementById('tbl-meta').textContent = `Showing ${n.toLocaleString()} of ${filtered.length.toLocaleString()} Â· ${DATA.length.toLocaleString()} total`;
+  document.getElementById('tbl-meta').textContent = `Showing ${n.toLocaleString()} of ${filtered.length.toLocaleString()} · ${DATA.length.toLocaleString()} total`;
 
   if(!filtered.length){
     tbody.innerHTML=''; cardList.innerHTML=''; empty.style.display='block'; return;
@@ -833,26 +833,26 @@ function renderTable(q){
     const rc = rowClass(r);
     const dtc = DT_CLASS[r.DocType]||'b-other';
     const fn = r.Filename||'';
-    const trunc = fn.length>44?fn.slice(0,41)+'&hellip;':fn;
+    const trunc = fn.length>44?fn.slice(0,41)+'…':fn;
     const url = spUrl(r);
     const rj = encodeURIComponent(JSON.stringify(r));
     const expB = expiryTag(r);
     let extra = '';
-    const expDate = (r.ExpirationDate||'').slice(0,10)||'&mdash;';
+    const expDate = (r.ExpirationDate||'').slice(0,10)||'—';
     const expStyle = r.ExpirationDate&&r.ExpirationDate<new Date().toISOString().slice(0,10)?'color:var(--red);font-weight:700':'color:var(--text3)';
     if(showExp) extra += `<td style="font-size:12px;${expStyle}">${expDate}</td>`;
     if(showDL)  extra += daysCell(r);
-    if(showNot) extra += `<td style="font-size:12px;color:var(--text3)" title="${esc(r.Notes)}">${esc((r.Notes||'').slice(0,35))||'&mdash;'}</td>`;
-    if(showVer) extra += `<td style="font-size:12px;color:var(--text3)">${esc(r.VersionLabel)||'&mdash;'}</td>`;
+    if(showNot) extra += `<td style="font-size:12px;color:var(--text3)" title="${esc(r.Notes)}">${esc((r.Notes||'').slice(0,35))||'—'}</td>`;
+    if(showVer) extra += `<td style="font-size:12px;color:var(--text3)">${esc(r.VersionLabel)||'—'}</td>`;
     return `<tr class="${rc}">
-      <td title="${esc(r.CounterpartyName)}">${esc(r.CounterpartyName||'&mdash;')}</td>
-      <td>${badge(r.DocType||'&mdash;',dtc)}</td>
+      <td title="${esc(r.CounterpartyName)}">${esc(r.CounterpartyName||'—')}</td>
+      <td>${badge(r.DocType||'—',dtc)}</td>
       <td>${statusBadge(r.Status)}</td>
       <td>${locBadge(r.ContractLocation)}</td>
       <td title="${esc(fn)}" style="font-family:monospace;font-size:11px;color:var(--text3)">
         <div class="fn-wrap">${fileIcon(r.Extension)}${esc(trunc)}${expB}</div>
       </td>
-      <td style="font-size:12px;color:var(--text3)">${(r.EffectiveDate||'').slice(0,10)||'&mdash;'}</td>
+      <td style="font-size:12px;color:var(--text3)">${(r.EffectiveDate||'').slice(0,10)||'—'}</td>
       ${extra}
       <td>
         <div style="display:flex;align-items:center;gap:4px">
@@ -867,19 +867,19 @@ function renderTable(q){
         </div>
       </td>
     </tr>`;
-  }).join('') + (filtered.length>LIMIT?`<tr><td colspan="12" style="text-align:center;padding:10px;font-size:12px;color:var(--text4)">Showing first ${LIMIT} of ${filtered.length.toLocaleString()} &mdash; refine search to see more</td></tr>`:'');
+  }).join('') + (filtered.length>LIMIT?`<tr><td colspan="12" style="text-align:center;padding:10px;font-size:12px;color:var(--text4)">Showing first ${LIMIT} of ${filtered.length.toLocaleString()} — refine search to see more</td></tr>`:'');
 
   // Mobile cards
   cardList.innerHTML = slice.map(r=>{
     const rc=rowClass(r); const url=spUrl(r);
-    const fn=r.Filename||''; const trunc=fn.length>46?fn.slice(0,43)+'&hellip;':fn;
+    const fn=r.Filename||''; const trunc=fn.length>46?fn.slice(0,43)+'…':fn;
     const rj=encodeURIComponent(JSON.stringify(r));
     return `<div class="contract-card ${rc}">
-      <div class="card-top"><span class="card-name">${esc(r.CounterpartyName||'&mdash;')}</span>${expiryTag(r)}</div>
-      <div class="card-badges">${badge(r.DocType||'&mdash;',DT_CLASS[r.DocType]||'b-other')}${statusBadge(r.Status)}${locBadge(r.ContractLocation)}</div>
+      <div class="card-top"><span class="card-name">${esc(r.CounterpartyName||'—')}</span>${expiryTag(r)}</div>
+      <div class="card-badges">${badge(r.DocType||'—',DT_CLASS[r.DocType]||'b-other')}${statusBadge(r.Status)}${locBadge(r.ContractLocation)}</div>
       <div class="card-fn">${fileIcon(r.Extension)}${esc(trunc)}</div>
       <div class="card-footer">
-        <span class="card-date">${(r.EffectiveDate||'').slice(0,10)||'&mdash;'}</span>
+        <span class="card-date">${(r.EffectiveDate||'').slice(0,10)||'—'}</span>
         <a href="${url}" target="_blank" rel="noopener" class="open-btn">Open</a>
       </div>
     </div>`;
@@ -953,10 +953,10 @@ function renderExpiring(){
     return `<div style="overflow-x:auto"><table class="cov-table">
       <thead><tr><th>Counterparty</th><th>Type</th><th>Filename</th><th>Expires</th><th></th></tr></thead>
       <tbody>${rows.map(r=>`<tr>
-        <td>${esc(r.CounterpartyName||'&mdash;')}</td>
-        <td>${badge(r.DocType||'&mdash;',DT_CLASS[r.DocType]||'b-other')}</td>
+        <td>${esc(r.CounterpartyName||'—')}</td>
+        <td>${badge(r.DocType||'—',DT_CLASS[r.DocType]||'b-other')}</td>
         <td style="font-family:monospace;font-size:11px;color:var(--text3)" title="${esc(r.Filename)}">${esc((r.Filename||'').slice(0,38))}</td>
-        <td><span class="exp-tag ${tagCls}">${(r.ExpirationDate||'&mdash;').slice(0,10)}</span></td>
+        <td><span class="exp-tag ${tagCls}">${(r.ExpirationDate||'—').slice(0,10)}</span></td>
         <td><a href="${spUrl(r)}" target="_blank" rel="noopener" class="open-btn">Open</a></td>
       </tr>`).join('')}</tbody>
     </table></div>`;
@@ -992,7 +992,7 @@ function renderInsights(){
   function portList(obj,max){
     return Object.entries(obj).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`
       <li class="port-item">
-        <span style="min-width:80px;font-size:12px">${esc(k)||'&mdash;'}</span>
+        <span style="min-width:80px;font-size:12px">${esc(k)||'—'}</span>
         <div class="port-bar-track"><div class="port-bar-fill" style="width:${Math.round(v/max*100)}%"></div></div>
         <span class="port-num">${v}</span>
       </li>`).join('');
@@ -1049,7 +1049,7 @@ function renderInsights(){
 }
 
 // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-// MANAGE TAB &mdash; REVIEW QUEUE
+// MANAGE TAB — REVIEW QUEUE
 // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 function renderManage(){
   renderReviewQueue();
@@ -1084,7 +1084,7 @@ function renderReviewQueue(){
   }).slice(0,8);
   const rowsHtml = matches.length
     ? matches.map(r=>`${r.ContractLocation} / ${r.VendorFolder} / ${r.Filename}`).join('\n')
-    : '(no matching rows found in current catalog &mdash; search manually)';
+    : '(no matching rows found in current catalog — search manually)';
 
   document.getElementById('review-queue-content').innerHTML = `
     <div class="review-progress">
@@ -1137,7 +1137,7 @@ function skipReview(){
 }
 
 // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-// MANAGE TAB &mdash; BULK ACTIONS
+// MANAGE TAB — BULK ACTIONS
 // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 function buildBulkFilters(){
   const types=[...new Set(DATA.map(r=>r.DocType).filter(Boolean))].sort();
@@ -1189,15 +1189,15 @@ function goBulk(){
 
   document.getElementById('bulk-tbody').innerHTML=bulkFiltered.slice(0,LIMIT).map(r=>{
     const fp=r.FilePath||r.Filename;
-    const fn=r.Filename||''; const trunc=fn.length>38?fn.slice(0,35)+'&hellip;':fn;
+    const fn=r.Filename||''; const trunc=fn.length>38?fn.slice(0,35)+'…':fn;
     return `<tr class="${rowClass(r)}">
       <td style="padding:4px 6px"><input type="checkbox" class="bulk-cb" data-fp="${esc(fp)}" ${bulkSelected.has(fp)?'checked':''} onchange="toggleBulkRow(this)" style="accent-color:var(--blue);width:14px;height:14px;cursor:pointer"></td>
-      <td>${esc(r.CounterpartyName||'&mdash;')}</td>
-      <td>${badge(r.DocType||'&mdash;',DT_CLASS[r.DocType]||'b-other')}</td>
+      <td>${esc(r.CounterpartyName||'—')}</td>
+      <td>${badge(r.DocType||'—',DT_CLASS[r.DocType]||'b-other')}</td>
       <td>${statusBadge(r.Status)}</td>
       <td>${locBadge(r.ContractLocation)}</td>
       <td style="font-family:monospace;font-size:11px;color:var(--text3)" title="${esc(fn)}">${esc(trunc)}</td>
-      <td style="font-size:12px;color:var(--text3)">${(r.EffectiveDate||'').slice(0,10)||'&mdash;'}</td>
+      <td style="font-size:12px;color:var(--text3)">${(r.EffectiveDate||'').slice(0,10)||'—'}</td>
     </tr>`;
   }).join('');
   syncBulkSelUI();
@@ -1240,13 +1240,13 @@ function generateBulkRelay(){
 }
 
 // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-// MANAGE TAB &mdash; DEPLOY RELAY
+// MANAGE TAB — DEPLOY RELAY
 // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 function generateDeployRelay(){
   const cols=Object.keys(DATA[0]||{});
   const quote=s=>'"'+String(s==null?'':s).replace(/"/g,'""')+'"';
   const lines=[cols.map(quote).join(','),...DATA.map(r=>cols.map(c=>quote(r[c]||'')).join(','))];
-  const csvSnippet=lines.slice(0,3).join('\n')+'&hellip;\n('+DATA.length+' total rows)';
+  const csvSnippet=lines.slice(0,3).join('\n')+'…\n('+DATA.length+' total rows)';
   const path=String.raw`C:\Users\jrudy\OneDrive - Diakonia Group, LLC\Contract Management - SharePoint\Tools\contract-catalog.csv`;
   const text=`Deploy: Save contract-catalog.csv and push to GitHub\n\n1. Write the following CSV to disk (full content attached separately):\n   Path: ${path}\n   Row count: ${DATA.length}\n   First rows (header + 2 data):\n${csvSnippet}\n\n2. After writing:\n   cd "${path.replace(/\\[^\\]+$/,'')}"\n   git add contract-catalog.csv\n   git commit -m "catalog update ${ts()}"\n   git push origin main\n   git log --oneline -3\n\n3. Report: confirm file written (byte count) and git log output.`;
   document.getElementById('deploy-relay-wrap').style.display='block';

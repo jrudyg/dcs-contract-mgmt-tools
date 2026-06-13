@@ -1219,7 +1219,8 @@ function adminLock(){
   switchTab('pipeline');
 }
 
-const STAGE_OPTIONS = ['Intake','In Review','Negotiation','Internal Review','Counterparty Review','Executed-Ready','On Hold'];
+// Single stage vocabulary across the page — alias to STAGES.
+const STAGE_OPTIONS = STAGES;
 
 function renderManage(){
   const rows = getVisible();

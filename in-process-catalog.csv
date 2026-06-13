@@ -1,1 +1,1 @@
-﻿CounterpartyName,DocType,Stage,Position,Leverage,Owner,DateReceived,LastActivity,Round,VendorFolder,Filename,FilePath,Notes
+﻿CounterpartyName,DocType,Filename,FilePath,VendorFolder,Stage,Position,Leverage,Round,Owner,LastActivity

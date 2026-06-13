@@ -250,13 +250,11 @@ anonymization/
 
 ## 12. Implementation Sequence
 
-| Phase | Deliverable | Success criterion |
-|-------|-------------|-------------------|
-| ANON-2 | `build_map.py`: parse COUNTERPARTIES.md → mapping.json | PARTY count = 537 (540 − 3 excluded) |
-| ANON-3 | `extract.py` + Layer 1: counterparty redaction only | Smoke test: 3 files, no real names in output |
-| ANON-4 | Layer 2: Presidio integration | Smoke test: PII tokens visible in audit.json |
-| ANON-5 | Layer 3: commercial regex | Full run; audit summary report |
-| ANON-6 | Audit roll-up: counts, coverage, manual spot-check | Sign-off before any external use |
+| Phase | Deliverable | Status |
+|-------|-------------|--------|
+| ANON-1 | anonymize.py: full pipeline (all 3 layers), 3-file pilot | COMPLETE (6247756) |
+| ANON-2 | build_map.py: 537 pseudonyms + 687 aliases; alias pass integrated | COMPLETE (832a88e) |
+| ANON-3 | Full corpus run + audit rollup | NOT STARTED |
 
 ---
 

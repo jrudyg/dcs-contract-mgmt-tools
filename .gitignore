@@ -9,3 +9,4 @@ anonymization/output/
 .claude/
 TRAIN*/
 contract-catalog/
+__pycache__/

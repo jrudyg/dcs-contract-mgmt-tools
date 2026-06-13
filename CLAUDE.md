@@ -122,6 +122,7 @@ These rules apply to every CC session in this repo.
 
 ### 1 — Session start checklist
 - Read `kb\LEARNINGS.md` and `NEAR_TERM_ENHANCEMENTS.md` before beginning any task.
+- Read `kb/INDEX.md` for current file manifest.
 
 ### 2 — Report channel
 - All task output appends to the **repo-root** `CC_REPORT.md` (not `Tools\CC_REPORT.md` — that file does not exist).

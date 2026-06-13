@@ -82,8 +82,15 @@ log = logging.getLogger(__name__)
 # Mapping: build or load
 # ---------------------------------------------------------------------------
 
-def build_mapping(counterparties_path: pathlib.Path, mapping_path: pathlib.Path) -> dict[str, str]:
-    """Parse kb/COUNTERPARTIES.md and write a fresh mapping.json."""
+def build_mapping(
+    counterparties_path: pathlib.Path,
+    mapping_path: pathlib.Path,
+) -> tuple[dict[str, str], dict[str, str]]:
+    """Parse kb/COUNTERPARTIES.md and write a v1 mapping.json (no aliases).
+
+    For a full v2 map with alias detection run build_map.py directly.
+    Returns (name_map, alias_map); alias_map is always empty from this builder.
+    """
     name_pattern = re.compile(r'^\*\*(.+?)\*\*')
     entries: dict[str, str] = {}
     idx = 1
@@ -105,25 +112,52 @@ def build_mapping(counterparties_path: pathlib.Path, mapping_path: pathlib.Path)
     mapping_path.parent.mkdir(parents=True, exist_ok=True)
     with open(mapping_path, 'w', encoding='utf-8') as fh:
         json.dump(payload, fh, indent=2, ensure_ascii=False)
-    log.info('Built mapping: %d entries → %s', len(entries), mapping_path)
-    return entries
+    log.info('Built mapping v1: %d entries → %s', len(entries), mapping_path)
+    return entries, {}
 
 
-def load_mapping(mapping_path: pathlib.Path) -> dict[str, str]:
-    """Load an existing mapping.json and return its entries dict."""
+def load_mapping(
+    mapping_path: pathlib.Path,
+) -> tuple[dict[str, str], dict[str, str]]:
+    """Load mapping.json (v1 or v2) → (name_map, alias_map).
+
+    v1: entries is {name: pseudonym}  — alias_map returned empty.
+    v2: entries is {name: {pseudonym, aliases, ...}} — alias_map populated.
+    """
     with open(mapping_path, encoding='utf-8') as fh:
         payload = json.load(fh)
-    entries: dict[str, str] = payload['entries']
-    log.info('Loaded mapping: %d entries from %s', len(entries), mapping_path)
-    return entries
+
+    version = payload.get('version', 1)
+    raw_entries = payload['entries']
+
+    if version >= 2:
+        name_map: dict[str, str] = {
+            name: data['pseudonym']
+            for name, data in raw_entries.items()
+        }
+        alias_map: dict[str, str] = {}
+        for name, data in raw_entries.items():
+            pseudo = data['pseudonym']
+            for alias in data.get('aliases', []):
+                if len(alias) >= 3:
+                    alias_map[alias] = pseudo
+    else:
+        name_map = dict(raw_entries)
+        alias_map = {}
+
+    log.info(
+        'Loaded mapping v%d: %d names, %d aliases from %s',
+        version, len(name_map), len(alias_map), mapping_path,
+    )
+    return name_map, alias_map
 
 
 def get_mapping(
     mapping_path: pathlib.Path,
     counterparties_path: pathlib.Path,
     rebuild: bool,
-) -> dict[str, str]:
-    """Return the counterparty mapping, building it if necessary."""
+) -> tuple[dict[str, str], dict[str, str]]:
+    """Return (name_map, alias_map), building mapping.json if necessary."""
     if rebuild or not mapping_path.exists():
         if not counterparties_path.exists():
             raise FileNotFoundError(
@@ -178,17 +212,24 @@ def _extract_txt(path: pathlib.Path) -> str:
 def apply_counterparty_layer(
     text: str,
     mapping: dict[str, str],
+    alias_map: Optional[dict[str, str]] = None,
 ) -> tuple[str, list[dict]]:
-    """Replace all mapped counterparty names with PARTY-XXXX pseudonyms.
+    """Replace counterparty names (and aliases) with PARTY-XXXX pseudonyms.
 
-    Applies longest-name-first to prevent partial matches from blocking
-    longer names (e.g. "ABC" before "ABC Corporation").
-    Offsets in the returned redaction list are pre-replacement positions
-    relative to the working text at time of match — approximate when
-    multiple distinct names appear in the same document.
+    Pass 1 — full names, longest-first: prevents partial matches from
+    blocking longer names (e.g. "ABC" before "ABC Corporation").
+
+    Pass 2 — alias variants, longest-first, word-boundary aware (\b),
+    min 3 chars: catches abbreviated forms (e.g. WSI, DMI) that survive
+    the full-name pass. Applied only when alias_map is provided.
+
+    Offsets in the redaction list are pre-replacement positions relative
+    to the working text at time of match — approximate when multiple
+    distinct names appear in the same document.
     """
     redactions: list[dict] = []
-    # Sort by descending name length to match longer names first
+
+    # Pass 1: full counterparty names
     ordered = sorted(mapping.items(), key=lambda kv: -len(kv[0]))
     for name, token in ordered:
         pattern = re.compile(re.escape(name), re.IGNORECASE)
@@ -200,6 +241,24 @@ def apply_counterparty_layer(
                 'char_end': match.end(),
             })
         text = pattern.sub(token, text)
+
+    # Pass 2: alias variants (word-boundary, case-insensitive, min 3 chars)
+    if alias_map:
+        alias_ordered = sorted(alias_map.items(), key=lambda kv: -len(kv[0]))
+        for alias, token in alias_ordered:
+            if len(alias) < 3:
+                continue
+            pattern = re.compile(r'\b' + re.escape(alias) + r'\b', re.IGNORECASE)
+            for match in pattern.finditer(text):
+                redactions.append({
+                    'layer': 'counterparty_alias',
+                    'alias': alias,
+                    'token': token,
+                    'char_start': match.start(),
+                    'char_end': match.end(),
+                })
+            text = pattern.sub(token, text)
+
     return text, redactions
 
 # ---------------------------------------------------------------------------
@@ -274,6 +333,7 @@ def process_file(
     mapping: dict[str, str],
     output_dir: pathlib.Path,
     write_audit: bool,
+    alias_map: Optional[dict[str, str]] = None,
 ) -> dict:
     """Run the full anonymization pipeline on one file.
 
@@ -296,7 +356,7 @@ def process_file(
     chars_in = len(raw_text)
 
     try:
-        text, cp_reds   = apply_counterparty_layer(raw_text, mapping)
+        text, cp_reds   = apply_counterparty_layer(raw_text, mapping, alias_map)
         text, pii_reds  = apply_presidio_layer(text)
         text, com_reds  = apply_commercial_layer(text)
     except Exception as exc:
@@ -406,7 +466,7 @@ def main() -> None:
 
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    mapping = get_mapping(mapping_path, counterparties_p, args.rebuild_map)
+    mapping, alias_map = get_mapping(mapping_path, counterparties_p, args.rebuild_map)
 
     input_path = pathlib.Path(args.input)
     if input_path.is_file():
@@ -423,7 +483,7 @@ def main() -> None:
 
     summaries: list[dict] = []
     for file_path in files:
-        summary = process_file(file_path, mapping, output_dir, args.audit)
+        summary = process_file(file_path, mapping, output_dir, args.audit, alias_map)
         summaries.append(summary)
 
     ok_count    = sum(1 for s in summaries if s.get('status') == 'ok')

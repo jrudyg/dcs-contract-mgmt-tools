@@ -25,3 +25,15 @@ Multiple times this session a code-reading pass concluded "fix applied" when the
 **Rule:** For any HTML/display bug, the verify step must be rendered output (screenshot, `curl`, or browser observation), not a code diff. A passing diff is necessary but not sufficient.
 
 **Corollary:** When CC reports a display fix as complete, the verify gate is: "does the live dashboard show correct glyphs?" — not "does the source look correct?"
+
+---
+
+## 3 — Alias detection is load-bearing for counterparty redaction
+
+**Session:** 2026-06-13 (ANON-2)
+
+Abbreviated names (WSI, DMI) will pass a full-name leak check but remain exposed without an alias pass. A scan that only matches `Williams-Sonoma, Inc` will miss `WSI` appearing elsewhere in the same document or in related documents that use the short form.
+
+**Rule:** Always validate counterparty redaction with abbreviation variants, not full names only. An alias pass (word-boundary aware, case-insensitive, min 3 chars) is required alongside the full-name pass to achieve complete coverage.
+
+**How to apply:** `build_map.py` generates abbreviation, short-name, and suffix-stripped aliases for every counterparty. `anonymize.py` applies them in a second pass after full-name replacement. Run both together — neither alone is sufficient.

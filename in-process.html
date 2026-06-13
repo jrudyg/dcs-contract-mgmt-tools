@@ -1133,7 +1133,9 @@ function generateNewWorkspace(){
   const fp = `05-In-Process/${folder}/00-source/`;
   const today = new Date().toISOString().slice(0,10);
 
-  const csvRow = [cp,doctype,'Intake',position,leverage,'USER',today,today,'0',folder,'',fp,''].map(csvCell).join(',');
+  // Column order matches in-process-catalog.csv header:
+  // CounterpartyName,DocType,Filename,FilePath,VendorFolder,Stage,Position,Leverage,Round,Owner,LastActivity
+  const csvRow = [cp,doctype,'',fp,folder,STAGES[0],position,leverage,'0','USER',today].map(csvCell).join(',');
   const detailEntry = JSON.stringify({
     counterparty: cp, doctype, position, leverage,
     batna:{strength:leverage,note:''},
@@ -1157,7 +1159,7 @@ Apply the following changes, then report back:
 
 2. Append ONE row to in-process-catalog.csv (preserve UTF-8 with BOM; do not rewrite the header):
      ${csvRow}
-   Column order: CounterpartyName,DocType,Stage,Position,Leverage,Owner,DateReceived,LastActivity,Round,VendorFolder,Filename,FilePath,Notes
+   Column order: CounterpartyName,DocType,Filename,FilePath,VendorFolder,Stage,Position,Leverage,Round,Owner,LastActivity
 
 3. Add ONE keyed entry to in-process-detail.json (valid JSON merge — parse, add the key, write back pretty-printed indent=2, UTF-8 no BOM):
    Key: "05-In-Process/${folder}/00-source/"

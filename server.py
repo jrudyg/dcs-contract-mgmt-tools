@@ -680,6 +680,315 @@ def move_expired():
         return json.dumps({"ok": False, "moved": 0, "skipped": skipped, "errors": [str(exc)]}), 500, {"Content-Type": "application/json"}
 
 
+ANON_SCRIPT = TOOLS / "anonymization" / "anonymize.py"
+
+
+@app.route("/api/anonymize", methods=["POST", "OPTIONS"])
+def anonymize():
+    if request.method == "OPTIONS":
+        return "", 204
+
+    body = request.get_json(force=True) or {}
+    rel_path = (body.get("path") or "").strip().replace("\\", "/")
+
+    if not rel_path:
+        def _err():
+            yield f"data: {json.dumps('[ERROR] path is required.')}\n\n"
+            yield f"data: {json.dumps({'__done__': True, 'rc': 1})}\n\n"
+        return Response(_err(), mimetype="text/event-stream",
+                        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
+
+    abs_path = SHAREPOINT / rel_path
+    if not abs_path.exists():
+        def _err2():
+            yield f"data: {json.dumps(f'[ERROR] File not found: {rel_path}')}\n\n"
+            yield f"data: {json.dumps({'__done__': True, 'rc': 1})}\n\n"
+        return Response(_err2(), mimetype="text/event-stream",
+                        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
+
+    output_dir = str(abs_path.parent)
+    args = [
+        sys.executable,
+        str(ANON_SCRIPT),
+        "--input", str(abs_path),
+        "--output-dir", output_dir,
+        "--audit",
+    ]
+
+    def generate():
+        try:
+            proc = subprocess.Popen(
+                args,
+                cwd=str(TOOLS),
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                text=True, encoding="utf-8", errors="replace",
+            )
+            for line in proc.stdout:
+                yield f"data: {json.dumps(line.rstrip())}\n\n"
+            proc.wait()
+            yield f"data: {json.dumps({'__done__': True, 'rc': proc.returncode})}\n\n"
+        except Exception as exc:
+            yield f"data: {json.dumps(f'[ERROR] {exc}')}\n\n"
+            yield f"data: {json.dumps({'__done__': True, 'rc': 1})}\n\n"
+
+    return Response(generate(), mimetype="text/event-stream",
+                    headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
+
+
+# ── Anonymizer UI ──────────────────────────────────────────────────────────
+ANON_PAGE = r"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DCS Contract Anonymizer</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f3f4f6;color:#111827;padding:24px 16px}
+.card{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:24px;max-width:980px;margin:0 auto 20px}
+h1{font-size:20px;font-weight:700;margin-bottom:4px}
+h2{font-size:15px;font-weight:600;margin-bottom:12px}
+.sub{font-size:13px;color:#6b7280;margin-bottom:20px}
+label{font-size:13px;color:#374151;display:block;margin-bottom:4px;font-weight:500}
+.hint{font-size:12px;color:#9ca3af;font-weight:400}
+input[type=text],input[type=search],input[type=file],select{
+  width:100%;background:#f9fafb;border:1px solid #d1d5db;border-radius:8px;
+  padding:9px 12px;font-size:13px;color:#111827;font-family:inherit;outline:none;transition:border-color .15s}
+input:focus,select:focus{border-color:#6366f1}
+.row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:14px}
+.field{margin-top:14px}
+button.primary{background:#6366f1;color:#fff;border:none;border-radius:8px;padding:9px 20px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap}
+button.primary:hover{background:#4f46e5}
+button.primary:disabled{background:#a5b4fc;cursor:not-allowed}
+button.ghost{background:transparent;border:1px solid #d1d5db;color:#374151;border-radius:8px;padding:8px 14px;font-size:13px;cursor:pointer;white-space:nowrap}
+button.ghost:hover{background:#f3f4f6}
+/* Tabs */
+.tabs{display:flex;gap:4px;border-bottom:1px solid #e5e7eb;margin-bottom:18px}
+.tab{padding:9px 16px;font-size:13px;font-weight:500;color:#6b7280;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px}
+.tab:hover{color:#374151}
+.tab.active{color:#4f46e5;border-bottom-color:#6366f1}
+.panel{display:none}
+.panel.active{display:block}
+/* In-process list */
+.ip-wrap{max-height:340px;overflow-y:auto;border:1px solid #e5e7eb;border-radius:8px}
+.ip-row{display:flex;align-items:center;gap:10px;padding:9px 12px;border-bottom:1px solid #f3f4f6;cursor:pointer;font-size:13px;transition:background .1s}
+.ip-row:last-child{border-bottom:none}
+.ip-row:hover{background:#f5f3ff}
+.ip-row.sel{background:#ede9fe}
+.ip-icon{flex:0 0 auto;font-size:14px}
+.ip-name{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ip-dir{color:#6b7280;font-size:11px;flex:0 0 auto}
+#ip-status{font-size:12px;color:#9ca3af}
+#anon-status{font-size:12px;color:#9ca3af}
+/* Output log */
+.log-card{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:24px;max-width:980px;margin:0 auto;display:none}
+#log{background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:12px 14px;
+     font-family:monospace;font-size:12px;line-height:1.6;max-height:480px;overflow-y:auto;white-space:pre-wrap}
+.note{font-size:12px;color:#d97706;background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:10px 14px;margin-top:14px}
+</style>
+</head>
+<body>
+
+<div class="card">
+  <h1>DCS Contract Anonymizer</h1>
+  <p class="sub">Redact counterparties, PII, and commercial terms. Output (<code>.anon.txt</code> + <code>.audit.json</code>) is written next to the source file.</p>
+
+  <div class="tabs">
+    <div class="tab active" data-tab="select" onclick="switchTab('select')">Select from 05-In-Process</div>
+    <div class="tab" data-tab="upload" onclick="switchTab('upload')">Upload a file</div>
+  </div>
+
+  <!-- Select panel -->
+  <div class="panel active" id="panel-select">
+    <div class="row" style="margin-top:0">
+      <label style="margin:0">Files in 05-In-Process <span class="hint">— click to select, then Anonymize</span></label>
+      <button class="ghost" onclick="loadInProcess()" style="margin-left:auto">↻ Refresh</button>
+    </div>
+    <div class="ip-wrap" id="ip-wrap" style="margin-top:8px">
+      <p style="padding:18px;text-align:center;color:#9ca3af;font-size:13px" id="ip-empty">Loading…</p>
+    </div>
+    <div class="row">
+      <button class="primary" id="anon-sel-btn" onclick="anonymizeSelected()" disabled>🛡️ Anonymize Selected</button>
+      <span id="ip-status"></span>
+    </div>
+    <p class="note">Folders are shown for navigation context only — select a file to anonymize. Subfolders are not recursed from here; open the folder in SharePoint to anonymize a file inside it, or use Upload.</p>
+  </div>
+
+  <!-- Upload panel -->
+  <div class="panel" id="panel-upload">
+    <div class="field">
+      <label>Agreement / vendor subfolder <span class="hint">— the file lands in 05-In-Process\&lt;this name&gt;\</span></label>
+      <input type="text" id="up-folder" placeholder="e.g. Acme NDA 2026">
+    </div>
+    <div class="field">
+      <label>Contract file <span class="hint">(.pdf / .docx / .doc / .txt)</span></label>
+      <input type="file" id="up-file" accept=".pdf,.docx,.doc,.txt">
+    </div>
+    <div class="row">
+      <button class="primary" id="anon-up-btn" onclick="uploadAndAnonymize()">⬆️ Upload &amp; Anonymize</button>
+      <span id="anon-status"></span>
+    </div>
+  </div>
+</div>
+
+<!-- Output log -->
+<div class="log-card" id="log-card">
+  <h2>Output</h2>
+  <div id="log"></div>
+</div>
+
+<script>
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+// ── Tabs ──────────────────────────────────────────────────────────────────
+function switchTab(name){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.tab===name));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('active',p.id==='panel-'+name));
+}
+
+// ── In-process listing ──────────────────────────────────────────────────────
+let IP_SEL=null;
+function loadInProcess(){
+  const wrap=document.getElementById('ip-wrap');
+  wrap.innerHTML='<p id="ip-empty" style="padding:18px;text-align:center;color:#9ca3af;font-size:13px">Loading…</p>';
+  IP_SEL=null;
+  document.getElementById('anon-sel-btn').disabled=true;
+  fetch('/api/list-in-process').then(r=>r.json()).then(d=>{
+    if(!d.ok){wrap.innerHTML='<p style="padding:18px;text-align:center;color:#991b1b;font-size:13px">'+esc(d.error||'Could not load.')+'</p>';return;}
+    if(!d.entries.length){wrap.innerHTML='<p style="padding:18px;text-align:center;color:#9ca3af;font-size:13px">05-In-Process is empty.</p>';return;}
+    wrap.innerHTML='';
+    d.entries.forEach(e=>{
+      const row=document.createElement('div');
+      row.className='ip-row';
+      row.dataset.path=e.path;
+      row.dataset.dir=e.is_dir?'1':'0';
+      row.innerHTML='<span class="ip-icon">'+(e.is_dir?'📁':'📄')+'</span>'+
+                    '<span class="ip-name" title="'+esc(e.name)+'">'+esc(e.name)+'</span>'+
+                    (e.is_dir?'<span class="ip-dir">folder</span>':'');
+      if(!e.is_dir) row.onclick=()=>selectIp(row);
+      else row.style.cursor='default';
+      wrap.appendChild(row);
+    });
+  }).catch(()=>{wrap.innerHTML='<p style="padding:18px;text-align:center;color:#991b1b;font-size:13px">Server not responding.</p>';});
+}
+function selectIp(row){
+  document.querySelectorAll('.ip-row').forEach(r=>r.classList.remove('sel'));
+  row.classList.add('sel');
+  IP_SEL=row.dataset.path;
+  document.getElementById('anon-sel-btn').disabled=false;
+}
+function anonymizeSelected(){
+  if(!IP_SEL) return;
+  runAnonymize(IP_SEL,'ip-status');
+}
+loadInProcess();
+
+// ── Upload then anonymize ───────────────────────────────────────────────────
+function uploadAndAnonymize(){
+  const folder=document.getElementById('up-folder').value.trim();
+  const fileInput=document.getElementById('up-file');
+  const status=document.getElementById('anon-status');
+  if(!folder){alert('Enter an agreement / vendor subfolder name.');return;}
+  if(/[\\\/]|\.\./.test(folder)){alert('Subfolder name cannot contain slashes or "..".');return;}
+  if(!fileInput.files.length){alert('Choose a file to upload.');return;}
+  const file=fileInput.files[0];
+  const btn=document.getElementById('anon-up-btn');
+  btn.disabled=true; btn.textContent='Uploading…'; status.textContent='';
+
+  const fd=new FormData();
+  fd.append('location','05-In-Process');
+  fd.append('vendor_folder',folder);
+  fd.append('file',file);
+
+  fetch('/api/upload-file',{method:'POST',body:fd})
+  .then(r=>r.json()).then(d=>{
+    if(!d.ok){btn.disabled=false;btn.textContent='⬆️ Upload & Anonymize';status.textContent='Upload failed';alert(d.message||'Upload failed.');return;}
+    btn.textContent='Anonymizing…';
+    status.textContent='Uploaded ✓';
+    const relPath='05-In-Process/'+folder+'/'+file.name;
+    runAnonymize(relPath,'anon-status',()=>{btn.disabled=false;btn.textContent='⬆️ Upload & Anonymize';});
+  }).catch(()=>{btn.disabled=false;btn.textContent='⬆️ Upload & Anonymize';status.textContent='Upload error';alert('Upload request failed.');});
+}
+
+// ── Shared SSE anonymize runner (mirrors scan UI reader) ─────────────────────
+function runAnonymize(relPath,statusId,onDone){
+  const log=document.getElementById('log');
+  const status=document.getElementById(statusId);
+  const selBtn=document.getElementById('anon-sel-btn');
+  log.textContent='';
+  document.getElementById('log-card').style.display='block';
+  if(selBtn) selBtn.disabled=true;
+  status.textContent='Running…';
+
+  function done(rc){
+    if(selBtn) selBtn.disabled=(IP_SEL===null);
+    log.textContent+='\n'+(rc===0?'── done ──':'── errors (exit '+rc+') ──')+'\n';
+    status.textContent=rc===0?'Done':'Errors';
+    log.scrollTop=log.scrollHeight;
+    if(onDone) onDone();
+  }
+
+  fetch('/api/anonymize',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({path:relPath})})
+  .then(resp=>{
+    const reader=resp.body.getReader(), dec=new TextDecoder();
+    let buf='';
+    function read(){return reader.read().then(({done:d,value})=>{
+      if(d) return done(0);
+      buf+=dec.decode(value,{stream:true});
+      const parts=buf.split('\n\n'); buf=parts.pop();
+      for(const chunk of parts){
+        if(!chunk.startsWith('data: ')) continue;
+        const pay=chunk.slice(6);
+        try{
+          const obj=JSON.parse(pay);
+          if(obj&&obj.__done__!==undefined) return done(obj.rc);
+          log.textContent+=(typeof obj==='string'?obj:JSON.stringify(obj))+'\n';
+        }catch{log.textContent+=pay+'\n';}
+        log.scrollTop=log.scrollHeight;
+      }
+      return read();
+    });}
+    return read();
+  }).catch(()=>{log.textContent+='[ERROR] Server not responding.\n'; done(1);});
+}
+</script>
+</body>
+</html>"""
+
+
+@app.route("/anonymize", methods=["GET"])
+def anonymize_page():
+    return ANON_PAGE, 200, {"Content-Type": "text/html; charset=utf-8"}
+@app.route("/api/list-in-process", methods=["GET"])
+def list_in_process():
+    """Return files and subfolders inside 05-In-Process, skipping _-prefixed entries."""
+    root = SHAREPOINT / "05-In-Process"
+    if not root.exists():
+        return json.dumps({"ok": False, "error": "05-In-Process folder not found."}), 404, {"Content-Type": "application/json"}
+    entries = []
+    try:
+        for item in sorted(root.iterdir(), key=lambda p: (p.is_file(), p.name.lower())):
+            nm = item.name
+            if nm.startswith("_") or nm.startswith("~$") or nm.lower() == "desktop.ini":
+                continue
+            try:
+                import stat as _stat
+                attrs = item.stat().st_file_attributes
+                if attrs & (_stat.FILE_ATTRIBUTE_HIDDEN | _stat.FILE_ATTRIBUTE_SYSTEM):
+                    continue
+            except (AttributeError, OSError):
+                pass
+            entries.append({
+                "name":   item.name,
+                "path":   str(item.relative_to(SHAREPOINT)).replace("\\", "/"),
+                "is_dir": item.is_dir(),
+            })
+    except Exception as exc:
+        return json.dumps({"ok": False, "error": str(exc)}), 500, {"Content-Type": "application/json"}
+    return json.dumps({"ok": True, "entries": entries}), 200, {"Content-Type": "application/json"}
+
+
 @app.route("/api/save-catalog", methods=["POST", "OPTIONS"])
 def save_catalog():
     if request.method == "OPTIONS":

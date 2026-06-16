@@ -797,6 +797,7 @@ def detect():
         spans = detect_file(
             abs_path, ctx_name_map, alias_map, abs_path.parent,
             contract_type=contract_type,
+            context=ctx,
         )
 
         # C2: cross-reference spans against decisions library
@@ -816,7 +817,17 @@ def detect():
         # W2: review.json now lives in the private zone — return that path.
         review_path = review_path_for(abs_path)
         rel_review = str(review_path.relative_to(SHAREPOINT)).replace("\\", "/")
-        return json.dumps({"ok": True, "review_path": rel_review, "spans": spans}), 200, {"Content-Type": "application/json"}
+
+        # Phase E: surface review_triggers persisted by detect_file into review.json.
+        # Backward compat — default to [] if the key is absent.
+        review_triggers = []
+        try:
+            with open(review_path, encoding="utf-8") as fh:
+                review_triggers = json.load(fh).get("review_triggers", [])
+        except Exception:
+            review_triggers = []
+
+        return json.dumps({"ok": True, "review_path": rel_review, "spans": spans, "review_triggers": review_triggers}), 200, {"Content-Type": "application/json"}
     except Exception as exc:
         return json.dumps({"ok": False, "error": str(exc)}), 500, {"Content-Type": "application/json"}
 
@@ -1269,6 +1280,15 @@ table.rv td{padding:6px 10px;vertical-align:middle}
 .lib-prior{font-size:11px;color:#6b7280;font-style:italic}
 .lib-prior.confirm{color:#166534}
 .lib-prior.reject{color:#991b1b}
+/* Phase E — review triggers */
+#trigger-panel{margin-top:4px}
+.trigger-banner{border-radius:8px;padding:12px 16px;margin-top:14px;font-size:13px;line-height:1.5}
+.trigger-banner h4{font-size:13px;font-weight:600;margin-bottom:6px}
+.trigger-banner ul{margin:0;padding-left:18px}
+.trigger-banner li{margin:2px 0}
+.trigger-banner.flag{background:#fffbeb;border:1px solid #fde68a;color:#92400e}
+.trigger-banner.stop{background:#fef2f2;border:1px solid #fecaca;color:#991b1b}
+tr.trigger-highlight td{background:#fef9c3 !important}
 </style>
 </head>
 <body>
@@ -1361,6 +1381,7 @@ table.rv td{padding:6px 10px;vertical-align:middle}
   <h2>Review Redactions</h2>
   <p class="sub" style="margin-bottom:16px">Confirm or reject each detected item. Only confirmed items will be redacted.</p>
   <div id="review-groups"></div>
+  <div id="trigger-panel"></div>
   <div class="bar">
     <span class="summary" id="review-summary">0 confirmed · 0 rejected</span>
     <button class="ghost" onclick="cancelReview()">Cancel</button>
@@ -1381,6 +1402,7 @@ const LAYER_ORDER=['counterparty','counterparty_alias','presidio','commercial_re
 const LAYER_LABEL={counterparty:'Counterparty',counterparty_alias:'Counterparty Alias',presidio:'Presidio PII',commercial_regex:'Commercial'};
 let currentFilePath=null;
 let SPANS=[];
+let TRIGGERS=[];
 
 // ── Tabs ──────────────────────────────────────────────────────────────────
 function switchTab(name){
@@ -1496,6 +1518,7 @@ function runDetect(relPath,statusId,onDone){
     document.getElementById('log-card').style.display='none';
     currentFilePath=relPath;
     SPANS=d.spans||[];
+    TRIGGERS=d.review_triggers||[];
     renderReview();
   }).catch(()=>{
     if(selBtn) selBtn.disabled=(IP_SEL===null);
@@ -1516,10 +1539,15 @@ function renderReview(){
   const card=document.getElementById('review-card');
   const groups=document.getElementById('review-groups');
   groups.innerHTML='';
+  // Reset trigger panel + apply button before re-render
+  document.getElementById('trigger-panel').innerHTML='';
+  const applyBtn=document.getElementById('apply-btn');
+  applyBtn.disabled=false; applyBtn.textContent='Apply Redactions';
 
   if(!SPANS.length){
     groups.innerHTML='<p style="padding:18px;text-align:center;color:#9ca3af;font-size:13px">No redaction candidates detected.</p>';
     card.style.display='block';
+    renderTriggers();
     updateSummary();
     return;
   }
@@ -1590,7 +1618,47 @@ function renderReview(){
   }
 
   card.style.display='block';
+  renderTriggers();
   updateSummary();
+}
+
+// ── Phase E: review triggers panel ──────────────────────────────────────────
+function renderTriggers(){
+  const panel=document.getElementById('trigger-panel');
+  const applyBtn=document.getElementById('apply-btn');
+  panel.innerHTML='';
+  // Clear any prior highlights
+  document.querySelectorAll('tr.trigger-highlight').forEach(tr=>tr.classList.remove('trigger-highlight'));
+  if(!TRIGGERS.length) return;
+
+  const stops=TRIGGERS.filter(t=>t.severity==='HARD_STOP');
+  const flags=TRIGGERS.filter(t=>t.severity==='FLAG');
+  const highlights=TRIGGERS.filter(t=>t.severity==='HIGHLIGHT');
+
+  // HIGHLIGHT severity: highlight the referenced rows (no banner on its own)
+  highlights.forEach(t=>(t.span_indices||[]).forEach(id=>{
+    const tr=document.querySelector('tr[data-span-id="'+id+'"]');
+    if(tr) tr.classList.add('trigger-highlight');
+  }));
+
+  if(stops.length){
+    // HARD_STOP — red banner, Apply disabled
+    panel.innerHTML='<div class="trigger-banner stop">'+
+      '<h4>⛔ Cannot apply — hard stop conditions present.</h4>'+
+      '<ul>'+stops.map(t=>'<li>'+esc(t.message)+'</li>').join('')+'</ul>'+
+    '</div>';
+    applyBtn.disabled=true;
+    applyBtn.textContent='Apply Redactions';
+  }else if(flags.length){
+    // FLAG — yellow banner, Apply enabled but relabelled
+    panel.innerHTML='<div class="trigger-banner flag">'+
+      '<h4>⚠️ Review flags</h4>'+
+      '<ul>'+flags.map(t=>'<li>'+esc(t.message)+'</li>').join('')+'</ul>'+
+    '</div>';
+    applyBtn.disabled=false;
+    applyBtn.textContent='Apply with flags';
+  }
+  // HIGHLIGHT-only or empty: no banner (rows already highlighted above)
 }
 
 function toggleLibSection(bodyId, headId){
@@ -1621,7 +1689,7 @@ function _renderSpanTable(items, showLibPrior){
       '<td><span class="lib-prior '+(s.library_decision||'')+'">'
         +(s.library_decision==='confirm'?'✓ confirmed':s.library_decision==='reject'?'✗ rejected':'—')
         +' (×'+s.library_count+')</span></td>':'';
-    rows+='<tr'+rowCls+'>'+
+    rows+='<tr'+rowCls+' data-span-id="'+s.id+'">'+
       '<td class="mono">'+s.id+'</td>'+
       '<td class="orig mono" title="'+orig+'">'+truncated+'</td>'+
       '<td><span class="tok">'+esc(s.proposed_token||'')+'</span></td>'+

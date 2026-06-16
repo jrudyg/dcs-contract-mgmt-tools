@@ -195,7 +195,7 @@ def main() -> None:
     payload = {
         'generated': time.strftime('%Y-%m-%dT%H:%M:%S'),
         'version': 2,
-        'excluded': sorted(EXCLUDED - {''}),
+        'excluded': sorted(EXCLUDED - {'', '(blank)'}),  # drop blank sentinels from output
         'entries': entries,
     }
 

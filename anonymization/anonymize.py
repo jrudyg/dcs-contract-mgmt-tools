@@ -36,6 +36,7 @@ import time
 from typing import Optional
 
 import pdfplumber
+from rapidfuzz import fuzz
 from docx import Document
 from presidio_analyzer import AnalyzerEngine
 from presidio_analyzer import RecognizerResult
@@ -665,11 +666,6 @@ def review_path_for(source) -> pathlib.Path:
     return REVIEWS_DIR / f'{_private_stem(source)}.review.json'
 
 
-def verify_path_for(source) -> pathlib.Path:
-    """Private location of a source's .verify.json."""
-    return VERIFY_DIR / f'{_private_stem(source)}.verify.json'
-
-
 def quarantine_path_for(source) -> pathlib.Path:
     """Private quarantine location for a source's failed .anon.txt."""
     return QUARANTINE_DIR / f'{_private_stem(source)}.anon.txt'
@@ -801,6 +797,7 @@ def detect_file(
     alias_map: Optional[dict[str, str]],
     output_dir: pathlib.Path,
     contract_type: str = 'unknown',
+    context: Optional[dict] = None,
 ) -> list[dict]:
     """Detect candidate redaction spans across all three layers.
 
@@ -1027,6 +1024,61 @@ def detect_file(
             'confirmed': None,
         })
 
+    # ── Phase E: mandatory human-review triggers ───────────────────────────
+    # Evaluated after spans are fully assembled, before return. Each trigger is
+    # {code, severity (HARD_STOP|FLAG|HIGHLIGHT), message, span_indices}.
+    # span_indices are positions in the review_spans array (== span 'id').
+    ctx = context or {}
+    review_triggers: list[dict] = []
+
+    # E1 — zero counterparty redactions with a known counterparty (possible miss)
+    cp_span_count = len([s for s in review_spans if s['layer'] == 'counterparty'])
+    if cp_span_count == 0 and (ctx.get('party_2', '') or '').strip() != '':
+        review_triggers.append({
+            'code': 'E1_NO_COUNTERPARTY_SPANS',
+            'severity': 'FLAG',
+            'message': '0 counterparty spans detected but party_2 is set — possible detection miss',
+            'span_indices': [],
+        })
+
+    # E2 — Presidio PERSON entities in the 0.35–0.60 confidence band
+    e2_indices = [
+        i for i, s in enumerate(review_spans)
+        if s['entity_type'] == 'PERSON' and 0.35 <= s['score'] < 0.60
+    ]
+    if e2_indices:
+        review_triggers.append({
+            'code': 'E2_PERSON_LOW_CONFIDENCE',
+            'severity': 'FLAG',
+            'message': f'{len(e2_indices)} PERSON entity/entities in 0.35–0.60 confidence band — require explicit decision',
+            'span_indices': e2_indices,
+        })
+
+    # E3 — liability_cap commercial spans (default confirmed but flagged for verify)
+    e3_indices = [
+        i for i, s in enumerate(review_spans)
+        if s.get('context_type') == 'liability_cap'
+    ]
+    if e3_indices:
+        review_triggers.append({
+            'code': 'E3_LIABILITY_CAP',
+            'severity': 'HIGHLIGHT',
+            'message': f'{len(e3_indices)} liability cap amount(s) detected — default confirmed but verify',
+            'span_indices': e3_indices,
+        })
+
+    # E4 — short extraction (probable scanned/image PDF)
+    if len(raw_text) < 500:
+        review_triggers.append({
+            'code': 'E4_SHORT_EXTRACTION',
+            'severity': 'FLAG',
+            'message': f'Extracted text is only {len(raw_text)} chars — possible scanned/image PDF; anonymization may be incomplete',
+            'span_indices': [],
+        })
+
+    # E5 enforced by D1 HARD STOP in _run_verification()
+    # E6 enforced by D3 HARD STOP in _run_verification()
+
     private_stem = _private_stem(source)
     payload = {
         'source_file': sanitized_stem + source.suffix,
@@ -1036,6 +1088,7 @@ def detect_file(
         'sanitized_stem': sanitized_stem,
         'private_stem': private_stem,
         'doc_output_dir': str(output_dir),
+        'review_triggers': review_triggers,
         'spans': review_spans,
     }
     # W2: review.json lives in the private zone (originals + reverse-map data),
@@ -1111,10 +1164,8 @@ def _scan_leakage(
     """Scan anonymized text for residual counterparty identity leakage.
 
     Uses rapidfuzz token_set_ratio on normalized 6-word windows.
-    Returns list of findings: {name, window, score, char_start}.
+    Returns list of findings: {name, window, score, char_start, match_type}.
     """
-    from rapidfuzz import fuzz as _fuzz
-
     findings: list[dict] = []
     _combined_stop = {s.lower() for s in ALIAS_STOPWORDS} | {w.lower() for w in COMMON_WORDS}
     words = anon_text.split()
@@ -1132,7 +1183,7 @@ def _scan_leakage(
         window       = " ".join(window_words)
         norm_window  = _normalize_for_scan(window)
         for norm_name, orig_name in candidates.items():
-            score = _fuzz.token_set_ratio(norm_name, norm_window)
+            score = fuzz.token_set_ratio(norm_name, norm_window)
             if score >= threshold:
                 if orig_name.lower() in _combined_stop:
                     continue
@@ -1149,6 +1200,7 @@ def _scan_leakage(
                     "window":     window,
                     "score":      round(score, 1),
                     "char_start": pos,
+                    "match_type": "fuzzy",
                 })
         pos += len(window_words[0]) + 1 if window_words else 0
 
@@ -1168,14 +1220,24 @@ def _sweep_counterparty_dict(
     anon_text: str,
     name_map:  dict[str, str],
     alias_map: dict[str, str],
+    fuzzy_threshold: int = 92,
 ) -> list[dict]:
-    """Exact (case-insensitive) sweep for any name_map or alias_map key
-    that appears verbatim in the anonymized text.
+    """Sweep for any name_map or alias_map key that survives anonymization.
 
-    Returns list of {name, count} for each hit.
+    Two passes per name:
+      (a) exact — word-boundary, case-insensitive regex (match_type "exact").
+      (b) fuzzy (F) — for names >= 6 chars with no exact hit, flag a survivor
+          when rapidfuzz partial_ratio(name, anon_text) >= fuzzy_threshold
+          (default 92, match_type "fuzzy"). partial_ratio finds the optimal
+          substring alignment natively, so no manual windowing is needed.
+          Tighter than D1's 90 because D2 scans the full name list, so the
+          false-positive cost of a HARD STOP is higher.
+
+    Returns list of {name, count, match_type[, score]} for each hit.
     """
     findings: list[dict] = []
     _combined_stop = {s.lower() for s in ALIAS_STOPWORDS} | {w.lower() for w in COMMON_WORDS}
+    anon_lower = anon_text.lower()
     for name in sorted(
         list(name_map.keys()) + list(alias_map.keys()),
         key=len, reverse=True,
@@ -1187,6 +1249,7 @@ def _sweep_counterparty_dict(
         # Drop short ALL-CAPS abbreviation aliases (e.g. CCOM, Merc, TITL)
         if len(name) <= 4 and name.isupper():
             continue
+        # ── (a) Exact pass (unchanged behaviour) ───────────────────────────
         # Defect 2a: word-boundary match so a dictionary name cannot flag inside
         # a longer word (e.g. "Convey" inside the un-redactable "Conveyor").
         pattern = re.compile(r'(?<!\w)' + re.escape(name) + r'(?!\w)', re.IGNORECASE)
@@ -1197,7 +1260,20 @@ def _sweep_counterparty_dict(
                 continue
             count += 1
         if count:
-            findings.append({"name": name, "count": count})
+            findings.append({"name": name, "count": count, "match_type": "exact"})
+            continue  # exact already caught it — fuzzy pass would be redundant
+
+        # ── (b) Fuzzy pass (F) — names >= 6 chars, no exact hit ─────────────
+        # Direct partial_ratio finds the optimal substring alignment natively,
+        # so no manual window iteration is needed.
+        if len(name) < 6:
+            continue
+        score = fuzz.partial_ratio(name.lower(), anon_lower)
+        if score >= fuzzy_threshold:
+            findings.append({
+                "name": name, "count": 1,
+                "match_type": "fuzzy", "score": round(score, 1),
+            })
     return findings
 
 

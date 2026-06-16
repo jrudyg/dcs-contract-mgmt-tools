@@ -321,7 +321,7 @@ failure mode with a mitigation:
 
 | Risk | Mitigation |
 |------|------------|
-| en_core_web_lg false negatives on legal boilerplate (e.g., signature names) | Confidence threshold at 0.75; audit.json enables spot-check |
+| en_core_web_lg false negatives on legal boilerplate (e.g., signature names) | Display floor 0.35, auto-confirm 0.60; low-confidence spans flagged for explicit human decision (E2 trigger); audit.json enables spot-check |
 | PDF text extraction failures (scanned/image PDFs) | Excluded by SigningStatus=Review rule |
 | Counterparty name variants not in COUNTERPARTIES.md | Alias detection pass in Layer 1 (first 300 chars) |
 | mapping.json accidentally staged | `_anon-private\mapping.json` is gitignored; pre-commit check in ANON-2 |

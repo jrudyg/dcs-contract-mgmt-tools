@@ -98,19 +98,35 @@ This prevents pseudonym drift across incremental runs.
 | `spacy` | ≥3.7 | NER model host |
 | `en_core_web_lg` | ≥3.7 | Large English NER model |
 
-### 5.2 Targeted entity types
+### 5.2 Presidio score floor and auto-confirm thresholds
 
-| Entity type | Replacement token | Confidence threshold |
-|-------------|------------------|----------------------|
-| PERSON | `[PERSON]` | 0.75 |
-| EMAIL_ADDRESS | `[EMAIL]` | 0.85 |
-| PHONE_NUMBER | `[PHONE]` | 0.80 |
-| US_SSN | `[SSN]` | 0.90 |
-| DATE_TIME | `[DATE]` | 0.70 |
-| LOCATION (non-city) | `[LOCATION]` | 0.75 |
-| NRP | `[NRP]` | 0.80 |
-| US_BANK_NUMBER | `[BANK_ACCT]` | 0.90 |
-| CREDIT_CARD | `[CC]` | 0.90 |
+The pipeline uses a display-floor model, not a drop-below-threshold model.
+All detections are shown in the review table. The floor governs default state,
+not visibility.
+
+| Entity type | Replacement token | Display floor | Auto-confirm threshold |
+|-------------|------------------|---------------|----------------------|
+| PERSON | `[PERSON]` | 0.35 | 0.60 |
+| EMAIL_ADDRESS | `[EMAIL]` | 0.35 | 0.60 |
+| PHONE_NUMBER | `[PHONE]` | 0.35 | 0.60 |
+| US_SSN | `[SSN]` | 0.35 | 0.60 |
+| DATE_TIME | `[DATE]` | 0.35 | 0.60 |
+| LOCATION (non-city) | `[LOCATION]` | 0.35 | 0.60 |
+| NRP | `[NRP]` | 0.35 | 0.60 |
+| US_BANK_NUMBER | `[BANK_ACCT]` | 0.35 | 0.60 |
+| CREDIT_CARD | `[CC]` | 0.35 | 0.60 |
+
+**Display floor (0.35):** Detections below this score are shown in the review table,
+pre-rejected by default, and visually muted. They are never silently dropped —
+a 0.30 PERSON hit could be a real name.
+
+**Auto-confirm threshold (0.60):** Only detections at or above this score are
+eligible for auto-confirmation in bulk flows. Detections in the 0.35–0.60 band
+(PERSON especially) are shown pre-confirmed-off and require explicit human decision
+(Phase E trigger E2).
+
+**Rationale:** Preserves error asymmetry (Design Principle 1). Nothing is silently
+dropped at detect; the human always sees the full catch list.
 
 ### 5.3 Scope constraints
 
@@ -162,46 +178,70 @@ Structural spans pass through to output unchanged. Only content spans enter Laye
 
 ---
 
-## 8. Output Format
+## 8. Output Format and Storage
 
-Two files per source contract, written to `anonymization/output/` (gitignored):
+### Output files
+Outputs are NOT written to `anonymization/output/`. They are written to
+`_anon-private\` (reversal-capable artifacts) and next to the source document
+(shippable output) per the storage segregation model (Design Principle 6).
 
-### `[VendorFolder]_[filename].anon.txt`
+| File | Location | Committed? |
+|------|----------|------------|
+| `<sanitized_stem>.anon.txt` | Next to source document in SharePoint doc tree | No |
+| `<sanitized_stem>.audit.json` | `_anon-private\audits\` | No |
+| `<sanitized_stem>.verify.json` | `_anon-private\verify\` | No |
+| `<sanitized_stem>.review.json` | `_anon-private\reviews\` | No |
+| `mapping.json` | `_anon-private\` | No |
+| `decisions_library.json` | `_anon-private\` | No |
 
-Plain UTF-8 text. Fully redacted, structure-preserved document.
+**Filename sanitization:** The output stem is sanitized — counterparty names,
+document-local aliases, and confirmed-redact original_text values are replaced
+with their tokens in the filename. The original filename never appears in any
+shippable artifact.
 
-### `[VendorFolder]_[filename].audit.json`
+### audit.json schema (as-built)
 
 ```json
 {
-  "source_file": "VendorFolder/filename.pdf",
-  "counterparty_pseudonym": "PARTY-0001",
-  "layers_applied": ["counterparty", "presidio", "commercial_regex"],
-  "redaction_count": {
+  "source_file": "<sanitized_stem>",
+  "processing_timestamp": "<ISO-8601>",
+  "passed": true,
+  "layers_applied": ["counterparty", "alias", "presidio", "commercial_regex"],
+  "span_count": {
     "counterparty": 14,
-    "presidio": 3,
+    "alias": 3,
+    "presidio": 5,
     "commercial_regex": 8
   },
-  "redactions": [
+  "spans": [
     {
+      "index": 0,
       "layer": "counterparty",
+      "original_text": "[redacted — not stored in audit]",
       "token": "PARTY-0001",
       "char_start": 142,
       "char_end": 158,
-      "occurrence": 1
+      "score": null,
+      "decision": "confirm"
     }
   ],
-  "presidio_entities": [
-    { "entity_type": "PERSON", "token": "[PERSON]", "char_start": 890, "char_end": 904, "score": 0.88 }
+  "review_triggers": [
+    { "code": "E2_PERSON_LOW_CONFIDENCE", "severity": "FLAG",
+      "message": "2 PERSON entities in 0.35–0.60 band", "span_indices": [4, 7] }
   ],
-  "commercial_terms": [
-    { "pattern": "AMOUNT", "token": "[AMOUNT]", "char_start": 1200, "char_end": 1209 }
-  ]
+  "verification": {
+    "leakage_scan": { "pass": true, "hits": [] },
+    "dictionary_sweep": { "pass": true, "findings": [] },
+    "roundtrip": { "pass": true, "diff_chars": 0 },
+    "orphan_tokens": { "pass": true, "orphans": [] },
+    "shippable": true
+  }
 }
 ```
 
-**Audit.json never contains the original counterparty name.** The `counterparty_pseudonym`
-field stores the PARTY-XXXX token only. Reverse lookup requires `mapping.json`.
+**audit.json never contains the original counterparty name.** The `token` field
+stores the PARTY-XXXX pseudonym only. Reverse lookup requires `mapping.json`
+(stored in `_anon-private\`, never committed).
 
 ---
 
@@ -239,11 +279,25 @@ python -m spacy download en_core_web_lg
 ## 11. File Layout
 
 ```
-anonymization/
-  PLAN.md              ← this file (committed to git)
-  mapping.json         ← GITIGNORED — local only, never push
-  output/              ← GITIGNORED — all .anon.txt and .audit.json files
-  samples/             ← GITIGNORED — smoke-test source files
+_anon-private\                    ← OUTSIDE git tree, never committed
+  mapping.json                    ← counterparty pseudonym map (reversal key)
+  decisions_library.json          ← global confirm/reject decision library
+  reviews\                        ← *.review.json per file (REVIEWS_DIR)
+  verify\                         ← *.verify.json per file (VERIFY_DIR)
+  audits\                         ← *.audit.json per file (AUDITS_DIR)
+  quarantine\                     ← outputs that failed verification (QUARANTINE_DIR)
+  backups\                        ← decisions_library.json rolling backups
+
+anonymization\
+  PLAN.md                         ← this file (committed to git)
+  anonymize.py                    ← pipeline (committed)
+  build_map.py                    ← map builder (committed)
+  ANON_IMPL_SPEC_v2_2.md          ← implementation spec (committed)
+
+Tools\.gitignore                  ← excludes *.anon.txt, *.restored.txt,
+                                    *.audit.json, *.review.json, *.verify.json,
+                                    mapping.json, decisions_library.json,
+                                    __pycache__/
 ```
 
 ---

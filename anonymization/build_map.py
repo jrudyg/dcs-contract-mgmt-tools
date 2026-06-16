@@ -23,7 +23,7 @@ import time
 
 BASE_DIR = pathlib.Path(__file__).parent.parent          # Tools/
 COUNTERPARTIES_PATH = BASE_DIR / "kb" / "COUNTERPARTIES.md"
-MAPPING_PATH = BASE_DIR / "anonymization" / "mapping.json"
+MAPPING_PATH = pathlib.Path(r"C:\Users\jrudy\OneDrive - Diakonia Group, LLC\Contract Management - SharePoint\_anon-private\mapping.json")
 
 # ---------------------------------------------------------------------------
 # Exclusion list
@@ -86,6 +86,37 @@ def parse_counterparties(path: pathlib.Path) -> list[dict]:
 # Alias generation
 # ---------------------------------------------------------------------------
 
+# Single dictionary words that must NOT become aliases — they appear in many
+# documents as ordinary nouns and would cause mass false-positive redaction /
+# verification leakage hits. Only dropped for SINGLE-token aliases (no spaces,
+# no hyphens, no digits); multi-word and hyphenated/numbered aliases are kept.
+COMMON_WORDS = {
+    "material", "general", "process", "system", "systems", "service", "services",
+    "group", "global", "national", "american", "united", "standard", "industrial",
+    "industries", "solutions", "technology", "technologies", "network", "networks",
+    "management", "resources", "advanced", "integrated", "international", "design",
+    "designed", "conveyor", "conveyors", "distribution", "logistics", "supply",
+    "capital", "partners", "holdings", "enterprises", "corp", "corporation",
+    "company", "limited", "inc", "llc", "ltd", "co", "the", "of", "and",
+    "tractor", "action", "serve", "merc"
+}
+
+
+def _is_common_word_alias(alias: str) -> bool:
+    """True if alias is a single dictionary word that should be dropped.
+
+    Only single tokens (no whitespace, no hyphen, no digit) whose lowercase
+    form is in COMMON_WORDS qualify. Multi-word / hyphenated / numbered
+    aliases are never dropped.
+    """
+    return (
+        ' ' not in alias
+        and '-' not in alias
+        and not any(ch.isdigit() for ch in alias)
+        and alias.lower() in COMMON_WORDS
+    )
+
+
 def _abbreviation(name: str) -> str:
     """Return uppercase initials of each word (split on whitespace/hyphens/punctuation)."""
     words = re.split(r'[\s\-_/,;:()+&]+', name)
@@ -133,7 +164,7 @@ def generate_aliases(name: str) -> list[str]:
         _add(_abbreviation(sv))
         _add(_short_name(sv))
 
-    return sorted(pool)
+    return sorted(a for a in pool if not _is_common_word_alias(a))
 
 # ---------------------------------------------------------------------------
 # Main

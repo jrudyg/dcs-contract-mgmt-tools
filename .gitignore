@@ -10,3 +10,13 @@ anonymization/output/
 TRAIN*/
 contract-catalog/
 __pycache__/
+
+# Anonymizer — sensitive artifacts (never commit)
+mapping.json
+decisions_library.json
+*.review.json
+*.verify.json
+*.audit.json
+*.anon.txt
+*.restored.txt
+_anon-private/

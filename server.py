@@ -11,10 +11,26 @@ import csv
 import re
 import shutil
 import subprocess
+import time
+import logging
 from datetime import datetime
 from pathlib import Path
 from flask import Flask, Response, request
 from werkzeug.utils import secure_filename
+
+import sys as _sys
+_ANON_DIR = Path(__file__).resolve().parent / "anonymization"
+if str(_ANON_DIR) not in _sys.path:
+    _sys.path.insert(0, str(_ANON_DIR))
+from anonymize import (
+    detect_file, apply_file, get_mapping,
+    _load_decisions_library, _save_decisions_library, _library_key,
+    review_path_for, quarantine_path_for, audit_path_for, append_override_entry,
+    REVIEWS_DIR, QUARANTINE_DIR, AUDITS_DIR,
+)
+
+# C3: module logger (anonymize.py already called logging.basicConfig at import).
+log = logging.getLogger("anonymizer-server")
 
 # ── Exit immediately if already running on port 5000 ────────────────────────
 _s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -681,6 +697,8 @@ def move_expired():
 
 
 ANON_SCRIPT = TOOLS / "anonymization" / "anonymize.py"
+MAPPING_PATH = SHAREPOINT / "_anon-private" / "mapping.json"
+COUNTERPARTIES_PATH = TOOLS / "kb" / "COUNTERPARTIES.md"
 
 
 @app.route("/api/anonymize", methods=["POST", "OPTIONS"])
@@ -736,6 +754,414 @@ def anonymize():
                     headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
 
 
+@app.route("/api/detect", methods=["POST", "OPTIONS"])
+def detect():
+    if request.method == "OPTIONS":
+        return "", 204
+    try:
+        body = request.get_json(force=True) or {}
+        rel_path = (body.get("path") or "").strip().replace("\\", "/")
+        if not rel_path:
+            return json.dumps({"ok": False, "error": "path is required."}), 400, {"Content-Type": "application/json"}
+
+        abs_path = SHAREPOINT / rel_path
+        if not abs_path.exists():
+            return json.dumps({"ok": False, "error": f"File not found: {rel_path}"}), 404, {"Content-Type": "application/json"}
+
+        name_map, alias_map = get_mapping(MAPPING_PATH, COUNTERPARTIES_PATH, rebuild=False)
+
+        # B1: extract context from request body
+        ctx           = body.get("context") or {}
+        contract_type = (ctx.get("contract_type") or "unknown").strip().lower()
+        party_2       = (ctx.get("party_2") or "").strip()
+        add_parties   = [p.strip() for p in (ctx.get("additional_parties") or []) if p.strip()]
+
+        # Inject party_2 + additional_parties as document-local seeds into alias_map
+        # so detect_file's B0.1 binding extraction has pre-seeded names to match against.
+        # These are added as name_map entries (not alias_map) so they participate in
+        # full-name Layer 1 detection, not just the alias pass.
+        ctx_name_map = dict(name_map)
+        for extra_name in ([party_2] if party_2 else []) + add_parties:
+            if extra_name and extra_name not in ctx_name_map:
+                # Generate a provisional token — detect_file will assign the real
+                # PARTY-XXXX from mapping.json; this ensures the name is searched.
+                # Use a deterministic slot: look up in name_map case-insensitively.
+                matched = next(
+                    (v for k, v in name_map.items()
+                     if k.lower() == extra_name.lower()), None
+                )
+                if matched:
+                    ctx_name_map[extra_name] = matched
+                # If not in mapping at all, skip — don't invent tokens.
+
+        spans = detect_file(
+            abs_path, ctx_name_map, alias_map, abs_path.parent,
+            contract_type=contract_type,
+        )
+
+        # C2: cross-reference spans against decisions library
+        library = _load_decisions_library()
+        for span in spans:
+            key = _library_key(span["original_text"], span["entity_type"])
+            if key in library:
+                entry = library[key]
+                span["library_decision"] = entry["decision"]   # "confirm" or "reject"
+                span["library_count"]    = entry["count"]
+                span["library_hit"]      = True
+            else:
+                span["library_hit"]      = False
+                span["library_decision"] = None
+                span["library_count"]    = 0
+
+        # W2: review.json now lives in the private zone — return that path.
+        review_path = review_path_for(abs_path)
+        rel_review = str(review_path.relative_to(SHAREPOINT)).replace("\\", "/")
+        return json.dumps({"ok": True, "review_path": rel_review, "spans": spans}), 200, {"Content-Type": "application/json"}
+    except Exception as exc:
+        return json.dumps({"ok": False, "error": str(exc)}), 500, {"Content-Type": "application/json"}
+
+
+@app.route("/api/apply-redactions", methods=["POST", "OPTIONS"])
+def apply_redactions():
+    if request.method == "OPTIONS":
+        return "", 204
+    try:
+        body = request.get_json(force=True) or {}
+        rel_path = (body.get("path") or "").strip().replace("\\", "/")
+        decisions = body.get("decisions") or {}
+        if not rel_path:
+            return json.dumps({"ok": False, "error": "path is required."}), 400, {"Content-Type": "application/json"}
+
+        abs_path = SHAREPOINT / rel_path
+        review_path = review_path_for(abs_path)
+        if not review_path.exists():
+            return json.dumps({"ok": False, "error": f"review.json not found: {review_path.name}"}), 404, {"Content-Type": "application/json"}
+
+        with open(review_path, encoding="utf-8") as fh:
+            review = json.load(fh)
+        for span in review.get("spans", []):
+            key = str(span["id"])
+            if key in decisions:
+                span["confirmed"] = bool(decisions[key])
+        with open(review_path, "w", encoding="utf-8") as fh:
+            json.dump(review, fh, indent=2, ensure_ascii=False)
+
+        result = apply_file(review_path, abs_path.parent)
+
+        # C3: write decisions back to library
+        try:
+            library = _load_decisions_library()
+            today = time.strftime("%Y-%m-%d")
+            for span in review.get("spans", []):
+                if span.get("confirmed") is None:
+                    continue
+                key = _library_key(span["original_text"], span["entity_type"])
+                decision = "confirm" if span["confirmed"] else "reject"
+                if key in library:
+                    # Update existing entry — flip decision if overridden
+                    library[key]["decision"]  = decision
+                    library[key]["count"]    += 1
+                    library[key]["last_seen"] = today
+                else:
+                    library[key] = {
+                        "original_text": span["original_text"],
+                        "entity_type":   span["entity_type"],
+                        "decision":      decision,
+                        "count":         1,
+                        "last_seen":     today,
+                    }
+            _save_decisions_library(library)
+            log.info("C3: decisions library updated — %d entries", len(library))
+        except Exception as exc:
+            log.error("C3: library write-back failed: %s", exc)
+            # Non-fatal — apply succeeded; library failure must not block response
+
+        # FAIL-2: relay pass vs quarantine. On failure there is no doc-tree path.
+        passed = result.get("passed", False)
+        resp = {
+            "ok":        True,
+            "passed":    passed,
+            "confirmed": result.get("confirmed"),
+            "rejected":  result.get("rejected"),
+            "verify":    result.get("verify"),
+        }
+        if passed:
+            resp["anon_path"]  = result.get("anon_path")
+            resp["audit_path"] = result.get("audit_path")
+        else:
+            resp["quarantine_path"] = result.get("quarantine_path")
+            resp["hits"]            = result.get("hits", [])
+        return json.dumps(resp), 200, {"Content-Type": "application/json"}
+    except Exception as exc:
+        return json.dumps({"ok": False, "error": str(exc)}), 500, {"Content-Type": "application/json"}
+
+
+@app.route("/api/de-anonymize", methods=["POST", "OPTIONS"])
+def de_anonymize():
+    if request.method == "OPTIONS":
+        return "", 204
+    try:
+        body = request.get_json(force=True) or {}
+        rel_path = (body.get("path") or "").strip().replace("\\", "/")
+        if not rel_path:
+            return json.dumps({"ok": False, "error": "path is required."}), 400, {"Content-Type": "application/json"}
+
+        abs_path = SHAREPOINT / rel_path
+        if not abs_path.exists():
+            return json.dumps({"ok": False, "error": f"File not found: {rel_path}"}), 404, {"Content-Type": "application/json"}
+
+        suffix = ".anon.txt"
+        if abs_path.name.endswith(suffix):
+            stem = abs_path.name[:-len(suffix)]
+        else:
+            stem = abs_path.stem
+
+        # W2: review.json lives in the private zone keyed by the source's
+        # path-context stem, while the .anon.txt carries the sanitized stem.
+        # audit.json (also private now, keyed by the OUTPUT stem derivable from
+        # this .anon.txt) carries private_stem, which bridges to the review.json.
+        audit_path = audit_path_for(abs_path.parent, stem)
+        private_stem = None
+        if audit_path.exists():
+            try:
+                with open(audit_path, encoding="utf-8") as fh:
+                    private_stem = json.load(fh).get("private_stem")
+            except Exception:
+                private_stem = None
+
+        review_path = REVIEWS_DIR / ((private_stem or stem) + ".review.json")
+        if not review_path.exists():
+            return json.dumps({"ok": False, "error": f"review.json not found for {abs_path.name}"}), 404, {"Content-Type": "application/json"}
+
+        with open(review_path, encoding="utf-8") as fh:
+            review = json.load(fh)
+
+        reverse_map = {}
+        for span in review.get("spans", []):
+            if span.get("confirmed") is True:
+                token = span["proposed_token"]
+                if token not in reverse_map:
+                    reverse_map[token] = span["original_text"]
+
+        content = abs_path.read_text(encoding="utf-8")
+        replacements = 0
+        for token in sorted(reverse_map, key=len, reverse=True):
+            original = reverse_map[token]
+            count = content.count(token)
+            if count:
+                content = content.replace(token, original)
+                replacements += count
+
+        restored_path = abs_path.parent / (stem + ".restored.txt")
+        restored_path.write_text(content, encoding="utf-8")
+
+        return json.dumps({
+            "ok": True,
+            "restored_path": str(restored_path.relative_to(SHAREPOINT)).replace("\\", "/"),
+            "replacements": replacements,
+        }), 200, {"Content-Type": "application/json"}
+    except Exception as exc:
+        return json.dumps({"ok": False, "error": str(exc)}), 500, {"Content-Type": "application/json"}
+
+
+# ── Quarantine decision endpoints (FAIL-2) ───────────────────────────────────
+def _safe_stem(stem: str) -> bool:
+    """Reject path-traversal / separator characters in a client-supplied stem."""
+    return bool(stem) and "/" not in stem and "\\" not in stem and ".." not in stem
+
+
+@app.route("/api/quarantine/override", methods=["POST", "OPTIONS"])
+def quarantine_override():
+    if request.method == "OPTIONS":
+        return "", 204
+    try:
+        body   = request.get_json(force=True) or {}
+        stem   = (body.get("stem") or "").strip()
+        reason = (body.get("reason") or "").strip()
+        if not _safe_stem(stem):
+            return json.dumps({"ok": False, "error": "valid stem is required."}), 400, {"Content-Type": "application/json"}
+
+        q_path = QUARANTINE_DIR / (stem + ".anon.txt")
+        if not q_path.exists():
+            return json.dumps({"ok": False, "error": f"quarantine file not found: {stem}.anon.txt"}), 404, {"Content-Type": "application/json"}
+
+        review_path = REVIEWS_DIR / (stem + ".review.json")
+        if not review_path.exists():
+            return json.dumps({"ok": False, "error": f"review.json not found for stem: {stem}"}), 404, {"Content-Type": "application/json"}
+        with open(review_path, encoding="utf-8") as fh:
+            review = json.load(fh)
+
+        doc_output_dir = review.get("doc_output_dir")
+        if not doc_output_dir:
+            return json.dumps({"ok": False, "error": "review.json missing doc_output_dir."}), 500, {"Content-Type": "application/json"}
+        doc_dir        = Path(doc_output_dir)
+        sanitized_stem = review.get("sanitized_stem") or stem
+
+        # 1-2: promote the quarantined output into the document tree.
+        dest = doc_dir / (sanitized_stem + ".anon.txt")
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(str(q_path), str(dest))
+
+        # Minimal audit.json in the private audits zone so the restore tool can
+        # still locate the review.json (keyed by the promoted output's stem).
+        src_suffix = Path(review.get("source_path") or "").suffix
+        audit_min = {
+            "source_file":         sanitized_stem + src_suffix,
+            "private_stem":        stem,
+            "quarantine_override": True,
+            "reason":              reason,
+        }
+        audit_dest = audit_path_for(doc_dir, sanitized_stem)
+        audit_dest.parent.mkdir(parents=True, exist_ok=True)
+        audit_dest.write_text(
+            json.dumps(audit_min, indent=2, ensure_ascii=False), encoding="utf-8"
+        )
+
+        # 3: log the override in the decisions library.
+        append_override_entry({
+            "action":    "quarantine_override",
+            "stem":      stem,
+            "reason":    reason,
+            "timestamp": datetime.now().isoformat(timespec="seconds"),
+        })
+
+        # 4: remove the quarantine file.
+        q_path.unlink()
+
+        rel = str(dest.relative_to(SHAREPOINT)).replace("\\", "/")
+        log.info("Quarantine override: %s → %s", stem, rel)
+        return json.dumps({"ok": True, "status": "promoted", "path": rel}), 200, {"Content-Type": "application/json"}
+    except Exception as exc:
+        return json.dumps({"ok": False, "error": str(exc)}), 500, {"Content-Type": "application/json"}
+
+
+@app.route("/api/quarantine/discard", methods=["POST", "OPTIONS"])
+def quarantine_discard():
+    if request.method == "OPTIONS":
+        return "", 204
+    try:
+        body = request.get_json(force=True) or {}
+        stem = (body.get("stem") or "").strip()
+        if not _safe_stem(stem):
+            return json.dumps({"ok": False, "error": "valid stem is required."}), 400, {"Content-Type": "application/json"}
+        q_path = QUARANTINE_DIR / (stem + ".anon.txt")
+        if q_path.exists():
+            q_path.unlink()
+        return json.dumps({"ok": True, "status": "discarded"}), 200, {"Content-Type": "application/json"}
+    except Exception as exc:
+        return json.dumps({"ok": False, "error": str(exc)}), 500, {"Content-Type": "application/json"}
+
+
+@app.route("/api/quarantine/list", methods=["GET"])
+def quarantine_list():
+    try:
+        if not QUARANTINE_DIR.exists():
+            return json.dumps({"ok": True, "quarantined": []}), 200, {"Content-Type": "application/json"}
+        stems = sorted(
+            p.name[:-len(".anon.txt")]
+            for p in QUARANTINE_DIR.iterdir()
+            if p.is_file() and p.name.endswith(".anon.txt")
+        )
+        return json.dumps({"ok": True, "quarantined": stems}), 200, {"Content-Type": "application/json"}
+    except Exception as exc:
+        return json.dumps({"ok": False, "error": str(exc)}), 500, {"Content-Type": "application/json"}
+
+
+# ── Restore UI ──────────────────────────────────────────────────────────────
+RESTORE_PAGE = r"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DCS Contract Restore</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f3f4f6;color:#111827;padding:24px 16px}
+.card{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:24px;max-width:980px;margin:0 auto 20px}
+h1{font-size:20px;font-weight:700;margin-bottom:4px}
+h2{font-size:15px;font-weight:600;margin-bottom:12px}
+.sub{font-size:13px;color:#6b7280;margin-bottom:20px}
+label{font-size:13px;color:#374151;display:block;margin-bottom:4px;font-weight:500}
+.hint{font-size:12px;color:#9ca3af;font-weight:400}
+input[type=text],input[type=search],input[type=file],select{
+  width:100%;background:#f9fafb;border:1px solid #d1d5db;border-radius:8px;
+  padding:9px 12px;font-size:13px;color:#111827;font-family:inherit;outline:none;transition:border-color .15s}
+input:focus,select:focus{border-color:#6366f1}
+.row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:14px}
+.field{margin-top:14px}
+button.primary{background:#6366f1;color:#fff;border:none;border-radius:8px;padding:9px 20px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap}
+button.primary:hover{background:#4f46e5}
+button.primary:disabled{background:#a5b4fc;cursor:not-allowed}
+button.ghost{background:transparent;border:1px solid #d1d5db;color:#374151;border-radius:8px;padding:8px 14px;font-size:13px;cursor:pointer;white-space:nowrap}
+button.ghost:hover{background:#f3f4f6}
+.note{font-size:12px;color:#d97706;background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:10px 14px;margin-top:14px}
+.result{margin-top:16px;border-radius:8px;padding:14px 16px;font-size:13px;display:none}
+.result.ok{background:#dcfce7;border:1px solid #bbf7d0;color:#166534}
+.result.err{background:#fee2e2;border:1px solid #fecaca;color:#991b1b}
+.result code{font-family:monospace;font-size:12px}
+#restore-status{font-size:12px;color:#9ca3af}
+</style>
+</head>
+<body>
+
+<div class="card">
+  <h1>DCS Contract Restore</h1>
+  <p class="sub">Reverse anonymization using the review map. Writes <code>&lt;stem&gt;.restored.txt</code> next to the .anon.txt.</p>
+
+  <div class="field">
+    <label>Path to .anon.txt <span class="hint">— relative to the SharePoint root</span></label>
+    <input type="text" id="anon-path" placeholder="e.g. 05-In-Process/Columbia-Okura/file.anon.txt">
+  </div>
+  <div class="row">
+    <button class="primary" id="restore-btn" onclick="doRestore()">Restore Original</button>
+    <span id="restore-status"></span>
+  </div>
+
+  <div class="result" id="result"></div>
+</div>
+
+<script>
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+function doRestore(){
+  const path=document.getElementById('anon-path').value.trim();
+  const btn=document.getElementById('restore-btn');
+  const status=document.getElementById('restore-status');
+  const result=document.getElementById('result');
+  result.style.display='none';
+  if(!path){alert('Enter the relative path to the .anon.txt file.');return;}
+  btn.disabled=true; btn.textContent='Restoring…'; status.textContent='';
+
+  fetch('/api/de-anonymize',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({path})})
+  .then(r=>r.json()).then(d=>{
+    btn.disabled=false; btn.textContent='Restore Original'; status.textContent='';
+    if(!d.ok){
+      result.className='result err';
+      result.innerHTML='⚠️ '+esc(d.error||'Restore failed.');
+      result.style.display='block';
+      return;
+    }
+    result.className='result ok';
+    result.innerHTML='✓ Restored <strong>'+d.replacements+'</strong> token'+(d.replacements===1?'':'s')+
+                     '.<br>Wrote <code>'+esc(d.restored_path)+'</code>';
+    result.style.display='block';
+  }).catch(()=>{
+    btn.disabled=false; btn.textContent='Restore Original';
+    result.className='result err';
+    result.innerHTML='⚠️ Server not responding.';
+    result.style.display='block';
+  });
+}
+</script>
+</body>
+</html>"""
+
+
+@app.route("/restore", methods=["GET"])
+def restore_page():
+    return RESTORE_PAGE, 200, {"Content-Type": "text/html; charset=utf-8"}
+
+
 # ── Anonymizer UI ──────────────────────────────────────────────────────────
 ANON_PAGE = r"""<!DOCTYPE html>
 <html lang="en">
@@ -781,18 +1207,75 @@ button.ghost:hover{background:#f3f4f6}
 .ip-dir{color:#6b7280;font-size:11px;flex:0 0 auto}
 #ip-status{font-size:12px;color:#9ca3af}
 #anon-status{font-size:12px;color:#9ca3af}
+/* Review table */
+.review-card{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:24px;max-width:980px;margin:0 auto 20px;display:none}
+.grp{margin-bottom:20px}
+.grp-head{display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap}
+.layer-badge{display:inline-block;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.02em}
+.lb-counterparty{background:#dbeafe;color:#1e40af}
+.lb-counterparty_alias{background:#e0e7ff;color:#3730a3}
+.lb-presidio{background:#fce7f3;color:#9d174d}
+.lb-commercial_regex{background:#dcfce7;color:#166534}
+.grp-count{font-size:12px;color:#9ca3af;margin-right:auto}
+.grp-actions{display:flex;gap:6px}
+.mini{font-size:11px;padding:4px 10px;border-radius:6px;border:1px solid #d1d5db;background:#fff;color:#374151;cursor:pointer}
+.mini:hover{background:#f3f4f6}
+table.rv{width:100%;border-collapse:collapse;font-size:12px}
+table.rv thead th{position:sticky;top:0;background:#f9fafb;padding:7px 10px;text-align:left;font-size:11px;font-weight:600;color:#6b7280;text-transform:uppercase;border-bottom:1px solid #e5e7eb;white-space:nowrap}
+table.rv tbody tr{border-bottom:1px solid #f3f4f6}
+table.rv td{padding:6px 10px;vertical-align:middle}
+.mono{font-family:monospace;font-size:12px}
+.tok{display:inline-block;font-family:monospace;font-size:11px;background:#f3f4f6;color:#4f46e5;border-radius:6px;padding:2px 8px}
+.orig{max-width:360px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.score-low{color:#d97706;font-weight:600}
+.tier-low  { opacity: 0.55; background: #fffbeb; }
+.tier-low td { color: #92400e; }
+.tier-medium { background: #eff6ff; }
+.act{display:flex;gap:8px;white-space:nowrap}
+.act label{display:inline-flex;align-items:center;gap:4px;font-weight:400;margin:0;cursor:pointer;font-size:13px}
+.bar{position:sticky;bottom:0;background:#fff;border-top:1px solid #e5e7eb;padding:14px 0 0;margin-top:8px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.bar .summary{font-size:13px;color:#374151;font-weight:500;margin-right:auto}
 /* Output log */
 .log-card{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:24px;max-width:980px;margin:0 auto;display:none}
 #log{background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:12px 14px;
      font-family:monospace;font-size:12px;line-height:1.6;max-height:480px;overflow-y:auto;white-space:pre-wrap}
 .note{font-size:12px;color:#d97706;background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:10px 14px;margin-top:14px}
+.success{background:#dcfce7;border:1px solid #bbf7d0;color:#166534;border-radius:8px;padding:16px 18px;font-size:13px}
+.success a{color:#166534;font-weight:600}
+.spin{display:inline-block;font-size:12px;color:#6366f1}
+/* B1 — Context form */
+.ctx-form{background:#f9fafb;border:1px solid #e5e7eb;border-radius:10px;padding:16px 18px;margin-top:16px}
+.ctx-form h3{font-size:13px;font-weight:600;color:#374151;margin-bottom:12px;display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none}
+.ctx-form h3 .toggle-icon{font-size:11px;color:#9ca3af;transition:transform .2s}
+.ctx-form h3.collapsed .toggle-icon{transform:rotate(-90deg)}
+.ctx-body{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.ctx-body .full{grid-column:1/-1}
+.ctx-body label{font-size:12px;color:#6b7280;font-weight:500;margin-bottom:3px}
+.ctx-body select,.ctx-body input[type=text],.ctx-body textarea{
+  font-size:12px;padding:7px 10px;background:#fff}
+.ctx-body textarea{min-height:52px;resize:vertical;font-size:12px}
+.ctx-chk{display:flex;align-items:center;gap:6px;font-size:12px;color:#374151;cursor:pointer}
+/* C2 — Library sections */
+.lib-section{margin-bottom:24px}
+.lib-section-head{display:flex;align-items:center;gap:10px;padding:10px 14px;
+  background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;
+  cursor:pointer;user-select:none;margin-bottom:0}
+.lib-section-head h3{font-size:13px;font-weight:600;color:#374151;margin:0;flex:1}
+.lib-section-head .lib-count{font-size:12px;color:#9ca3af}
+.lib-section-head .lib-toggle{font-size:11px;color:#9ca3af}
+.lib-section-body{border:1px solid #e5e7eb;border-top:none;
+  border-radius:0 0 8px 8px;overflow:hidden}
+.lib-row-hit td{background:#fafaf5}
+.lib-prior{font-size:11px;color:#6b7280;font-style:italic}
+.lib-prior.confirm{color:#166534}
+.lib-prior.reject{color:#991b1b}
 </style>
 </head>
 <body>
 
 <div class="card">
   <h1>DCS Contract Anonymizer</h1>
-  <p class="sub">Redact counterparties, PII, and commercial terms. Output (<code>.anon.txt</code> + <code>.audit.json</code>) is written next to the source file.</p>
+  <p class="sub">Detect candidate redactions, review each one, then apply. Output (<code>.anon.txt</code> + <code>.audit.json</code>) is written next to the source file.</p>
 
   <div class="tabs">
     <div class="tab active" data-tab="select" onclick="switchTab('select')">Select from 05-In-Process</div>
@@ -802,14 +1285,14 @@ button.ghost:hover{background:#f3f4f6}
   <!-- Select panel -->
   <div class="panel active" id="panel-select">
     <div class="row" style="margin-top:0">
-      <label style="margin:0">Files in 05-In-Process <span class="hint">— click to select, then Anonymize</span></label>
+      <label style="margin:0">Files in 05-In-Process <span class="hint">— click to select, then Detect</span></label>
       <button class="ghost" onclick="loadInProcess()" style="margin-left:auto">↻ Refresh</button>
     </div>
     <div class="ip-wrap" id="ip-wrap" style="margin-top:8px">
       <p style="padding:18px;text-align:center;color:#9ca3af;font-size:13px" id="ip-empty">Loading…</p>
     </div>
     <div class="row">
-      <button class="primary" id="anon-sel-btn" onclick="anonymizeSelected()" disabled>🛡️ Anonymize Selected</button>
+      <button class="primary" id="anon-sel-btn" onclick="detectSelected()" disabled>🛡️ Anonymize Selected</button>
       <span id="ip-status"></span>
     </div>
     <p class="note">Folders are shown for navigation context only — select a file to anonymize. Subfolders are not recursed from here; open the folder in SharePoint to anonymize a file inside it, or use Upload.</p>
@@ -826,13 +1309,66 @@ button.ghost:hover{background:#f3f4f6}
       <input type="file" id="up-file" accept=".pdf,.docx,.doc,.txt">
     </div>
     <div class="row">
-      <button class="primary" id="anon-up-btn" onclick="uploadAndAnonymize()">⬆️ Upload &amp; Anonymize</button>
+      <button class="primary" id="anon-up-btn" onclick="uploadAndDetect()">⬆️ Upload &amp; Anonymize</button>
       <span id="anon-status"></span>
+    </div>
+  </div>
+
+  <!-- B1 — Context form (shared between select and upload panels) -->
+  <div class="ctx-form" id="ctx-form">
+    <h3 id="ctx-toggle" onclick="toggleCtx()">
+      Contract Context
+      <span class="toggle-icon" id="ctx-icon">▼</span>
+      <span style="font-size:11px;color:#9ca3af;font-weight:400;margin-left:4px">(optional — improves detection accuracy)</span>
+    </h3>
+    <div class="ctx-body" id="ctx-body">
+      <div>
+        <label>Contract type</label>
+        <select id="ctx-type">
+          <option value="unknown">— select —</option>
+          <option value="nda">NDA / MNDA</option>
+          <option value="msa">MSA</option>
+          <option value="sow">SOW</option>
+          <option value="po">PO</option>
+          <option value="amendment">Amendment</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+      <div>
+        <label>Counterparty name <span style="font-weight:400;color:#9ca3af">(Party 2)</span></label>
+        <input type="text" id="ctx-party2" placeholder="e.g. Acme Corp">
+      </div>
+      <div class="full">
+        <label>Additional parties <span style="font-weight:400;color:#9ca3af">(one per line — subcontractors, affiliates)</span></label>
+        <textarea id="ctx-parties" placeholder="e.g. Colmac Coil&#10;Walmart"></textarea>
+      </div>
+      <div class="full" style="display:flex;gap:20px;flex-wrap:wrap">
+        <label class="ctx-chk">
+          <input type="checkbox" id="ctx-ignore-jur" checked>
+          Ignore governing-law jurisdiction
+        </label>
+        <label class="ctx-chk">
+          <input type="checkbox" id="ctx-ignore-ind" checked>
+          Ignore standard industry bodies (OSHA, ISO, ANSI…)
+        </label>
+      </div>
     </div>
   </div>
 </div>
 
-<!-- Output log -->
+<!-- Review table (Phase 2) -->
+<div class="review-card" id="review-card">
+  <h2>Review Redactions</h2>
+  <p class="sub" style="margin-bottom:16px">Confirm or reject each detected item. Only confirmed items will be redacted.</p>
+  <div id="review-groups"></div>
+  <div class="bar">
+    <span class="summary" id="review-summary">0 confirmed · 0 rejected</span>
+    <button class="ghost" onclick="cancelReview()">Cancel</button>
+    <button class="primary" id="apply-btn" onclick="applyRedactions()">Apply Redactions</button>
+  </div>
+</div>
+
+<!-- Output log (detect spinner / errors) -->
 <div class="log-card" id="log-card">
   <h2>Output</h2>
   <div id="log"></div>
@@ -840,6 +1376,11 @@ button.ghost:hover{background:#f3f4f6}
 
 <script>
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+const LAYER_ORDER=['counterparty','counterparty_alias','presidio','commercial_regex'];
+const LAYER_LABEL={counterparty:'Counterparty',counterparty_alias:'Counterparty Alias',presidio:'Presidio PII',commercial_regex:'Commercial'};
+let currentFilePath=null;
+let SPANS=[];
 
 // ── Tabs ──────────────────────────────────────────────────────────────────
 function switchTab(name){
@@ -878,14 +1419,14 @@ function selectIp(row){
   IP_SEL=row.dataset.path;
   document.getElementById('anon-sel-btn').disabled=false;
 }
-function anonymizeSelected(){
+function detectSelected(){
   if(!IP_SEL) return;
-  runAnonymize(IP_SEL,'ip-status');
+  runDetect(IP_SEL,'ip-status');
 }
 loadInProcess();
 
-// ── Upload then anonymize ───────────────────────────────────────────────────
-function uploadAndAnonymize(){
+// ── Upload then detect ──────────────────────────────────────────────────────
+function uploadAndDetect(){
   const folder=document.getElementById('up-folder').value.trim();
   const fileInput=document.getElementById('up-file');
   const status=document.getElementById('anon-status');
@@ -904,53 +1445,271 @@ function uploadAndAnonymize(){
   fetch('/api/upload-file',{method:'POST',body:fd})
   .then(r=>r.json()).then(d=>{
     if(!d.ok){btn.disabled=false;btn.textContent='⬆️ Upload & Anonymize';status.textContent='Upload failed';alert(d.message||'Upload failed.');return;}
-    btn.textContent='Anonymizing…';
     status.textContent='Uploaded ✓';
     const relPath='05-In-Process/'+folder+'/'+file.name;
-    runAnonymize(relPath,'anon-status',()=>{btn.disabled=false;btn.textContent='⬆️ Upload & Anonymize';});
+    runDetect(relPath,'anon-status',()=>{btn.disabled=false;btn.textContent='⬆️ Upload & Anonymize';});
   }).catch(()=>{btn.disabled=false;btn.textContent='⬆️ Upload & Anonymize';status.textContent='Upload error';alert('Upload request failed.');});
 }
 
-// ── Shared SSE anonymize runner (mirrors scan UI reader) ─────────────────────
-function runAnonymize(relPath,statusId,onDone){
+// ── Context form ──────────────────────────────────────────────────────────
+function toggleCtx(){
+  const body=document.getElementById('ctx-body');
+  const toggle=document.getElementById('ctx-toggle');
+  const icon=document.getElementById('ctx-icon');
+  const collapsed=toggle.classList.toggle('collapsed');
+  body.style.display=collapsed?'none':'grid';
+  icon.textContent=collapsed?'▶':'▼';
+}
+
+function getContext(){
+  return {
+    contract_type: document.getElementById('ctx-type').value,
+    party_2:       document.getElementById('ctx-party2').value.trim(),
+    additional_parties: document.getElementById('ctx-parties').value
+      .split(/\r?\n/).map(s=>s.trim()).filter(Boolean),
+    ignore_jurisdiction:    document.getElementById('ctx-ignore-jur').checked,
+    ignore_industry_bodies: document.getElementById('ctx-ignore-ind').checked,
+  };
+}
+
+// ── Phase 1: detect (synchronous JSON) ──────────────────────────────────────
+function runDetect(relPath,statusId,onDone){
   const log=document.getElementById('log');
   const status=document.getElementById(statusId);
   const selBtn=document.getElementById('anon-sel-btn');
-  log.textContent='';
+  document.getElementById('review-card').style.display='none';
+  log.innerHTML='<span class="spin">⏳ Detecting…</span>';
   document.getElementById('log-card').style.display='block';
   if(selBtn) selBtn.disabled=true;
-  status.textContent='Running…';
+  if(status) status.textContent='Detecting…';
 
-  function done(rc){
+  fetch('/api/detect',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({path:relPath, context:getContext()})})
+  .then(r=>r.json()).then(d=>{
     if(selBtn) selBtn.disabled=(IP_SEL===null);
-    log.textContent+='\n'+(rc===0?'── done ──':'── errors (exit '+rc+') ──')+'\n';
-    status.textContent=rc===0?'Done':'Errors';
-    log.scrollTop=log.scrollHeight;
+    if(status) status.textContent=d.ok?'Detected':'Error';
     if(onDone) onDone();
+    if(!d.ok){
+      log.textContent='[ERROR] '+(d.error||'Detection failed.');
+      return;
+    }
+    document.getElementById('log-card').style.display='none';
+    currentFilePath=relPath;
+    SPANS=d.spans||[];
+    renderReview();
+  }).catch(()=>{
+    if(selBtn) selBtn.disabled=(IP_SEL===null);
+    if(status) status.textContent='Error';
+    if(onDone) onDone();
+    log.textContent='[ERROR] Server not responding.';
+  });
+}
+
+// ── Phase 2: review table ───────────────────────────────────────────────────
+function defaultConfirm(s){
+  if(s.score_tier==='low') return false;     // pre-rejected
+  if(s.score_tier==='medium') return false;  // pre-confirmed off — requires explicit decision
+  return true;                               // pre-confirmed on
+}
+
+function renderReview(){
+  const card=document.getElementById('review-card');
+  const groups=document.getElementById('review-groups');
+  groups.innerHTML='';
+
+  if(!SPANS.length){
+    groups.innerHTML='<p style="padding:18px;text-align:center;color:#9ca3af;font-size:13px">No redaction candidates detected.</p>';
+    card.style.display='block';
+    updateSummary();
+    return;
   }
 
-  fetch('/api/anonymize',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({path:relPath})})
-  .then(resp=>{
-    const reader=resp.body.getReader(), dec=new TextDecoder();
-    let buf='';
-    function read(){return reader.read().then(({done:d,value})=>{
-      if(d) return done(0);
-      buf+=dec.decode(value,{stream:true});
-      const parts=buf.split('\n\n'); buf=parts.pop();
-      for(const chunk of parts){
-        if(!chunk.startsWith('data: ')) continue;
-        const pay=chunk.slice(6);
-        try{
-          const obj=JSON.parse(pay);
-          if(obj&&obj.__done__!==undefined) return done(obj.rc);
-          log.textContent+=(typeof obj==='string'?obj:JSON.stringify(obj))+'\n';
-        }catch{log.textContent+=pay+'\n';}
-        log.scrollTop=log.scrollHeight;
-      }
-      return read();
-    });}
-    return read();
-  }).catch(()=>{log.textContent+='[ERROR] Server not responding.\n'; done(1);});
+  // Seed default decisions — library hits use prior decision as default
+  SPANS.forEach(s=>{
+    if(s._dec===undefined){
+      if(s.library_hit && s.library_decision==='confirm') s._dec=true;
+      else if(s.library_hit && s.library_decision==='reject') s._dec=false;
+      else s._dec=defaultConfirm(s);
+    }
+  });
+
+  const libSpans=SPANS.filter(s=>s.library_hit);
+  const newSpans=SPANS.filter(s=>!s.library_hit);
+
+  // ── Section 1: Library matches (collapsed by default) ──────────────
+  if(libSpans.length){
+    const sec=document.createElement('div');
+    sec.className='lib-section';
+    const headId='lib-head-'+Date.now();
+    const bodyId='lib-body-'+Date.now();
+    sec.innerHTML=
+      '<div class="lib-section-head" onclick="toggleLibSection(\''+bodyId+'\',\''+headId+'\')">'+
+        '<h3>📚 Library matches</h3>'+
+        '<span class="lib-count">'+libSpans.length+' item'+(libSpans.length===1?'':'s')+
+          ' — auto-decided from prior sessions</span>'+
+        '<span class="lib-toggle" id="'+headId+'">▶ (collapsed)</span>'+
+      '</div>'+
+      '<div id="'+bodyId+'" style="display:none">'+
+        _renderSpanTable(libSpans, true)+
+      '</div>';
+    groups.appendChild(sec);
+  }
+
+  // ── Section 2: New detections (expanded) ───────────────────────────
+  if(newSpans.length){
+    const sec=document.createElement('div');
+    sec.className='lib-section';
+    if(libSpans.length){
+      sec.innerHTML='<div class="lib-section-head" style="cursor:default;margin-bottom:8px">'+
+        '<h3>🔍 New detections</h3>'+
+        '<span class="lib-count">'+newSpans.length+' item'+(newSpans.length===1?'':'s')+
+          ' — review required</span>'+
+      '</div>';
+    }
+    // Group new spans by layer
+    const grpDiv=document.createElement('div');
+    LAYER_ORDER.forEach(layer=>{
+      const items=newSpans.filter(s=>s.layer===layer);
+      if(!items.length) return;
+      const grp=document.createElement('div');
+      grp.className='grp';
+      grp.innerHTML=
+        '<div class="grp-head">'+
+          '<span class="layer-badge lb-'+layer+'">'+esc(LAYER_LABEL[layer]||layer)+'</span>'+
+          '<span class="grp-count">'+items.length+' item'+(items.length===1?'':'s')+'</span>'+
+          '<div class="grp-actions">'+
+            '<button class="mini" onclick="bulk_ids('+JSON.stringify(items.map(s=>s.id))+',true)">Confirm all</button>'+
+            '<button class="mini" onclick="bulk_ids('+JSON.stringify(items.map(s=>s.id))+',false)">Reject all</button>'+
+          '</div>'+
+        '</div>'+
+        _renderSpanTable(items, false);
+      grpDiv.appendChild(grp);
+    });
+    sec.appendChild(grpDiv);
+    groups.appendChild(sec);
+  }
+
+  card.style.display='block';
+  updateSummary();
+}
+
+function toggleLibSection(bodyId, headId){
+  const body=document.getElementById(bodyId);
+  const head=document.getElementById(headId);
+  const collapsed=body.style.display==='none';
+  body.style.display=collapsed?'block':'none';
+  head.textContent=collapsed?'▼ (expanded)':'▶ (collapsed)';
+}
+
+function _renderSpanTable(items, showLibPrior){
+  const showScore=items.some(s=>s.layer==='presidio');
+  let rows='';
+  items.forEach(s=>{
+    const full=s.original_text||'';
+    const orig=esc(full);
+    const truncated=full.length>60?esc(full.slice(0,60))+'…':orig;
+    const tier=s.score_tier;
+    const rowCls=tier==='low'?' class="tier-low"':(tier==='medium'?' class="tier-medium"':
+      (s.library_hit?' class="lib-row-hit"':''));
+    const scoreNum=(typeof s.score==='number'?s.score.toFixed(2):'—');
+    let scoreInner;
+    if(tier==='low') scoreInner='<span style="color:#d97706">'+scoreNum+'</span><div style="font-size:10px;color:#9ca3af">⚠️ low confidence</div>';
+    else if(tier==='medium') scoreInner='<span style="color:#2563eb">'+scoreNum+'</span>';
+    else scoreInner='<span>'+scoreNum+'</span>';
+    const scoreCell=showScore?'<td>'+scoreInner+'</td>':'';
+    const priorCell=showLibPrior?
+      '<td><span class="lib-prior '+(s.library_decision||'')+'">'
+        +(s.library_decision==='confirm'?'✓ confirmed':s.library_decision==='reject'?'✗ rejected':'—')
+        +' (×'+s.library_count+')</span></td>':'';
+    rows+='<tr'+rowCls+'>'+
+      '<td class="mono">'+s.id+'</td>'+
+      '<td class="orig mono" title="'+orig+'">'+truncated+'</td>'+
+      '<td><span class="tok">'+esc(s.proposed_token||'')+'</span></td>'+
+      scoreCell+priorCell+
+      '<td><div class="act">'+
+        '<label><input type="radio" name="dec-'+s.id+'" value="1"'+(s._dec?' checked':'')+
+          ' onchange="setDec('+s.id+',true)"> ✓</label>'+
+        '<label><input type="radio" name="dec-'+s.id+'" value="0"'+(!s._dec?' checked':'')+
+          ' onchange="setDec('+s.id+',false)"> ✗</label>'+
+      '</div></td>'+
+    '</tr>';
+  });
+  const headers='<th style="width:40px">#</th><th>Original text</th><th>Proposed token</th>'+
+    (showScore?'<th style="width:60px">Score</th>':'')+
+    (showLibPrior?'<th style="width:120px">Prior decision</th>':'')+
+    '<th style="width:90px">Action</th>';
+  return '<table class="rv"><thead><tr>'+headers+'</tr></thead><tbody>'+rows+'</tbody></table>';
+}
+
+function setDec(id,val){
+  const s=SPANS.find(x=>x.id===id);
+  if(s){ s._dec=val; updateSummary(); }
+}
+
+function bulk_ids(ids,val){
+  ids.forEach(id=>{
+    const s=SPANS.find(x=>x.id===id);
+    if(!s) return;
+    s._dec=val;
+    document.getElementsByName('dec-'+id).forEach(r=>{r.checked=(r.value==='1')===val;});
+  });
+  updateSummary();
+}
+
+function updateSummary(){
+  const conf=SPANS.filter(s=>s._dec).length;
+  const rej=SPANS.length-conf;
+  document.getElementById('review-summary').textContent=conf+' confirmed · '+rej+' rejected';
+}
+
+function cancelReview(){
+  document.getElementById('review-card').style.display='none';
+  SPANS=[]; currentFilePath=null;
+}
+
+// ── Apply ───────────────────────────────────────────────────────────────────
+function applyRedactions(){
+  if(!currentFilePath) return;
+  const decisions={};
+  SPANS.forEach(s=>{ decisions[String(s.id)]=!!s._dec; });
+  const btn=document.getElementById('apply-btn');
+  btn.disabled=true; btn.textContent='Applying…';
+
+  fetch('/api/apply-redactions',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({path:currentFilePath,decisions})})
+  .then(r=>r.json()).then(d=>{
+    btn.disabled=false; btn.textContent='Apply Redactions';
+    if(!d.ok){ alert('Apply failed: '+(d.error||'unknown error')); return; }
+    const card=document.getElementById('review-card');
+    if(d.passed===false){
+      const hits=(d.hits||[]).map(h=>'• <strong>'+esc(h.check)+'</strong>: '+esc(h.matched_text)).join('<br>');
+      card.innerHTML=
+        '<h2>Quarantined — Not Shippable</h2>'+
+        '<div class="note">⚠️ Verification failed — the redacted output was withheld from the '+
+          'document tree and quarantined in the private zone:<br>'+
+          '<span class="mono">'+esc(d.quarantine_path||'')+'</span>'+
+          (hits?('<br><br>Findings:<br>'+hits):'')+
+        '</div>';
+      card.style.display='block';
+      SPANS=[]; currentFilePath=null;
+      return;
+    }
+    card.innerHTML=
+      '<h2>Redactions Applied</h2>'+
+      '<div class="success">'+
+        '✓ <strong>'+d.confirmed+'</strong> redaction'+(d.confirmed===1?'':'s')+' applied · '+
+        '<strong>'+d.rejected+'</strong> rejected.<br><br>'+
+        'Output written next to the source file:<br>'+
+        '<span class="mono">'+esc(d.anon_path)+'</span><br>'+
+        '<span class="mono">'+esc(d.audit_path)+'</span><br><br>'+
+        'Need the original back? <a href="/restore">Open the Restore tool →</a>'+
+      '</div>';
+    card.style.display='block';
+    SPANS=[]; currentFilePath=null;
+  }).catch(()=>{
+    btn.disabled=false; btn.textContent='Apply Redactions';
+    alert('Apply request failed — server not responding.');
+  });
 }
 </script>
 </body>

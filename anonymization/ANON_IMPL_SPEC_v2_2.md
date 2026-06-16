@@ -23,14 +23,35 @@
 
 | Item | Status |
 |------|--------|
-| anonymize.py — detect/apply split | ✅ Shipped (e188afe, 11d42fc) |
-| server.py — 4 new routes + /restore | ✅ Shipped |
-| ANON_PAGE — two-phase review UI | ✅ Shipped |
-| Three detection bugs | ⏳ Prompted, pending CC |
-| Context form (UI) | ❌ Not built |
-| Decisions library | ❌ Not built |
-| Output verification | ❌ Not built |
-| Corpus run | ❌ Not started |
+| anonymize.py — detect/apply split | ✅ Built (e188afe, 11d42fc) |
+| server.py — 4 new routes + /restore | ✅ Built |
+| ANON_PAGE — two-phase review UI | ✅ Built |
+| A0 — Storage segregation (_anon-private\) | ✅ Built + verified |
+| A1 — Three detection bug fixes | ✅ Built + verified |
+| A2 — Score floor (display, not drop) | ✅ Built + verified |
+| B0.1–B0.7 — Context-aware detection | ✅ Built + verified |
+| B1 — Context form (UI + /api/detect body) | ✅ Built + verified |
+| B2.1 — TERM_DURATION context-gated | ✅ Built + verified |
+| B2.2 — Non-$ amount formats | ✅ Built + verified |
+| C1 — Decisions library store | ✅ Built + verified |
+| C2 — Library applied in review (two-section UI) | ✅ Built + verified |
+| C3 — Library write-back on Apply | ✅ Built + verified |
+| D0 — Pre-apply backup + corpus lock | ✅ Built + verified |
+| D1 — Leakage scan | ✅ Built + verified |
+| D2 — Counterparty dictionary sweep | ✅ Built + verified |
+| D3 — Roundtrip check (counterparty tokens) | ✅ Built + verified |
+| D4 — Orphan token scan | ✅ Built + verified |
+| D5 — Verification report (.verify.json) | ✅ Built + verified |
+| Quarantine flow (override/discard/list) | ✅ Built + verified |
+| Alias map rebuilt (660 aliases) | ✅ Built + verified |
+| End-to-end: Colmac detect→apply→de-anon | ✅ Passed |
+| E — Mandatory human-review triggers (E1–E4) | ✅ Built + verified |
+| F — rapidfuzz wired into D1/D2 | ✅ Built + verified |
+| G1 — __pycache__ in .gitignore | ✅ Built |
+| G2 — PLAN.md §5.2 + §8 + §11 reconcile | ✅ Built (6fb93b5) |
+| G3 — CONTRACT-RULES.md NDA evergreen | ⛔ Blocked (USER wording pending) |
+| G4 — audit-catalog.py kb/ auto-refresh | 🔲 Open (unscoped) |
+| H — Corpus run | ❌ Not started |
 
 ---
 
@@ -55,7 +76,6 @@ decisions_library.json
 *.review.json
 *.verify.json
 __pycache__/
-anonymization/output/
 ```
 
 ### A0.5 — Failure mode

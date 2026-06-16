@@ -40,7 +40,7 @@ Source file (PDF / DOCX)
         ↓
 [Step 6] Structure reassembly     (splice structural spans back untouched)
         ↓
-anonymization/output/             [name].anon.txt + [name].audit.json
+_anon-private\ (see §8 and §11 for full layout)   [name].anon.txt + [name].audit.json
 ```
 
 ---
@@ -56,7 +56,7 @@ anonymization/output/             [name].anon.txt + [name].audit.json
   - `ACI for Signature` — workflow artifact, not a real counterparty
 - Sort remaining 537 entries alphabetically (case-insensitive)
 - Assign stable pseudonyms: `PARTY-0001`, `PARTY-0002`, … `PARTY-0537`
-- Save mapping locally to `anonymization/mapping.json` — **GITIGNORED, NEVER STAGED**
+- Save mapping locally to `_anon-private\mapping.json` — **GITIGNORED, NEVER STAGED**
 
 ### 4.2 mapping.json schema
 
@@ -132,7 +132,7 @@ dropped at detect; the human always sees the full catch list.
 
 - Do **not** redact: LLC, Inc., Corp., LP, Ltd. when appearing without a preceding name
 - Do **not** redact: city and state names used in governing-law or notice-address clauses
-- PERSON threshold set at 0.75 to reduce false positives in signature-block boilerplate
+- PERSON display floor is 0.35 (shown pre-confirmed-off); auto-confirm threshold is 0.60. See §5.2 for full threshold model.
   (`By:`, `Name:`, `Title:` labels are structural and never reach this layer)
 
 ### 5.4 Layer ordering
@@ -324,7 +324,7 @@ failure mode with a mitigation:
 | en_core_web_lg false negatives on legal boilerplate (e.g., signature names) | Confidence threshold at 0.75; audit.json enables spot-check |
 | PDF text extraction failures (scanned/image PDFs) | Excluded by SigningStatus=Review rule |
 | Counterparty name variants not in COUNTERPARTIES.md | Alias detection pass in Layer 1 (first 300 chars) |
-| mapping.json accidentally staged | `anonymization/mapping.json` is gitignored; pre-commit check in ANON-2 |
+| mapping.json accidentally staged | `_anon-private\mapping.json` is gitignored; pre-commit check in ANON-2 |
 
 Residual 3% uncertainty: Presidio's recall on legal-specific PII patterns (e.g., custom
 clause-embedded SSNs, unusual phone formats). This is an implementation tuning risk, not

@@ -23,6 +23,7 @@ import time
 
 BASE_DIR = pathlib.Path(__file__).parent.parent          # Tools/
 COUNTERPARTIES_PATH = BASE_DIR / "kb" / "COUNTERPARTIES.md"
+MANUAL_PATH = BASE_DIR / "kb" / "COUNTERPARTIES_MANUAL.json"
 MAPPING_PATH = pathlib.Path(r"C:\Users\jrudy\OneDrive - Diakonia Group, LLC\Contract Management - SharePoint\_anon-private\mapping.json")
 
 # ---------------------------------------------------------------------------
@@ -98,7 +99,14 @@ COMMON_WORDS = {
     "designed", "conveyor", "conveyors", "distribution", "logistics", "supply",
     "capital", "partners", "holdings", "enterprises", "corp", "corporation",
     "company", "limited", "inc", "llc", "ltd", "co", "the", "of", "and",
-    "tractor", "action", "serve", "merc"
+    "tractor", "action", "serve", "merc",
+    "columbia", "machine", "safety", "energy", "power", "electric",
+    "fire", "steel", "mechanical", "structural", "control", "controls",
+    "precision", "performance", "professional", "premier", "preferred",
+    "quality", "innovative", "innovation", "creative", "dynamic",
+    "strategic", "summit", "apex", "pinnacle", "nexus", "core",
+    "prime", "first", "united", "american", "alliance", "source",
+    "anchor", "axis", "vector", "vertex", "metric", "spectrum"
 }
 
 
@@ -124,8 +132,20 @@ def _abbreviation(name: str) -> str:
 
 
 def _short_name(name: str) -> str:
-    """Return first word if longer than 4 chars, else empty string."""
-    first = re.split(r'[\s\-_/,;:()+&]+', name)[0].strip('.,;:()')
+    """Return first word only if the name is effectively a single
+    meaningful word (no ambiguity). Multi-word names do not generate
+    short-name aliases — the first word alone is too generic."""
+    words = [w.strip('.,;:()') for w in re.split(r'[\s\-_/,;:()+&]+', name) if w.strip('.,;:()')]
+    # Strip trailing suffix words to see the meaningful word count
+    meaningful = [w for w in words if w.lower() not in {
+        'inc', 'corp', 'ltd', 'llc', 'l.l.c', 'lcc', 'lp', 'l.p',
+        'co', 'company', 'corporation', 'incorporated', 'limited',
+        'group', 'gmbh', 'srl', 'b.v', 'the', 'of', 'and'
+    }]
+    # Only generate a short-name alias for single-word entities
+    if len(meaningful) != 1:
+        return ''
+    first = meaningful[0]
     return first if len(first) > 4 else ''
 
 
@@ -167,6 +187,37 @@ def generate_aliases(name: str) -> list[str]:
     return sorted(a for a in pool if not _is_common_word_alias(a))
 
 # ---------------------------------------------------------------------------
+# Manual entries merge
+# ---------------------------------------------------------------------------
+
+def merge_manual(payload: dict) -> int:
+    """Merge COUNTERPARTIES_MANUAL.json into payload['entries'].
+    Returns count of entries merged."""
+    if not MANUAL_PATH.exists():
+        return 0
+    with open(MANUAL_PATH, encoding='utf-8') as fh:
+        manual = json.load(fh)
+    merged = 0
+    for item in manual:
+        name = item.get("name", "").strip()
+        if not name:
+            continue
+        if name in payload["entries"]:
+            # Already present (added to COUNTERPARTIES.md later) — skip silently.
+            continue
+        payload["entries"][name] = {
+            "pseudonym": item["pseudonym"],
+            "aliases":   item.get("aliases", []),
+            "row_count": 0,
+            "doc_types": {},
+            "manual":    True,
+            "note":      item.get("note", ""),
+        }
+        merged += 1
+    return merged
+
+
+# ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
 
@@ -199,11 +250,17 @@ def main() -> None:
         'entries': entries,
     }
 
+    # Merge manual entries (e.g. counterparties not in the catalog CSV) before writing.
+    generated_count = len(entries)
+    merged = merge_manual(payload)
+
     MAPPING_PATH.parent.mkdir(parents=True, exist_ok=True)
     with open(MAPPING_PATH, 'w', encoding='utf-8') as fh:
         json.dump(payload, fh, indent=2, ensure_ascii=False)
 
-    print(f'Total mapped:         {len(entries)}')
+    print(f'Total mapped:         {len(payload["entries"])}')
+    print(f'Generated from CSV:   {generated_count}')
+    print(f'Manual entries merged: {merged}')
     print(f'Total alias entries:  {total_aliases}')
     print(f'Excluded:             {len(excluded_entries)}  '
           f'({", ".join(repr(e["name"]) for e in excluded_entries)})')

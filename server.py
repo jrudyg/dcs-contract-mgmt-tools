@@ -65,6 +65,20 @@ def _cors(r):
     r.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
     return r
 
+@app.route("/api/status", methods=["GET"])
+def status():
+    try:
+        with open(MAPPING_PATH, encoding="utf-8") as fh:
+            m = json.load(fh)
+        entry_count = len(m.get("entries", {}))
+    except Exception:
+        entry_count = -1
+    return json.dumps({
+        "ok": True,
+        "version": "1.0",
+        "mapping_entries": entry_count,
+    }), 200, {"Content-Type": "application/json"}
+
 # ── Scan UI ──────────────────────────────────────────────────────────────────
 SCAN_PAGE = r"""<!DOCTYPE html>
 <html lang="en">
@@ -623,6 +637,33 @@ def upload_file():
         return json.dumps({"ok": False, "message": str(exc)}), 500, {"Content-Type": "application/json"}
 
 
+@app.route("/api/upload-for-anon", methods=["POST", "OPTIONS"])
+def upload_for_anon():
+    """FIX 1: stage a contract uploaded from any location into _anon-private/staging/.
+    Returns the relative staged_path that /api/detect accepts."""
+    if request.method == "OPTIONS":
+        return "", 204
+    f = request.files.get("file")
+    if not f:
+        return json.dumps({"ok": False, "error": "file is required."}), 400, {"Content-Type": "application/json"}
+    # BUG 1: take only the basename so a full path doesn't get flattened into one mangled token.
+    filename = secure_filename(Path(f.filename).name)
+    if not filename:
+        return json.dumps({"ok": False, "error": "Invalid filename."}), 400, {"Content-Type": "application/json"}
+    ext = Path(filename).suffix.lower()
+    if ext not in (".docx", ".pdf"):
+        return json.dumps({"ok": False, "error": f"Unsupported file type '{ext}'. Only .docx and .pdf are accepted."}), 400, {"Content-Type": "application/json"}
+    staging_dir = SHAREPOINT / "_anon-private" / "staging"
+    try:
+        staging_dir.mkdir(parents=True, exist_ok=True)
+        dest = staging_dir / filename
+        f.save(str(dest))
+        staged_path = str(dest.relative_to(SHAREPOINT)).replace("\\", "/")
+        return json.dumps({"ok": True, "staged_path": staged_path}), 200, {"Content-Type": "application/json"}
+    except Exception as exc:
+        return json.dumps({"ok": False, "error": str(exc)}), 500, {"Content-Type": "application/json"}
+
+
 @app.route("/api/move-expired", methods=["POST", "OPTIONS"])
 def move_expired():
     if request.method == "OPTIONS":
@@ -776,6 +817,46 @@ def detect():
         party_2       = (ctx.get("party_2") or "").strip()
         add_parties   = [p.strip() for p in (ctx.get("additional_parties") or []) if p.strip()]
 
+        # FIX 3: freetext context — no whitelist validation; compute advisory flags only.
+        _known_types = {"nda", "mnda", "msa", "sow", "po", "amendment", "license", "other"}
+        contract_type_recognized = contract_type in _known_types
+        _p2l = party_2.lower()
+        party_2_in_mapping = bool(party_2) and (
+            any(k.lower() == _p2l for k in name_map) or
+            any(k.lower() == _p2l for k in alias_map)
+        )
+
+        # FIX 2: auto-create a counterparty folder in 05-In-Process derived from party_2.
+        # Skip silently when party_2 is blank or sanitizes to empty.
+        if party_2:
+            folder_name = re.sub(r'[\\/:*?"<>|]', "", party_2).strip().rstrip(". ")
+            if folder_name:
+                cp_folder = SHAREPOINT / "05-In-Process" / folder_name
+                if not cp_folder.exists():
+                    cp_folder.mkdir(parents=True, exist_ok=True)
+                    log.info("Created 05-In-Process folder: %s", folder_name)
+
+        # Move a staged upload into 05-In-Process\<party_2>\ now that party_2 is known.
+        # Files already in their final location are left untouched.
+        staging_dir = SHAREPOINT / "_anon-private" / "staging"
+        try:
+            in_staging = staging_dir.resolve() in abs_path.resolve().parents
+        except Exception:
+            in_staging = False
+        if in_staging:
+            move_folder = re.sub(r'[\\/:*?"<>|]', "", party_2).strip().rstrip(". ") if party_2 else ""
+            if move_folder:
+                dest_dir  = SHAREPOINT / "05-In-Process" / move_folder
+                dest_file = dest_dir / abs_path.name
+                if dest_file.exists():
+                    return json.dumps({"ok": False, "error": f"File already exists in 05-In-Process\\{move_folder}\\{abs_path.name}. Remove it first or rename the upload."}), 409, {"Content-Type": "application/json"}
+                dest_dir.mkdir(parents=True, exist_ok=True)
+                shutil.move(str(abs_path), str(dest_file))
+                log.info("Moved staged file to: %s", dest_file)
+                abs_path = dest_file
+            else:
+                log.warning("Staged file %s has blank party_2 — left in staging.", abs_path.name)
+
         # Inject party_2 + additional_parties as document-local seeds into alias_map
         # so detect_file's B0.1 binding extraction has pre-seeded names to match against.
         # These are added as name_map entries (not alias_map) so they participate in
@@ -827,7 +908,9 @@ def detect():
         except Exception:
             review_triggers = []
 
-        return json.dumps({"ok": True, "review_path": rel_review, "spans": spans, "review_triggers": review_triggers}), 200, {"Content-Type": "application/json"}
+        return json.dumps({"ok": True, "review_path": rel_review, "spans": spans, "review_triggers": review_triggers,
+                           "context_notes": {"party_2_in_mapping": party_2_in_mapping,
+                                             "contract_type_recognized": contract_type_recognized}}), 200, {"Content-Type": "application/json"}
     except Exception as exc:
         return json.dumps({"ok": False, "error": str(exc)}), 500, {"Content-Type": "application/json"}
 
@@ -1321,12 +1404,8 @@ tr.trigger-highlight td{background:#fef9c3 !important}
   <!-- Upload panel -->
   <div class="panel" id="panel-upload">
     <div class="field">
-      <label>Agreement / vendor subfolder <span class="hint">— the file lands in 05-In-Process\&lt;this name&gt;\</span></label>
-      <input type="text" id="up-folder" placeholder="e.g. Acme NDA 2026">
-    </div>
-    <div class="field">
-      <label>Contract file <span class="hint">(.pdf / .docx / .doc / .txt)</span></label>
-      <input type="file" id="up-file" accept=".pdf,.docx,.doc,.txt">
+      <label>Upload contract (from any location) <span class="hint">(.docx / .pdf) — staged privately, then detected</span></label>
+      <input type="file" id="up-file" accept=".docx,.pdf">
     </div>
     <div class="row">
       <button class="primary" id="anon-up-btn" onclick="uploadAndDetect()">⬆️ Upload &amp; Anonymize</button>
@@ -1343,20 +1422,18 @@ tr.trigger-highlight td{background:#fef9c3 !important}
     </h3>
     <div class="ctx-body" id="ctx-body">
       <div>
-        <label>Contract type</label>
-        <select id="ctx-type">
-          <option value="unknown">— select —</option>
-          <option value="nda">NDA / MNDA</option>
-          <option value="msa">MSA</option>
-          <option value="sow">SOW</option>
-          <option value="po">PO</option>
-          <option value="amendment">Amendment</option>
-          <option value="other">Other</option>
-        </select>
+        <label>Contract type <span style="font-weight:400;color:#9ca3af">(type or pick — freetext allowed)</span></label>
+        <input type="text" id="ctx-type" list="doctype-list" placeholder="e.g. NDA">
+        <datalist id="doctype-list">
+          <option value="NDA"></option><option value="MNDA"></option><option value="MSA"></option>
+          <option value="SOW"></option><option value="PO"></option><option value="Amendment"></option>
+          <option value="License"></option><option value="Other"></option>
+        </datalist>
       </div>
       <div>
-        <label>Counterparty name <span style="font-weight:400;color:#9ca3af">(Party 2)</span></label>
-        <input type="text" id="ctx-party2" placeholder="e.g. Acme Corp">
+        <label>Counterparty name <span style="font-weight:400;color:#9ca3af">(Party 2 — type or pick, freetext allowed)</span></label>
+        <input type="text" id="ctx-party2" list="counterparty-list" placeholder="e.g. Acme Corp">
+        <datalist id="counterparty-list"></datalist>
       </div>
       <div class="full">
         <label>Additional parties <span style="font-weight:400;color:#9ca3af">(one per line — subcontractors, affiliates)</span></label>
@@ -1375,6 +1452,9 @@ tr.trigger-highlight td{background:#fef9c3 !important}
     </div>
   </div>
 </div>
+
+<!-- FIX 3 — freetext context advisory notices -->
+<div id="ctx-notes" style="max-width:980px;margin:0 auto"></div>
 
 <!-- Review table (Phase 2) -->
 <div class="review-card" id="review-card">
@@ -1440,6 +1520,9 @@ function selectIp(row){
   row.classList.add('sel');
   IP_SEL=row.dataset.path;
   document.getElementById('anon-sel-btn').disabled=false;
+  // Selecting from the list clears any pending upload selection.
+  const uf=document.getElementById('up-file'); if(uf) uf.value='';
+  const us=document.getElementById('anon-status'); if(us) us.textContent='';
 }
 function detectSelected(){
   if(!IP_SEL) return;
@@ -1447,29 +1530,33 @@ function detectSelected(){
 }
 loadInProcess();
 
+// FIX 3: populate the counterparty datalist from /api/vendors (freetext still allowed).
+fetch('/api/vendors').then(r=>r.json()).then(vs=>{
+  const dl=document.getElementById('counterparty-list');
+  if(!dl||!Array.isArray(vs)) return;
+  dl.innerHTML=vs.map(v=>'<option value="'+esc(v)+'"></option>').join('');
+}).catch(()=>{});
+
 // ── Upload then detect ──────────────────────────────────────────────────────
 function uploadAndDetect(){
-  const folder=document.getElementById('up-folder').value.trim();
   const fileInput=document.getElementById('up-file');
   const status=document.getElementById('anon-status');
-  if(!folder){alert('Enter an agreement / vendor subfolder name.');return;}
-  if(/[\\\/]|\.\./.test(folder)){alert('Subfolder name cannot contain slashes or "..".');return;}
   if(!fileInput.files.length){alert('Choose a file to upload.');return;}
   const file=fileInput.files[0];
   const btn=document.getElementById('anon-up-btn');
-  btn.disabled=true; btn.textContent='Uploading…'; status.textContent='';
+  // Selecting a file via upload clears any 05-In-Process list selection.
+  document.querySelectorAll('.ip-row').forEach(r=>r.classList.remove('sel'));
+  IP_SEL=null; const _sb=document.getElementById('anon-sel-btn'); if(_sb)_sb.disabled=true;
+  btn.disabled=true; btn.textContent='Uploading…'; status.textContent='Uploading…';
 
   const fd=new FormData();
-  fd.append('location','05-In-Process');
-  fd.append('vendor_folder',folder);
   fd.append('file',file);
 
-  fetch('/api/upload-file',{method:'POST',body:fd})
+  fetch('/api/upload-for-anon',{method:'POST',body:fd})
   .then(r=>r.json()).then(d=>{
-    if(!d.ok){btn.disabled=false;btn.textContent='⬆️ Upload & Anonymize';status.textContent='Upload failed';alert(d.message||'Upload failed.');return;}
+    if(!d.ok){btn.disabled=false;btn.textContent='⬆️ Upload & Anonymize';status.textContent='Upload failed';alert(d.error||'Upload failed.');return;}
     status.textContent='Uploaded ✓';
-    const relPath='05-In-Process/'+folder+'/'+file.name;
-    runDetect(relPath,'anon-status',()=>{btn.disabled=false;btn.textContent='⬆️ Upload & Anonymize';});
+    runDetect(d.staged_path,'anon-status',()=>{btn.disabled=false;btn.textContent='⬆️ Upload & Anonymize';});
   }).catch(()=>{btn.disabled=false;btn.textContent='⬆️ Upload & Anonymize';status.textContent='Upload error';alert('Upload request failed.');});
 }
 
@@ -1494,11 +1581,32 @@ function getContext(){
   };
 }
 
+// ── FIX 3: freetext context advisory notices ────────────────────────────────
+function renderContextNotes(notes){
+  const el=document.getElementById('ctx-notes');
+  if(!el) return;
+  el.innerHTML='';
+  if(!notes) return;
+  const p2=document.getElementById('ctx-party2').value.trim();
+  const ct=document.getElementById('ctx-type').value.trim();
+  let html='';
+  if(notes.party_2_in_mapping===false && p2){
+    html+='<div class="note">⚠️ '+esc(p2)+' is not in the counterparty map — detection will use '+
+          'text matching only. Consider adding to COUNTERPARTIES.md after this run.</div>';
+  }
+  if(notes.contract_type_recognized===false && ct){
+    html+='<div class="note">⚠️ \''+esc(ct)+'\' is not a recognized document type — '+
+          'using \'Other\' detection weights.</div>';
+  }
+  el.innerHTML=html;
+}
+
 // ── Phase 1: detect (synchronous JSON) ──────────────────────────────────────
 function runDetect(relPath,statusId,onDone){
   const log=document.getElementById('log');
   const status=document.getElementById(statusId);
   const selBtn=document.getElementById('anon-sel-btn');
+  const _cn=document.getElementById('ctx-notes'); if(_cn) _cn.innerHTML='';
   document.getElementById('review-card').style.display='none';
   log.innerHTML='<span class="spin">⏳ Detecting…</span>';
   document.getElementById('log-card').style.display='block';
@@ -1519,6 +1627,7 @@ function runDetect(relPath,statusId,onDone){
     currentFilePath=relPath;
     SPANS=d.spans||[];
     TRIGGERS=d.review_triggers||[];
+    renderContextNotes(d.context_notes);
     renderReview();
   }).catch(()=>{
     if(selBtn) selBtn.disabled=(IP_SEL===null);

@@ -1,4 +1,4 @@
-# Anonymizer Implementation Spec
+﻿# Anonymizer Implementation Spec
 **Version:** 2.2
 **Date:** 2026-06-15
 **Status:** DRAFT — pending USER review
@@ -51,7 +51,18 @@
 | G2 — PLAN.md §5.2 + §8 + §11 reconcile | ✅ Built (6fb93b5) |
 | G3 — CONTRACT-RULES.md NDA evergreen | ⛔ Blocked (USER wording pending) |
 | G4 — audit-catalog.py kb/ auto-refresh | 🔲 Open (unscoped) |
-| H — Corpus run | ❌ Not started |
+| H1 — Pre-run audit (3 eligible files, mapping verified) | ✅ Complete |
+| H0a — secure_filename() path-mangling fix | ✅ Built + committed |
+| H0b — _short_name() word-count guard + COMMON_WORDS +40 | ✅ Built + committed |
+| H0c — 05-In-Process\<party_2>\ auto-create on detect | ✅ Built + committed |
+| H0d — Staged-file move into party folder before detect_file() | ✅ Built + committed |
+| H0e — Freetext combobox for party_2 + contract_type | ✅ Built + committed |
+| H0f — COUNTERPARTIES_MANUAL.json + merge_manual() in build_map.py | ✅ Built + committed |
+| H0g — GET /api/status health-check route | ✅ Built + committed |
+| H2 — Detect-only run (Columbia Machine Inc proposal) | ✅ PASS — PARTY-0114 bound 5 cp/alias spans (2 full-name + 3 "Columbia Machine"), live /api/detect, no Okura collision. PARTY-0539 dup merged into PARTY-0114. |
+| H3 — Audit rollup -> AUDIT_ROLLUP.md | ❌ Not started |
+| H4 — Spot-check (5 files) | ❌ Not started |
+| H5 — Bulk apply (verification-gated) | ❌ Not started |
 
 ---
 

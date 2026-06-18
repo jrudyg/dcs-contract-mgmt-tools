@@ -135,6 +135,8 @@ ALIAS_STOPWORDS: frozenset[str] = frozenset({
     'days', 'weeks', 'months', 'years', 'term',
     # Common false-positive single words
     'the', 'and', 'or', 'for', 'not', 'any', 'all',
+    # Common nouns that collide with short single-word aliases (E19)
+    'capacity',
 })
 
 # Common single dictionary words that must never count as counterparty identity
@@ -330,8 +332,67 @@ def _extract_pdf(path: pathlib.Path) -> str:
 
 
 def _extract_docx(path: pathlib.Path) -> str:
+    """Extract text from a .docx, including regions python-docx's
+    ``doc.paragraphs`` silently omits: tables, headers/footers, and text
+    boxes/shapes. Any counterparty name living only in those regions would
+    otherwise be invisible to detection — a confirmed redaction-leakage
+    vector (e.g. 'Colmac' x4 sat in a body text box and extracted as 0).
+    """
+    from docx.oxml.ns import qn
+
     doc = Document(str(path))
-    return '\n'.join(para.text for para in doc.paragraphs)
+    parts: list[str] = []
+
+    def _table_text(tbl) -> list[str]:
+        out: list[str] = []
+        for row in tbl.rows:
+            for cell in row.cells:
+                for p in cell.paragraphs:
+                    if p.text:
+                        out.append(p.text)
+                for nested in cell.tables:
+                    out.extend(_table_text(nested))
+        return out
+
+    # Body paragraphs + tables
+    for para in doc.paragraphs:
+        if para.text:
+            parts.append(para.text)
+    for tbl in doc.tables:
+        parts.extend(_table_text(tbl))
+
+    # Headers / footers (primary, first-page, even-page) for each section
+    for section in doc.sections:
+        for hf in (
+            section.header, section.footer,
+            section.first_page_header, section.first_page_footer,
+            section.even_page_header, section.even_page_footer,
+        ):
+            if hf is None:
+                continue
+            for para in hf.paragraphs:
+                if para.text:
+                    parts.append(para.text)
+            for tbl in hf.tables:
+                parts.extend(_table_text(tbl))
+
+    # Text boxes / shapes — w:txbxContent is skipped by paragraph iteration.
+    # Walk body + header/footer parts. Dedupe identical blocks to avoid the
+    # mc:AlternateContent Choice/Fallback double-count.
+    seen_txbx: set[str] = set()
+    roots = [doc.element]
+    for section in doc.sections:
+        for hf in (section.header, section.footer):
+            if hf is not None:
+                roots.append(hf._element)
+    for root in roots:
+        for txbx in root.iter(qn('w:txbxContent')):
+            text = ''.join(t.text for t in txbx.iter(qn('w:t')) if t.text)
+            if text and text not in seen_txbx:
+                seen_txbx.add(text)
+                parts.append(text)
+
+    return '\n'.join(parts)
 
 
 def _extract_txt(path: pathlib.Path) -> str:

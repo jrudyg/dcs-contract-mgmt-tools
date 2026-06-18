@@ -35,6 +35,7 @@ EXCLUDED: frozenset[str] = frozenset({
     "(blank)",
     "A. MNDA Template",
     "ACI for Signature",
+    "each a",            # boilerplate fragment ("…each a 'Party'…"), not a counterparty (E19)
 })
 
 # ---------------------------------------------------------------------------
@@ -203,7 +204,15 @@ def merge_manual(payload: dict) -> int:
         if not name:
             continue
         if name in payload["entries"]:
-            # Already present (added to COUNTERPARTIES.md later) — skip silently.
+            # Name already built from the catalog — merge this manual entry's
+            # aliases into the existing entry (deduped) rather than dropping them.
+            # Lets a manual entry augment a catalog party's alias set (e.g. add
+            # "Colmac" to PARTY-0114 Columbia Machine).
+            existing = payload["entries"][name]
+            for alias in item.get("aliases", []):
+                if alias and alias not in existing["aliases"]:
+                    existing["aliases"].append(alias)
+            merged += 1
             continue
         payload["entries"][name] = {
             "pseudonym": item["pseudonym"],

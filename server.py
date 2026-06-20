@@ -898,6 +898,10 @@ def detect():
         # W2: review.json now lives in the private zone — return that path.
         review_path = review_path_for(abs_path)
         rel_review = str(review_path.relative_to(SHAREPOINT)).replace("\\", "/")
+        # BUGLOCK 20260620: return the (possibly moved) doc path so the client
+        # uses the post-move location for apply. Detect may relocate a staged
+        # file into 05-In-Process\<party_2>\, which changes its review.json key.
+        rel_doc = str(abs_path.relative_to(SHAREPOINT)).replace("\\", "/")
 
         # Phase E: surface review_triggers persisted by detect_file into review.json.
         # Backward compat — default to [] if the key is absent.
@@ -908,7 +912,7 @@ def detect():
         except Exception:
             review_triggers = []
 
-        return json.dumps({"ok": True, "review_path": rel_review, "spans": spans, "review_triggers": review_triggers,
+        return json.dumps({"ok": True, "path": rel_doc, "review_path": rel_review, "spans": spans, "review_triggers": review_triggers,
                            "context_notes": {"party_2_in_mapping": party_2_in_mapping,
                                              "contract_type_recognized": contract_type_recognized}}), 200, {"Content-Type": "application/json"}
     except Exception as exc:
@@ -1624,7 +1628,7 @@ function runDetect(relPath,statusId,onDone){
       return;
     }
     document.getElementById('log-card').style.display='none';
-    currentFilePath=relPath;
+    currentFilePath=d.path||relPath;  // BUGLOCK 20260620: use post-move path returned by server
     SPANS=d.spans||[];
     TRIGGERS=d.review_triggers||[];
     renderContextNotes(d.context_notes);

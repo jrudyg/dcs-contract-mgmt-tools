@@ -1183,6 +1183,28 @@ def detect_file(
             'span_indices': e3_indices,
         })
 
+    # E7 — zero spans on non-trivial extraction (silent leak surface)
+    # Fires when extraction succeeded (raw_text >= 500 chars, so not a scan stub)
+    # but ALL three detection layers returned 0 spans. This means the document
+    # passed through without any redaction candidates — a real contract with no
+    # counterparty, PII, or commercial matches is almost certainly a detection
+    # failure, not a genuinely empty document. FLAG (not HARD_STOP): the human
+    # must explicitly decide to ship a zero-redaction output.
+    # Distinct from E4 (short extraction = probable image PDF) — here text
+    # extracted fine but detection found nothing.
+    # (Code E7: E5/E6 are reserved for the D1/D3 verification hard-stops below.)
+    if len(review_spans) == 0 and len(raw_text) >= 500:
+        review_triggers.append({
+            'code': 'E7_ZERO_SPANS',
+            'severity': 'FLAG',
+            'message': (
+                f'0 redaction spans detected on {len(raw_text):,}-char document '
+                f'({source.suffix.lower()}) — possible detection failure or image-layer PDF. '
+                f'Verify the document contains selectable text before shipping.'
+            ),
+            'span_indices': [],
+        })
+
     # E4 — short extraction (probable scanned/image PDF)
     if len(raw_text) < 500:
         review_triggers.append({

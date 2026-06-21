@@ -106,4 +106,28 @@ python Tools/scan-contract.py --prune
 
 ---
 
-*Last updated: 2026-05-20*
+## Non-Expiring Documents — Classification Policy
+**Established:** 2026-06-21
+**Applies to:** All contract types with no expiration date in contract-catalog.csv
+
+### Rule
+Contracts with no stated expiration date are classified as one of:
+
+| Classification | Meaning | Examples |
+|---------------|---------|---------|
+| **On-Notice** | Active and terminable by either party with written notice per contract terms | NDAs, MNDAs, MSAs, evergreen service agreements |
+| **N/A** | Expiration concept not applicable to this document type | One-time licenses, certifications, permits, single-transaction POs |
+
+### Operational rules
+- Non-expiring documents are NEVER moved to "04 Expired Contracts" by the expiration archiving workflow.
+- Non-expiring documents are NOT subject to expiration-date-based status changes.
+- Termination or archiving of On-Notice and N/A documents requires an explicit manual action — see NEAR_TERM_ENHANCEMENTS.md E22 for the planned catalog workflow.
+- The ExpirationDate field in contract-catalog.csv is left blank for these documents. A blank ExpirationDate is the system signal for On-Notice or N/A classification.
+- SigningStatus for On-Notice documents = "Signed". SigningStatus for N/A documents = as applicable.
+
+### Prior action
+92 NDAs/MNDAs previously moved to "04 Expired Contracts" in error were restored to "01 Active Contracts" per this policy.
+
+---
+
+*Last updated: 2026-06-21*

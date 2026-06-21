@@ -1,7 +1,7 @@
 ﻿# NEAR-TERM ENHANCEMENTS — Contract Management Tools
-**Version:** 1.7
+**Version:** 1.8
 **Created:** 2026-06-12
-**Updated:** 2026-06-18
+**Updated:** 2026-06-21
 **Owner:** CAI (maintained at session close)
 **Canonical path:** `...\Contract Management - SharePoint\Tools\NEAR_TERM_ENHANCEMENTS.md`
 **Note:** Not committed to git unless USER directs — keep out of Azure SWA deploy until reviewed.
@@ -92,7 +92,7 @@ completion. A failed or skipped certification is a HARD BLOCK, not a warning.
 
 ### E6 — CONTRACT-RULES.md: NDA evergreen policy (flagged 2026-06-13)
 **What:** NDA/MNDA evergreen policy established in prior sessions (92 NDAs moved Expired→Active) is not documented in CONTRACT-RULES.md. Policy needs exact wording confirmed by USER before adding.
-**Status:** OPEN — needs USER confirmation of policy wording.
+**Status:** COMPLETE 2026-06-21 — policy written to Tools\CONTRACT-RULES.md. On-Notice / N/A classification; blank ExpirationDate = system signal; manual action required to terminate or archive. See E22 for catalog workflow.
 
 ### E7 — server.py status determination (flagged 2026-06-13)
 **What:** CLAUDE.md references server.py (Flask, port 5000, SSE scan UI) as a common command, but architecture is now static Azure SWA. Determine if server.py is: (A) still used for local scan ops, (B) fully replaced and should archive, or (C) occasionally used. Answer determines CLAUDE.md cleanup.
@@ -223,6 +223,17 @@ doc-defined term collides with another entity's name root need a **doc-scoped** 
 bare-token terms with no parenthetical definition.
 **Status:** OPEN — non-blocking. PARTY-0114 has adequate coverage via "Columbia Machine" / "CMI".
 
+### E22 — Catalog workflow: terminate / archive non-expiring documents (2026-06-21)
+**What:** Non-expiring documents (On-Notice / N/A per CONTRACT-RULES.md) have no
+expiration-based archiving path. The catalog UI needs explicit actions:
+- **Terminate** — mark an On-Notice contract as terminated (effective date + reason);
+  move to "04 Expired Contracts" or a new "05 Terminated" location; update SigningStatus.
+- **Archive** — move an N/A document to "03 Archived Contracts" when no longer needed.
+These actions must be manual and confirmation-gated (irreversible file moves).
+**Scope:** contract-catalog UI (server.py dashboard or separate workflow page);
+new `/api/terminate` and `/api/archive-document` routes; catalog CSV update + git commit.
+**Status:** OPEN — logged per USER direction 2026-06-21. Not blocking anonymizer production.
+
 ---
 
 ## OSS LANDSCAPE — EXPLICITLY REJECTED (do not re-litigate)
@@ -272,3 +283,4 @@ Source: ANON_OSS_INTEGRATION_PROPOSAL_v1_0.md (GitHub survey, 2026-06-17).
 | 1.6 | 2026-06-17 | E13 status corrected: deferred, not built (Phase H lock held). Spec Current State table updated via companion edit to ANON_IMPL_SPEC_v2_2.md. |
 | 1.7 | 2026-06-18 | H2 PASS closed out. E18 (single canonical catalog, PartyID key, dedupe-first gate — multi-session), E19 (short-token/stopword detection tightening), E20 (bare-token alias ambiguity / global-map limitation) appended from H2 findings. NOTE: requested as E14–E16 but those IDs were already occupied (GLiNER / docx / PII-reversibility) — renumbered to E18–E20 per USER to preserve existing entries. |
 | 1.5 | 2026-06-17 | E13 (party-name conflict card, this-session scope) + E14–E17 from GitHub OSS landscape review, re-ranked by evidence-verified [VALUE]: GLiNER (E14) first — native Presidio recognizer, CPU-capable; docx write-back (E15) downgraded 80%->70% on run-split / table-header leakage risk + Java ref unusable. E16 (PII reversibility) sequenced after E15 apply-path refactor. PRE-IMPORT SECURITY CERTIFICATION GATE added (blocking — no external code/weights without file-backed CAI certification). §4 reject list + gating-checks table recorded. Presidio confirmed already in production. |
+| 1.8 | 2026-06-21 | E6 closed (CONTRACT-RULES.md written). E22 added — catalog terminate/archive workflow for non-expiring documents. |

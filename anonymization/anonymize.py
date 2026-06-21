@@ -136,7 +136,15 @@ ALIAS_STOPWORDS: frozenset[str] = frozenset({
     # Common false-positive single words
     'the', 'and', 'or', 'for', 'not', 'any', 'all',
     # Common nouns that collide with short single-word aliases (E19)
-    'capacity',
+    'capacity', 'api',
+})
+
+# Generic words / section headings / role labels Presidio frequently mis-tags as
+# PERSON/LOCATION/NRP/DATE_TIME. Suppress these presidio spans (tuning 2026-06-20).
+PRESIDIO_STOPWORDS: frozenset[str] = ALIAS_STOPWORDS | frozenset({
+    'deliverables', 'monthly', 'the later', 'project overview', 'overview',
+    'timeline', 'personnel', 'exclusions', 'scope of services', 'payment terms',
+    'miscellaneous', 'governing law', 'fees',
 })
 
 # Common single dictionary words that must never count as counterparty identity
@@ -942,6 +950,17 @@ def detect_file(
         )
     ]
 
+    # Drop spans fully contained within a longer span (e.g. 'CEO' inside
+    # 'Co-Founder and CEO'). Overlapping/contained matches corrupt the offset
+    # application below, producing glued sub-word tokens. (tuning 2026-06-20)
+    _kept: list[dict] = []
+    for m in sorted(cp_full_matches, key=lambda d: -(d['char_end'] - d['char_start'])):
+        if any(o['char_start'] <= m['char_start'] and m['char_end'] <= o['char_end']
+               for o in _kept):
+            continue
+        _kept.append(m)
+    cp_full_matches = sorted(_kept, key=lambda d: d['char_start'])
+
     # Build cp_redacted from the full-name pass (reverse char-order, raw_text)
     # so its offsets remain valid for the alias pass that runs against it.
     cp_redacted = raw_text
@@ -999,13 +1018,21 @@ def detect_file(
     )
     # B0.3: drop presidio spans lying entirely within a structural range.
     # B0.4: also suppress LOCATION/NRP/DATE_TIME spans inside signature zones.
+    # tuning 2026-06-20 (offset-coordinate fix): presidio_results offsets index
+    # alias_redacted; structural_ranges/signature_zones were computed on raw_text.
+    # Body masking diverges the two, wrongly dropping real spans (e.g. the
+    # 'four (4) weeks' timeline DATE_TIME). Recompute on alias_redacted.
+    _pii_structural = _compute_structural_ranges(alias_redacted)
+    _pii_sigzones = _compute_signature_zones(alias_redacted)
     presidio_results = [
         r for r in presidio_results
-        if not any(s <= r.start and r.end <= e for s, e in structural_ranges)
+        if not any(s <= r.start and r.end <= e for s, e in _pii_structural)
         and not (
             r.entity_type in SIGNATURE_ZONE_SUPPRESS
-            and any(s <= r.start and r.end <= e for s, e in signature_zones)
+            and any(s <= r.start and r.end <= e for s, e in _pii_sigzones)
         )
+        # tuning 2026-06-20: drop generic-word / role-label / heading FPs
+        and alias_redacted[r.start:r.end].strip().lower() not in PRESIDIO_STOPWORDS
     ]
     pii_matches: list[dict] = []
     for r in presidio_results:
@@ -1061,9 +1088,15 @@ def detect_file(
         com_matches.extend(_term_duration_spans(presidio_redacted))
         # B0.3: drop commercial spans lying entirely within a structural range.
         # Placed before spans.extend so the exclusion actually reaches the output.
+        # tuning 2026-06-20 (offset-coordinate fix): com_matches offsets are in
+        # presidio_redacted coords; structural_ranges were computed on raw_text.
+        # As body masking grows the two diverge, wrongly excluding real commercial
+        # terms (e.g. 'four (4) weeks', table '$14,000.00'). Recompute structural
+        # ranges on presidio_redacted so the exclusion aligns to the same text.
+        _com_structural = _compute_structural_ranges(presidio_redacted)
         com_matches = [
             m for m in com_matches
-            if not any(s <= m['char_start'] and m['char_end'] <= e for s, e in structural_ranges)
+            if not any(s <= m['char_start'] and m['char_end'] <= e for s, e in _com_structural)
         ]
         com_matches.sort(key=lambda d: d['char_start'])
         spans.extend(com_matches)

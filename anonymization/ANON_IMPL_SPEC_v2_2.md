@@ -50,6 +50,7 @@
 | F — rapidfuzz wired into D1/D2 | ✅ Built + verified |
 | G1 — __pycache__ in .gitignore | ✅ Built |
 | G2 — PLAN.md §5.2 + §8 + §11 reconcile | ✅ Built (6fb93b5) |
+| B0.6a — DATE_TIME NDA down-tier | ✅ Built + verified (2026-06-21) |
 | G3 — CONTRACT-RULES.md NDA evergreen | ⛔ Blocked (USER wording pending) |
 | G4 — audit-catalog.py kb/ auto-refresh | 🔲 Open (unscoped) |
 | H1 — Pre-run audit (3 eligible files, mapping verified) | ✅ Complete |
@@ -166,6 +167,15 @@ Contract type (from context form, see B1) seeds detection weight only:
 - MSA → full all layers
 
 Contract type does NOT key the decisions library (see Phase C).
+
+#### B0.6a — DATE_TIME down-tiering for NDA contract types (2026-06-21)
+**Finding:** corpus RECON (02 Unsigned + 03 Archived, n=180 docx) showed the NDA population is 98% NDA documents. Presidio layer-isolated FP analysis: 44 of 54 Presidio spans (81%) are DATE_TIME, all ≥0.60 confidence, all body-text false positives (signing dates, effective dates, term dates). Floor tightening cannot reduce them — they sit in the high-confidence band. Fix: recognizer down-tiering.
+
+**Rule:** when `contract_type` is in `CONTRACT_TYPE_SUPPRESS_DATE_TIME` (same gate as B0.6), `DATE_TIME` is excluded from the active Presidio entity list for that detect run. DATE_TIME remains active for SOW/MSA/PO where payment-due and milestone dates are genuinely sensitive.
+
+**Implementation:** `CONTRACT_TYPE_SUPPRESS_DATE_TIME` constant added to `anonymize.py` (mirrors `CONTRACT_TYPE_SKIP_COMMERCIAL`). `detect_file()` builds `_active_entities` at runtime — DATE_TIME filtered out for NDA contract types. Log line: `B0.6a contract_type=<x> → DATE_TIME excluded from Presidio entities`.
+
+**Corpus eval scope finding (recorded here):** the 02 Unsigned + 03 Archived `.docx` corpus is NDA-homogeneous. SOW/MSA FP signal requires either (a) PDF detect path (235 uncounted PDFs in same folders) or (b) scoping 01 Active Contracts. Next corpus-eval phase must extend to one of these to measure DATE_TIME behavior on commercial doc types. See NEAR_TERM_ENHANCEMENTS.md for queued scope extension.
 
 ### B0.7 — Filename anonymization
 **The output filename itself leaks.** Source is `New Supplier Packet - Rev 3_ WALMART -DCS - Colmac Reviewed 060226.docx` — counterparty names survive in `.anon.txt` / `.audit.json` / `.review.json` filenames and in the `source_file` field of audit.json.

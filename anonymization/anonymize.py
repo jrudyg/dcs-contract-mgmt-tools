@@ -122,6 +122,16 @@ CONTRACT_TYPE_SKIP_COMMERCIAL: frozenset[str] = frozenset({
     'nda', 'mutual nda', 'mnda', 'non-disclosure', 'non disclosure',
 })
 
+# B0.6a — DATE_TIME down-tiering for NDA contract types.
+# NDAs contain no date PII worth redacting — signing/term/effective dates are
+# structural metadata, not sensitive identity. DATE_TIME remains active for
+# SOW/MSA/PO where payment-due and milestone dates are genuinely sensitive.
+# Uses the same NDA gate as CONTRACT_TYPE_SKIP_COMMERCIAL (B0.6) so the two
+# suppressions are tuned together, not independently.
+CONTRACT_TYPE_SUPPRESS_DATE_TIME: frozenset[str] = frozenset({
+    'nda', 'mutual nda', 'mnda', 'non-disclosure', 'non disclosure',
+})
+
 SUPPORTED_EXTENSIONS: frozenset[str] = frozenset({'.pdf', '.docx', '.doc', '.txt'})
 
 # Alias-pass stopwords — generic role/duration/filler words that must never be
@@ -1013,8 +1023,20 @@ def detect_file(
 
     # ── Layer 2: presidio (runs on the alias-redacted text) ────────────────
     analyzer, _ = _presidio_engines()
+    _active_entities = [
+        e for e in PRESIDIO_ENTITIES
+        if not (
+            e == 'DATE_TIME'
+            and contract_type.strip().lower() in CONTRACT_TYPE_SUPPRESS_DATE_TIME
+        )
+    ]
+    if len(_active_entities) < len(PRESIDIO_ENTITIES):
+        log.info(
+            'B0.6a contract_type=%r → DATE_TIME excluded from Presidio entities',
+            contract_type,
+        )
     presidio_results = analyzer.analyze(
-        text=alias_redacted, entities=PRESIDIO_ENTITIES, language='en',
+        text=alias_redacted, entities=_active_entities, language='en',
     )
     # B0.3: drop presidio spans lying entirely within a structural range.
     # B0.4: also suppress LOCATION/NRP/DATE_TIME spans inside signature zones.

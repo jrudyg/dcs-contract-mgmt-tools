@@ -136,3 +136,6 @@ These rules apply to every CC session in this repo.
 ### 4 — Session close
 - Append a session summary entry to `kb\SESSION_LOG.md` before ending the session.
 - Include: commits pushed (with hashes), catalog state (row count, distribution), and any open items.
+
+### 5 — Web research
+- Web research is permitted ONLY per the entity-resolution carve-out (ANON spec Principle 6a): org names in isolation, no contract/PII/commercial/DCS context. Treat results as inference unless authoritative.

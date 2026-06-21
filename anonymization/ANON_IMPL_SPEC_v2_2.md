@@ -16,6 +16,7 @@
 4. **Decisions compound.** Every confirm/reject is written to a global decisions library so the same call is never made twice.
 5. **Verify the output, not just the process.** Every apply run is followed by an automated leakage scan and roundtrip check before the output is considered shippable.
 6. **Data residency by sensitivity.** Tooling and non-sensitive reference → GitHub (diff/version/deploy). Documents and anonymized output → SharePoint (Copilot/MCP retrieval). Anything that reverses anonymization (mapping.json, decisions_library.json, review/verify sidecars) → a private folder outside every git tree, never committed, never Copilot-indexed.
+   - **6a. Web-research carve-out (USER-approved 2026-06-21).** Bare counterparty/organization NAMES IN ISOLATION may be researched on the public web to resolve entity-identity questions (is X an abbreviation / subsidiary / brand of Y). Permitted ONLY when: (a) the query contains the org name alone — no contract text, no commercial terms, no PII, no DCS context; (b) the purpose is entity resolution, not contract analysis; (c) results are treated as inference and flagged as such unless the source is authoritative. Does NOT relax Principle #6: no contract text, PII, or commercial terms ever leave the boundary un-anonymized.
 
 ---
 

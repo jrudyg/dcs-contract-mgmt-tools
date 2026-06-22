@@ -1436,7 +1436,10 @@ tr.trigger-highlight td{background:#fef9c3 !important}
       </div>
       <div>
         <label>Counterparty name <span style="font-weight:400;color:#9ca3af">(Party 2 — type or pick, freetext allowed)</span></label>
-        <input type="text" id="ctx-party2" list="counterparty-list" placeholder="e.g. Acme Corp">
+        <div style="display:flex;gap:6px;align-items:center">
+          <input type="text" id="ctx-party2" list="counterparty-list" placeholder="e.g. Acme Corp" style="flex:1">
+          <button class="ghost" type="button" style="white-space:nowrap;font-size:12px;padding:6px 12px" onclick="resolveParty()">Check</button>
+        </div>
         <datalist id="counterparty-list"></datalist>
       </div>
       <div class="full">
@@ -1459,6 +1462,9 @@ tr.trigger-highlight td{background:#fef9c3 !important}
 
 <!-- FIX 3 — freetext context advisory notices -->
 <div id="ctx-notes" style="max-width:980px;margin:0 auto"></div>
+
+<!-- E13 — Party-name conflict card -->
+<div id="party-conflict" style="max-width:980px;margin:4px auto;display:none"></div>
 
 <!-- Review table (Phase 2) -->
 <div class="review-card" id="review-card">
@@ -1533,6 +1539,60 @@ function detectSelected(){
   runDetect(IP_SEL,'ip-status');
 }
 loadInProcess();
+
+// E13: party-name conflict resolution
+function resolveParty() {
+  const val = (document.getElementById('ctx-party2').value || '').trim();
+  const card = document.getElementById('party-conflict');
+  if (!val || val.length < 3) { card.style.display = 'none'; card.innerHTML = ''; return; }
+
+  fetch('/api/resolve-party', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({party_2: val})
+  }).then(r => r.json()).then(d => {
+    card.innerHTML = '';
+    card.style.display = 'none';
+    if (!d.ok || d.result !== 'fuzzy_match' || !d.candidates.length) return;
+
+    let html = '<div style="background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:14px 16px;font-size:13px">' +
+      '<strong>⚠️ Similar folder' + (d.candidates.length > 1 ? 's' : '') + ' already exist in 05-In-Process.</strong>' +
+      '<p style="margin:6px 0 10px;color:#6b7280">Proceeding as typed creates a new folder. Choose an action:</p>';
+
+    d.candidates.forEach(c => {
+      const canon = c.mapping_name ? ' <span style="color:#6b7280;font-size:11px">(canonical: ' + esc(c.mapping_name) + ')</span>' : '';
+      html += '<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid #fde68a;flex-wrap:wrap">' +
+        '<span style="flex:1;font-weight:500">' + esc(c.folder_name) + canon +
+        ' <span style="font-size:11px;color:#9ca3af">(' + c.file_count + ' file' + (c.file_count === 1 ? '' : 's') + ', match ' + c.score + '%)</span></span>' +
+        '<button class="ghost" style="font-size:12px;padding:5px 10px" onclick="useFolder(' + JSON.stringify(c.folder_name) + ')">Use this folder</button>' +
+        (c.mapping_name && c.mapping_name !== c.folder_name ?
+          '<button class="ghost" style="font-size:12px;padding:5px 10px" onclick="useFolder(' + JSON.stringify(c.mapping_name) + ')">Use canonical name</button>' : '') +
+      '</div>';
+    });
+
+    html += '<div style="padding-top:8px;border-top:1px solid #fde68a">' +
+      '<button class="ghost" style="font-size:12px;padding:5px 10px" onclick="dismissConflict()">Proceed as typed</button>' +
+      '</div></div>';
+
+    card.innerHTML = html;
+    card.style.display = 'block';
+  }).catch(() => {});
+}
+
+function useFolder(name) {
+  document.getElementById('ctx-party2').value = name;
+  const card = document.getElementById('party-conflict');
+  card.style.display = 'none';
+  card.innerHTML = '';
+}
+
+function dismissConflict() {
+  const card = document.getElementById('party-conflict');
+  card.style.display = 'none';
+  card.innerHTML = '';
+}
+
+// E13: resolveParty() is triggered by the Check button onclick — no event listeners needed.
 
 // FIX 3: populate the counterparty datalist from /api/vendors (freetext still allowed).
 fetch('/api/vendors').then(r=>r.json()).then(vs=>{
@@ -1900,6 +1960,85 @@ function applyRedactions(){
 @app.route("/anonymize", methods=["GET"])
 def anonymize_page():
     return ANON_PAGE, 200, {"Content-Type": "text/html; charset=utf-8"}
+@app.route("/api/resolve-party", methods=["POST", "OPTIONS"])
+def resolve_party():
+    if request.method == "OPTIONS":
+        return "", 204
+    try:
+        body = request.get_json(force=True) or {}
+        party_2 = (body.get("party_2") or "").strip()
+        if not party_2 or len(party_2) < 3:
+            return json.dumps({"ok": True, "result": "zero_match", "candidates": []}), 200, {"Content-Type": "application/json"}
+
+        root = SHAREPOINT / "05-In-Process"
+        if not root.exists():
+            return json.dumps({"ok": True, "result": "zero_match", "candidates": []}), 200, {"Content-Type": "application/json"}
+
+        from rapidfuzz import fuzz as _fuzz
+
+        folders = [
+            p for p in root.iterdir()
+            if p.is_dir() and not p.name.startswith("_") and not p.name.startswith("~$")
+        ]
+
+        party_lower = party_2.lower()
+
+        # Exact match (case-insensitive) — proceed silently
+        for folder in folders:
+            if folder.name.lower() == party_lower:
+                file_count = sum(1 for f in folder.iterdir() if f.is_file() and not f.name.startswith("~$"))
+                # Look up canonical mapping name
+                mapping_name = None
+                try:
+                    name_map, _ = get_mapping(MAPPING_PATH, COUNTERPARTIES_PATH, rebuild=False)
+                    mapping_name = next(
+                        (name for name, token in name_map.items()
+                         if name.lower() == folder.name.lower()), None
+                    )
+                except Exception:
+                    mapping_name = None
+                return json.dumps({
+                    "ok": True,
+                    "result": "exact_match",
+                    "matched_folder": folder.name,
+                    "file_count": file_count,
+                    "mapping_name": mapping_name,
+                    "candidates": [],
+                }), 200, {"Content-Type": "application/json"}
+
+        # Fuzzy match — ratio >= 85
+        candidates = []
+        try:
+            name_map, _ = get_mapping(MAPPING_PATH, COUNTERPARTIES_PATH, rebuild=False)
+        except Exception:
+            name_map = {}
+
+        for folder in sorted(folders, key=lambda p: p.name.lower()):
+            score = _fuzz.token_set_ratio(party_lower, folder.name.lower())
+            if score >= 85:
+                file_count = sum(1 for f in folder.iterdir() if f.is_file() and not f.name.startswith("~$"))
+                mapping_name = next(
+                    (name for name, token in name_map.items()
+                     if name.lower() == folder.name.lower()), None
+                )
+                candidates.append({
+                    "folder_name": folder.name,
+                    "file_count": file_count,
+                    "mapping_name": mapping_name,
+                    "score": round(score, 1),
+                })
+
+        candidates.sort(key=lambda c: -c["score"])
+
+        if not candidates:
+            return json.dumps({"ok": True, "result": "zero_match", "candidates": []}), 200, {"Content-Type": "application/json"}
+
+        return json.dumps({"ok": True, "result": "fuzzy_match", "candidates": candidates}), 200, {"Content-Type": "application/json"}
+
+    except Exception as exc:
+        return json.dumps({"ok": False, "error": str(exc)}), 500, {"Content-Type": "application/json"}
+
+
 @app.route("/api/list-in-process", methods=["GET"])
 def list_in_process():
     """Return files and subfolders inside 05-In-Process, skipping _-prefixed entries."""

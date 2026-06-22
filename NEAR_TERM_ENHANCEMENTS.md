@@ -1,5 +1,5 @@
 ﻿# NEAR-TERM ENHANCEMENTS — Contract Management Tools
-**Version:** 1.8
+**Version:** 1.9
 **Created:** 2026-06-12
 **Updated:** 2026-06-21
 **Owner:** CAI (maintained at session close)
@@ -267,7 +267,7 @@ Source: ANON_OSS_INTEGRATION_PROPOSAL_v1_0.md (GitHub survey, 2026-06-17).
 | ANON-1 Phase A (PLAN.md) | 8d857a1 | ✅ |
 | ANON-1 Phase B-E (anonymize.py + pilot) | 6247756 | ✅ |
 | ANON-2 (build_map.py + alias detection) | 832a88e | ✅ |
-| ANON-3 (full corpus run + audit rollup) | not started | — |
+| ANON-3 (corpus characterization — detect only, H3/H4, 648 files) | 1f6a3a8 | ✅ |
 
 ---
 
@@ -284,3 +284,4 @@ Source: ANON_OSS_INTEGRATION_PROPOSAL_v1_0.md (GitHub survey, 2026-06-17).
 | 1.7 | 2026-06-18 | H2 PASS closed out. E18 (single canonical catalog, PartyID key, dedupe-first gate — multi-session), E19 (short-token/stopword detection tightening), E20 (bare-token alias ambiguity / global-map limitation) appended from H2 findings. NOTE: requested as E14–E16 but those IDs were already occupied (GLiNER / docx / PII-reversibility) — renumbered to E18–E20 per USER to preserve existing entries. |
 | 1.5 | 2026-06-17 | E13 (party-name conflict card, this-session scope) + E14–E17 from GitHub OSS landscape review, re-ranked by evidence-verified [VALUE]: GLiNER (E14) first — native Presidio recognizer, CPU-capable; docx write-back (E15) downgraded 80%->70% on run-split / table-header leakage risk + Java ref unusable. E16 (PII reversibility) sequenced after E15 apply-path refactor. PRE-IMPORT SECURITY CERTIFICATION GATE added (blocking — no external code/weights without file-backed CAI certification). §4 reject list + gating-checks table recorded. Presidio confirmed already in production. |
 | 1.8 | 2026-06-21 | E6 closed (CONTRACT-RULES.md written). E22 added — catalog terminate/archive workflow for non-expiring documents. |
+| 1.9 | 2026-06-21 | ANON-3 closed — corpus characterization complete (H3/H4, 648 files, detect-only). Bulk apply is not the production model; pipeline enters regular use on new contracts via UI. |

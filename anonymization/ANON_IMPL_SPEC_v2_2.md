@@ -51,7 +51,7 @@
 | G1 — __pycache__ in .gitignore | ✅ Built |
 | G2 — PLAN.md §5.2 + §8 + §11 reconcile | ✅ Built (6fb93b5) |
 | B0.6a — DATE_TIME NDA down-tier | ✅ Built + verified (2026-06-21) |
-| G3 — CONTRACT-RULES.md NDA evergreen | ⛔ Blocked (USER wording pending) |
+| G3 — CONTRACT-RULES.md NDA evergreen | ✅ Complete (2026-06-21) |
 | G4 — audit-catalog.py kb/ auto-refresh | 🔲 Open (unscoped) |
 | H1 — Pre-run audit (3 eligible files, mapping verified) | ✅ Complete |
 | H0a — secure_filename() path-mangling fix | ✅ Built + committed |
@@ -62,9 +62,9 @@
 | H0f — COUNTERPARTIES_MANUAL.json + merge_manual() in build_map.py | ✅ Built + committed |
 | H0g — GET /api/status health-check route | ✅ Built + committed |
 | H2 — Detect-only run (Columbia Machine Inc proposal) | ✅ PASS — PARTY-0114 bound 5 cp/alias spans (2 full-name + 3 "Columbia Machine"), live /api/detect, no Okura collision. PARTY-0539 dup merged into PARTY-0114. |
-| H3 — Audit rollup -> AUDIT_ROLLUP.md | ❌ Not started |
-| H4 — Spot-check (5 files) | ❌ Not started |
-| H5 — Bulk apply (verification-gated) | ❌ Not started |
+| H3 — Corpus detect audit (H3_AUDIT_ROLLUP.md, 648 files) | ✅ Complete (2026-06-21) |
+| H4 — Spot-check (5 files, H4_SPOT_CHECK.md) | ✅ Complete (2026-06-21) |
+| H5 — Bulk apply | ⛔ Retired — detect-only characterization was the correct scope; bulk apply is not the production model |
 
 ---
 
@@ -96,7 +96,7 @@ If `_anon-private\` is missing/renamed, the pipeline fails LOUD at startup (File
 
 **Exit gate:** `git status` in `Tools\` shows no sensitive artifacts as tracked or untracked-pending. Pipeline runs reading mapping from `_anon-private\`. A deliberate `git add -A` stages nothing sensitive.
 
-**Deferred (Option C, gated on Phase D):** depositing verified-clean `.anon.txt` into the SharePoint document tree for Copilot/MCP retrieval. Only after leakage scan + dictionary sweep pass — indexing an unverified output could surface a missed name.
+**Option C (Phase D now live):** Verified-clean `.anon.txt` is deposited into the SharePoint document tree for Copilot/MCP retrieval. Phase D verification (leakage scan + dictionary sweep) runs automatically on every apply — output is only written to the document tree on PASS. Deferred status lifted 2026-06-21.
 
 ---
 

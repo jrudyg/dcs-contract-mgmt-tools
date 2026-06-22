@@ -132,7 +132,7 @@ CONTRACT_TYPE_SUPPRESS_DATE_TIME: frozenset[str] = frozenset({
     'nda', 'mutual nda', 'mnda', 'non-disclosure', 'non disclosure',
 })
 
-SUPPORTED_EXTENSIONS: frozenset[str] = frozenset({'.pdf', '.docx', '.doc', '.txt'})
+SUPPORTED_EXTENSIONS: frozenset[str] = frozenset({'.pdf', '.docx', '.txt'})
 
 # Alias-pass stopwords — generic role/duration/filler words that must never be
 # treated as a counterparty alias even if they appear in alias_map.

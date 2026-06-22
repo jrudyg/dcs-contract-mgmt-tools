@@ -1882,7 +1882,7 @@ function applyRedactions(){
         '<strong>'+d.rejected+'</strong> rejected.<br><br>'+
         'Output written next to the source file:<br>'+
         '<span class="mono">'+esc(d.anon_path)+'</span><br>'+
-        '<span class="mono">'+esc(d.audit_path)+'</span><br><br>'+
+        '<span style="font-size:11px;color:#6b7280">Audit log written to private zone.</span><br><br>'+
         'Need the original back? <a href="/restore">Open the Restore tool →</a>'+
       '</div>';
     card.style.display='block';

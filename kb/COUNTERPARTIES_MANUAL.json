@@ -2,13 +2,18 @@
   {
     "name": "Columbia-Okura",
     "pseudonym": "PARTY-0538",
-    "aliases": ["Columbia Okura", "Columbia-Okura LLC"],
+    "aliases": [
+      "Columbia Okura",
+      "Columbia-Okura LLC"
+    ],
     "note": "Added manually 2026-06-16 — not in catalog CSV. 'Colmac' + 'Colmac Coil Dehumidification' removed 2026-06-18: Colmac is Columbia Machine (PARTY-0114), not Okura; Colmac Coil is an unrelated HVAC company."
   },
   {
     "name": "Columbia Machine, Inc",
     "pseudonym": "PARTY-0114",
-    "aliases": ["Colmac"],
+    "aliases": [
+      "Colmac"
+    ],
     "note": "Manual alias merge into catalog entry PARTY-0114 (2026-06-18): 'Colmac' = COLumbia MAChine shorthand. Confirmed by doc naming both 'COLUMBIA MACHINE, INC' (x2) and 'colmac' (x4). Requires build_map.py merge_manual() alias-merge behavior."
   }
 ]

@@ -39,6 +39,7 @@ LOCATION_ROOTS = {
     "01 Active Contracts":   ONEDRIVE   / "Salesforce Integration - Active Contracts",
     "02 Unsigned Contracts": SHAREPOINT / "02 Unsigned Contracts",
     "03 Archived Contracts": SHAREPOINT / "03 Archived Contracts",
+    "04 Expired Contracts":  SHAREPOINT / "04 Expired Contracts",
 }
 
 CONTRACT_ROOTS = list(LOCATION_ROOTS)
@@ -55,6 +56,22 @@ TEMPLATE_FOLDER_PREFIXES = ("00 ",)
 # of the old active tree left inside 03 Archived; walking it would add ~396
 # bogus rows for files that are duplicates of the live Salesforce library.
 EXCLUDED_VENDOR_FOLDERS = {"01 active contracts - do not use"}
+
+# Individual files that are on disk but deliberately have NO catalog row, with the
+# reason. Reviewed 2026-07-14 (Phase 3 reconciliation). Without this, any write-mode
+# run of this script would silently re-add them and undo the exclusion.
+EXCLUDED_FILES: dict[tuple[str, str], str] = {
+    ("01 Active Contracts", "ISM/Effective Contracting - ISM 05.14.26.pdf"):
+        "training material, not a contract",
+    ("01 Active Contracts", "Williams Sonoma/DATUM EULA 06.12.2026 - Clean - audit.pdf"):
+        "'- audit' working copy of a catalogued EULA",
+    ("01 Active Contracts", "Williams Sonoma/WSI-DCS  EXHIBIT A.2 SOW 26.06.22 CLEAN - audit.pdf"):
+        "'- audit' working copy of a catalogued SOW",
+    ("03 Archived Contracts", "ACI Licenses/AL Contractor License.pdf"):
+        "contractor license certificate, not a contract",
+    ("03 Archived Contracts", "Nationwide Services/Nationwide Svcs FL Contractor Lic thru 8-31-26.pdf"):
+        "contractor license certificate, not a contract",
+}
 
 # ── CSV helpers ────────────────────────────────────────────────────────────────
 
@@ -155,25 +172,29 @@ def main():
     columns = list(df.columns)
     print(f"Loaded {len(df)} CSV rows.\n")
 
-    # Build lookup: normalized FilePath -> list of row indices
-    fp_to_indices: dict[str, list[int]] = {}
+    # ── Uniqueness invariant: (ContractLocation, FilePath) ─────────────────────
+    # FilePath alone is NOT a key. The same relative path legitimately exists in
+    # two locations (e.g. an unsigned draft in 02 and a signed copy in 01), and
+    # they are two distinct records. Matching on FilePath alone previously made
+    # this script rewrite a row's ContractLocation to whichever copy the disk
+    # walk happened to reach last — manufacturing phantom "mismatches" and
+    # silently corrupting data. Everything below keys on (loc, fp).
+    key_to_indices: dict[tuple[str, str], list[int]] = {}
     for idx in df.index:
-        key = _norm_fp(df.at[idx, "FilePath"])
-        if key:
-            fp_to_indices.setdefault(key, []).append(idx)
+        fp = _norm_fp(df.at[idx, "FilePath"])
+        if fp:
+            key_to_indices.setdefault((df.at[idx, "ContractLocation"], fp), []).append(idx)
 
-    # Identify FilePaths whose CSV rows span multiple ContractLocations — these are
-    # duplicate-row conflicts and must not be auto-corrected.
-    conflict_fps: set[str] = set()
-    for fp_key, indices in fp_to_indices.items():
-        locs = {df.at[idx, "ContractLocation"] for idx in indices}
-        if len(locs) > 1:
-            conflict_fps.add(fp_key)
-            rows_str = ", ".join(f"row {i} ({df.at[i,'ContractLocation']})" for i in indices)
-            print(f"  [CONFLICT] Same FilePath in multiple CSV rows: {fp_key}")
+    # A real violation: two rows sharing the SAME (location, path).
+    n_dup_rows = 0
+    for (loc, fp), indices in key_to_indices.items():
+        if len(indices) > 1:
+            n_dup_rows += 1
+            rows_str = ", ".join(f"row {i}" for i in indices)
+            print(f"  [DUP-ROW]  Same (ContractLocation, FilePath) in {len(indices)} rows: [{loc}] {fp}")
             print(f"             Rows: {rows_str}")
-            print(f"             -> Review and remove the duplicate CSV row(s) manually.")
-    if conflict_fps:
+            print(f"             -> Violates the catalog uniqueness invariant; remove the extra row(s).")
+    if n_dup_rows:
         print()
 
     # Walk disk ────────────────────────────────────────────────────────────────
@@ -185,44 +206,63 @@ def main():
     n_mismatch = 0
     n_orphan   = 0
     n_duplicate = 0
+    n_excluded  = 0
     orphan_rows: list[dict] = []
 
-    for loc, fp_key, vendor, abs_path in walk_contracts(SHAREPOINT):
-        indices = fp_to_indices.get(fp_key)
+    # Every (location, path) present on disk.
+    disk_keys = {(loc, fp_key) for loc, fp_key, _v, _p in walk_contracts()}
 
-        if indices is None:
-            # File exists on disk but has no CSV row
+    for loc, fp_key, vendor, abs_path in walk_contracts():
+        indices = key_to_indices.get((loc, fp_key))
+
+        if indices is not None:
+            # Row and file agree on both location and path.
+            confirmed_indices.update(indices)
+            n_ok += len(indices)
+            continue
+
+        # No row for THIS (location, path). Before calling it an orphan, check
+        # whether a row holds the same path at a different location AND that
+        # row's own file is gone from disk — that is a genuine relocation, so
+        # correct the row rather than adding a duplicate one.
+        moved_from = [
+            (other_loc, idx)
+            for (other_loc, other_fp), idxs in key_to_indices.items()
+            if other_fp == fp_key and other_loc != loc and (other_loc, other_fp) not in disk_keys
+            for idx in idxs
+            if idx not in updated_indices and idx not in confirmed_indices
+        ]
+        if moved_from:
+            other_loc, idx = moved_from[0]
             tag = "[DRY RUN] " if args.dry_run else ""
-            print(f"  {tag}[ORPHAN]   {loc}/{fp_key}")
-            n_orphan += 1
+            print(f'  {tag}[MOVED]    Row {idx}: ContractLocation "{other_loc}" -> "{loc}"  |  {fp_key}')
+            print(f"             (file is no longer in {other_loc}; it is only in {loc})")
+            n_mismatch += 1
+            confirmed_indices.add(idx)
+            updated_indices.add(idx)
             if not args.dry_run:
-                orphan_rows.append(make_orphan_row(columns, loc, fp_key, vendor, abs_path))
-        else:
-            for idx in indices:
-                csv_loc = df.at[idx, "ContractLocation"]
-                confirmed_indices.add(idx)
-                if fp_key in conflict_fps:
-                    # Duplicate-row conflict — skip auto-correction, already reported above
-                    n_ok += 1
-                elif csv_loc == loc:
-                    n_ok += 1
-                elif idx in updated_indices:
-                    # Already corrected; file physically exists in multiple folders
-                    print(
-                        f"  [DUPLICATE] Row {idx}: file found in both "
-                        f'"{df.at[idx, "ContractLocation"]}" and "{loc}"  |  {fp_key}'
-                    )
-                    n_duplicate += 1
-                else:
-                    tag = "[DRY RUN] " if args.dry_run else ""
-                    print(
-                        f"  {tag}[MISMATCH] Row {idx}: "
-                        f'ContractLocation "{csv_loc}" -> "{loc}"  |  {fp_key}'
-                    )
-                    n_mismatch += 1
-                    if not args.dry_run:
-                        df.at[idx, "ContractLocation"] = loc
-                        updated_indices.add(idx)
+                df.at[idx, "ContractLocation"] = loc
+            continue
+
+        # A row may hold this path at another location where the file ALSO still
+        # exists. That is two distinct records, not a mismatch — never rewrite it.
+        same_path_elsewhere = any(
+            other_fp == fp_key and other_loc != loc and (other_loc, other_fp) in disk_keys
+            for (other_loc, other_fp) in key_to_indices
+        )
+        if (loc, fp_key) in EXCLUDED_FILES:
+            print(f"  [EXCLUDED] {loc}/{fp_key}")
+            print(f"             -> {EXCLUDED_FILES[(loc, fp_key)]}")
+            n_excluded += 1
+            continue
+
+        tag = "[DRY RUN] " if args.dry_run else ""
+        note = "  (same path also exists in another location — distinct record, not a duplicate)" \
+            if same_path_elsewhere else ""
+        print(f"  {tag}[ORPHAN]   {loc}/{fp_key}{note}")
+        n_orphan += 1
+        if not args.dry_run:
+            orphan_rows.append(make_orphan_row(columns, loc, fp_key, vendor, abs_path))
 
     # Check for CSV rows whose file was never found on disk ───────────────────
     print("\nChecking for CSV rows with missing files...")
@@ -261,10 +301,11 @@ def main():
     # Summary ─────────────────────────────────────────────────────────────────
     print("\n" + "=" * 54)
     print(f"Audit complete")
-    print(f"  OK (file matches CSV location):   {n_ok}")
-    print(f"  ContractLocation mismatches:      {n_mismatch}  {'(corrected)' if n_mismatch and not args.dry_run else ''}")
+    print(f"  OK (row matches disk):            {n_ok}")
+    print(f"  Relocated (file moved location):  {n_mismatch}  {'(corrected)' if n_mismatch and not args.dry_run else ''}")
     print(f"  Orphan files (added to CSV):      {n_orphan}  {'(added — run scan-contract.py --all to fill metadata)' if n_orphan and not args.dry_run else ''}")
-    print(f"  Duplicate (file in 2+ folders):   {n_duplicate}  (review and remove extra copy)")
+    print(f"  Excluded files (no row, by design): {n_excluded}")
+    print(f"  DUP-ROW invariant violations:     {n_dup_rows}  (same ContractLocation+FilePath in 2+ rows)")
     print(f"  Missing files (in CSV, not disk): {n_missing}  (review manually)")
     if args.dry_run:
         print("  [DRY RUN — CSV not written]")

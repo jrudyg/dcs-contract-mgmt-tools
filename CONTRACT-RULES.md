@@ -128,6 +128,42 @@ Contracts with no stated expiration date are classified as one of:
 ### Prior action
 92 NDAs/MNDAs previously moved to "04 Expired Contracts" in error were restored to "01 Active Contracts" per this policy.
 
+**Correction (2026-07-14):** that restore **copied instead of moving**, leaving a byte-identical twin of each contract behind in `04 Expired Contracts`. `04` had become a stale shadow of `01`. This was found by hashing the disk during Phase 3 reconciliation and has been cleaned up. It is the reason the conventions below exist.
+
 ---
 
-*Last updated: 2026-06-21*
+## Conventions (established 2026-07-14)
+
+These were learned the hard way across the Phase 1–4 catalog cleanup. They are load-bearing; breaking one of them has already cost real data.
+
+### Folder naming
+
+Name a vendor folder after **the counterparty's legal name as it appears in the signed document** — not the filename, not an acronym someone typed, not the project name. Drop commas and periods (they are awkward in paths). An acronym in parentheses is fine where it aids recognition: `Applied Technology Group (ATG)`, `United States Postal Service (USPS)`.
+
+Use **ASCII for folder names** — a bare `ö` in a path survives Windows but keeps getting mangled somewhere along the CSV → HTML → Azure chain. **Data fields carry full Unicode**, so `CounterpartyName` is `Körber Supply Chain LLC` while the folder is `Korber Supply Chain LLC (KSC)`.
+
+Read the document before you name the folder. Folders named from filenames produced `Winery NC` (a filename fragment) and `CVL Lighthouse` (a project name), and folders named from guesswork put an Industrial Controls Electric NDA under `Alice and Olivia` — because "ICE" matches inside "al-**ICE**-and-Olivia".
+
+### Subcontracts
+
+A subcontract files under **the counterparty DCS actually signed with**, never the end client. The Doral subcontract for an Amazon site belongs under `Doral Corp`, not `Amazon`. Client↔contract linkage is future catalog functionality, not something to encode in the folder tree.
+
+### Deletion
+
+**Deletions never destroy.** Move the file to a dated quarantine folder, preserve its `ContractLocation/VendorFolder/` path inside it, and record SHA-256 + byte size in that folder's `MANIFEST.json`.
+
+Do **not** use `os.remove` on this library — on Windows it bypasses the Recycle Bin entirely, and the only remaining copy then lives in the SharePoint *site* recycle bin, which is web-only and cannot be reached from a script. We lost a document that way once and could not get it back without a human going to the web UI.
+
+### CounterpartyName is fill-only
+
+The scanner **never overwrites a non-blank `CounterpartyName`**. Extraction is heuristic, and this is the field humans most often correct by hand to the legal name on the document. Curated values are permanent. `scan-contract.py --recheck-counterparty` forces re-extraction and will clobber them — migration use only.
+
+### Catalog uniqueness invariant
+
+**The key is `(ContractLocation, FilePath)`. `FilePath` alone is NOT a key.**
+
+The same relative path legitimately exists in two locations — an unsigned draft in `02` and the signed copy in `01` are two distinct records pointing at two different files. Every tool that reconciles rows against disk must match on the pair. Matching on `FilePath` alone previously caused `audit-catalog.py` to rewrite a row's `ContractLocation` to whichever copy the directory walk happened to reach last, and would have caused `scan-contract.py` to write one file's metadata into a row describing a different file.
+
+---
+
+*Last updated: 2026-07-14*

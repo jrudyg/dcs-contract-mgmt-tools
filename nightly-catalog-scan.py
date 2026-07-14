@@ -598,7 +598,16 @@ def build_csv_line(row: dict) -> str:
     return ",".join(_q(row.get(c, "")) for c in COLUMNS)
 
 
-def read_catalog() -> tuple[str, list[str], set[str]]:
+def read_catalog() -> tuple[str, list[str], set[tuple[str, str]]]:
+    """Returns (header, data_lines, existing_keys).
+
+    existing_keys is keyed on (ContractLocation, FilePath) — the catalog
+    uniqueness invariant. FilePath ALONE is not a key: the same relative path
+    legitimately exists in two locations (e.g. an unsigned draft in 02 and the
+    signed copy in 01). Keying on FilePath alone made this scanner skip a
+    genuinely new 01 Active file as "already catalogued" whenever that path
+    existed under any other location.
+    """
     raw = CATALOG.read_bytes()
     if raw.startswith(b"\xef\xbb\xbf"):
         raw = raw[3:]
@@ -607,7 +616,11 @@ def read_catalog() -> tuple[str, list[str], set[str]]:
         raise ValueError("catalog is empty")
     header = lines[0]
     data   = lines[1:]
-    existing = {_parse_csv_row(l)[3].lower() for l in data if len(_parse_csv_row(l)) >= 4}
+    existing = set()
+    for l in data:
+        cells = _parse_csv_row(l)
+        if len(cells) >= 4:
+            existing.add((cells[0], cells[3].lower()))   # (ContractLocation, FilePath)
     return header, data, existing
 
 
@@ -919,8 +932,10 @@ def main() -> None:
             flush_log(dry)
             sys.exit(1)
 
-        # Dedupe (§Deduplication — case-insensitive FilePath match)
-        new_files = [c for c in candidates if c["rel_path"].lower() not in existing_paths]
+        # Dedupe on (ContractLocation, FilePath) — this scanner only ever writes
+        # rows for "01 Active Contracts", so that is the location to test.
+        new_files = [c for c in candidates
+                     if ("01 Active Contracts", c["rel_path"].lower()) not in existing_paths]
         n_new = len(new_files)
 
         log(

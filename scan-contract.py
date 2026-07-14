@@ -727,8 +727,22 @@ def _norm_path(p: str) -> str:
 
 
 def rows_for_filepath(df: pd.DataFrame, file_path_key: str) -> list[int]:
+    """Rows matching a FilePath in ANY location — target selection only.
+
+    NOT a uniqueness key: the same relative path legitimately exists in two
+    ContractLocations (e.g. an unsigned draft in 02 and the signed copy in 01)
+    and those are two distinct records pointing at two different files. Use
+    rows_for_key() before writing anything back.
+    """
     key = _norm_path(file_path_key)
     mask = df["FilePath"].apply(_norm_path) == key
+    return df.index[mask].tolist()
+
+
+def rows_for_key(df: pd.DataFrame, loc: str, file_path_key: str) -> list[int]:
+    """Rows matching (ContractLocation, FilePath) — the catalog uniqueness key."""
+    key = _norm_path(file_path_key)
+    mask = (df["ContractLocation"] == loc) & (df["FilePath"].apply(_norm_path) == key)
     return df.index[mask].tolist()
 
 
@@ -959,14 +973,19 @@ def main():
     if not target_indices and not args.prune:
         sys.exit("No target rows resolved. Check your arguments.")
 
-    # Deduplicate by FilePath so the same physical file isn't scanned twice
-    seen_paths: set[str] = set()
+    # Group by (ContractLocation, FilePath) so the same physical file isn't
+    # scanned twice — and, critically, so a file is never scanned once and its
+    # metadata written into a row from a DIFFERENT location that points at a
+    # different file on disk (e.g. 01 Active signed vs 02 Unsigned draft under
+    # the same relative path). FilePath alone is not a uniqueness key.
+    seen_keys: set[tuple[str, str]] = set()
     file_groups: list[tuple[str, list[int]]] = []
     for idx in target_indices:
+        loc = df.at[idx, "ContractLocation"]
         key = _norm_path(df.at[idx, "FilePath"])
-        if key not in seen_paths:
-            seen_paths.add(key)
-            group_indices = rows_for_filepath(df, key)
+        if (loc, key) not in seen_keys:
+            seen_keys.add((loc, key))
+            group_indices = rows_for_key(df, loc, key)
             file_groups.append((key, group_indices))
 
     if file_groups:

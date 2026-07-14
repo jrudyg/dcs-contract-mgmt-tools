@@ -99,7 +99,11 @@ audit-catalog.py  ← reconciles disk vs CSV; run after any manual reorganizatio
 
 ### contract-catalog.csv
 
-The CSV is the system's only database. Written with `QUOTE_ALL` quoting. Every write creates a `.bak` backup first. Columns: `ContractLocation, VendorFolder, Filename, FilePath, Extension, FileCreatedDate, DocType, HasSignedKeyword, SigningStatus, IsAmendment, AmendmentNumber, VersionLabel, DateInFilename, CounterpartyName, EffectiveDate, ExpirationDate, DaysUntilExpiration, Notes`.
+The CSV is the system's only database. Written with `QUOTE_ALL` quoting. Every write creates a `.bak` backup first. Columns: `ContractLocation, VendorFolder, Filename, FilePath, Extension, DocType, HasSignedKeyword, SigningStatus, IsAmendment, AmendmentNumber, VersionLabel, DateInFilename, CounterpartyName, EffectiveDate, ExpirationDate, DaysUntilExpiration, Notes, Status, SurvivalRunning, Stale, SurvivalEndDate, ManualReview, ManualReviewNote` (23).
+
+`FileCreatedDate` was **dropped 2026-07-14**. It was populated from the filesystem `st_ctime`, which on a OneDrive-synced library is the *rehydration* date, not the document date. Use `DateInFilename` or `EffectiveDate`.
+
+**`CounterpartyName` is fill-only.** `scan-contract.py` will not overwrite a non-blank value — extraction is heuristic and this is the field most often hand-corrected to the legal name on the document. `--recheck-counterparty` forces re-extraction (and will clobber curated values).
 
 `DaysUntilExpiration` is a derived column (whole days from today to `ExpirationDate`; negative = expired, blank when `ExpirationDate` is not an ISO date). `scan-contract.py` recomputes it on every CSV write via `refresh_days_until_expiration()`, so it is current as of the last scan. The dashboard recomputes it live in the browser.
 

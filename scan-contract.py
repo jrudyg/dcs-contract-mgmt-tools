@@ -480,6 +480,11 @@ _GARBAGE_CANDIDATE_RE = re.compile(
 )
 
 
+# DocuSign e-signature audit page ("Certificate Of Completion") — an artifact of
+# the signing envelope, not the agreement itself.
+_DOCUSIGN_CERT_RE = re.compile(r'Certificate\s+Of\s+Completion.{0,120}Envelope\s+Id', re.IGNORECASE)
+
+
 def _clean_entity_name(raw: str) -> str:
     # Strip leading boilerplate before entity name
     raw = _BY_AND_BETWEEN_RE.sub('', raw)
@@ -499,6 +504,15 @@ def _clean_entity_name(raw: str) -> str:
 def extract_counterparty(text: str, vendor_folder: str = "") -> str | None:
     # Normalize line breaks for PDF text-flow artifacts before regex matching
     zone = re.sub(r"\s+", " ", text[:2000])
+
+    # A DocuSign "Certificate Of Completion" page is an e-sign audit artifact, not
+    # an agreement: it has no "by and between" clause, so every party-clause
+    # strategy below misses and the entity-suffix scan (Strategy 4) fires on the
+    # signer block instead — scooping the signer's JOB TITLE in with the company
+    # ("Chief Operating Officer CONNORS AND ASSOCIATES, LLC"). Skip straight to
+    # the vendor-folder fallback, which is the only reliable signal on these pages.
+    if _DOCUSIGN_CERT_RE.search(zone):
+        return vendor_folder.strip() if vendor_folder and len(vendor_folder.strip()) >= 2 else None
 
     def _valid_candidate(c: str) -> bool:
         """Return False if candidate is a garbage extraction or refers to DCS."""
@@ -785,6 +799,7 @@ def scan_file(
     vendor_folder: str,
     dry_run: bool,
     recheck_signing: bool = False,
+    recheck_counterparty: bool = False,
 ) -> dict:
     """Scan one file, update df rows in-place. Returns result dict."""
     result = {
@@ -853,6 +868,15 @@ def scan_file(
                 if old in ('Signed', 'Unsigned') and old != value:
                     continue
 
+            # CounterpartyName is fill-only. Extraction is heuristic and this is
+            # the field humans most often hand-correct to the legal name on the
+            # document; a rescan must not silently revert curated values (e.g. a
+            # DocuSign certificate page falls back to the vendor-folder name).
+            # Use --recheck-counterparty to force re-extraction.
+            if field == 'CounterpartyName' and not recheck_counterparty:
+                if old:
+                    continue
+
             # DocType update rules: preserve specific types; allow narrowing upgrades.
             if field == 'DocType' and old:
                 if old == 'Other':
@@ -898,6 +922,9 @@ def main():
     parser.add_argument("--dry-run",  action="store_true", help="Print changes without writing CSV")
     parser.add_argument("--recheck-signing", action="store_true",
                         help="Re-evaluate SigningStatus even for already-Signed/Unsigned rows (one-time migration)")
+    parser.add_argument("--recheck-counterparty", action="store_true",
+                        help="Re-extract CounterpartyName even for rows that already have one "
+                             "(overwrites hand-curated legal names — one-time migration use only)")
     parser.add_argument("--csv",      metavar="PATH",   default=str(DEFAULT_CSV), help="Path to contract-catalog.csv")
 
     args = parser.parse_args()
@@ -965,7 +992,8 @@ def main():
             continue
 
         result = scan_file(df, row_indices, abs_path, vendor_folder, args.dry_run,
-                           recheck_signing=args.recheck_signing)
+                           recheck_signing=args.recheck_signing,
+                           recheck_counterparty=args.recheck_counterparty)
 
         if result["status"] == "skipped":
             print(f"  [SKIPPED] {result['note']}")

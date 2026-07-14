@@ -110,17 +110,16 @@ def walk_contracts(root: Path | None = None):
 # ── Orphan row builder ────────────────────────────────────────────────────────
 
 def make_orphan_row(columns: list, loc: str, fp_key: str, vendor: str, abs_path: Path) -> dict:
-    try:
-        created = datetime.fromtimestamp(abs_path.stat().st_ctime).strftime("%Y-%m-%d")
-    except Exception:
-        created = ""
+    # FileCreatedDate was dropped from the schema (2026-07-14). It was populated
+    # from st_ctime, which on a OneDrive-synced library reports the *rehydration*
+    # date, not the document date — see "Never Trust Filesystem Dates" in
+    # NIGHTLY_CATALOG_JOB.md. Use DateInFilename / EffectiveDate instead.
     row = {col: "" for col in columns}
     row["ContractLocation"] = loc
     row["VendorFolder"]     = vendor
     row["Filename"]         = abs_path.name
     row["FilePath"]         = fp_key
     row["Extension"]        = abs_path.suffix.lower().lstrip(".")
-    row["FileCreatedDate"]  = created
     return row
 
 

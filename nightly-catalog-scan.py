@@ -55,7 +55,7 @@ SUPPORTED_EXT   = {".pdf", ".docx", ".doc", ".msg"}
 
 COLUMNS = [
     "ContractLocation", "VendorFolder", "Filename", "FilePath", "Extension",
-    "FileCreatedDate", "DocType", "HasSignedKeyword", "SigningStatus",
+    "DocType", "HasSignedKeyword", "SigningStatus",
     "IsAmendment", "AmendmentNumber", "VersionLabel", "DateInFilename",
     "CounterpartyName", "EffectiveDate", "ExpirationDate", "DaysUntilExpiration",
     "Notes", "Status", "SurvivalRunning", "Stale", "SurvivalEndDate",
@@ -647,8 +647,6 @@ def build_row(
     ext      = f_info["abs_path"].suffix.lower()
 
     date_in_fn, fn_ambiguity = parse_date_in_filename(name)
-    # §Never Trust Filesystem Dates: use DateInFilename only; blank if no parse
-    file_created_date = date_in_fn
 
     doc_type = detect_doc_type(name)
     nl = name.lower()
@@ -733,7 +731,6 @@ def build_row(
         "Filename":            name,
         "FilePath":            rel_path,
         "Extension":           ext,
-        "FileCreatedDate":     file_created_date,
         "DocType":             doc_type,
         "HasSignedKeyword":    has_signed,
         "SigningStatus":       signing_status,
@@ -756,10 +753,7 @@ def build_row(
 
     # Per-file log block
     file_log: list[str] = [f"[NEW] {rel_path}"]
-    fcd_src = " (from DateInFilename)" if date_in_fn else " (no filename date — left blank)"
-    if fn_ambiguity:
-        fcd_src = " (from DateInFilename — see [DATE-AMBIGUOUS] below)"
-    file_log.append(f"  FileCreatedDate  : {file_created_date or '(blank)'}{fcd_src}")
+    file_log.append(f"  DateInFilename   : {date_in_fn or '(none)'}")
     for ambig in all_ambiguities:
         file_log.append(f"[DATE-AMBIGUOUS] {ambig}")
     if eff.value:
@@ -953,7 +947,6 @@ def main() -> None:
                     "Filename":         name,
                     "FilePath":         f_info["rel_path"],
                     "Extension":        f_info["abs_path"].suffix.lower(),
-                    "FileCreatedDate":  d_fn,
                     "DateInFilename":   d_fn,
                     "DocType":          detect_doc_type(name),
                     "HasSignedKeyword": "True" if re.search(r"\b(?:signed|executed)\b", nl) else "False",

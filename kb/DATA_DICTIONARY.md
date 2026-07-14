@@ -37,11 +37,13 @@ Generated from contract-catalog.csv — 812 data rows (excludes header).
   - `.doc`: 30
   - `.msg`: 6
 
-### FileCreatedDate
-- Type: date (ISO 8601 YYYY-MM-DD)
-- Null/blank: 0
-- Populated: 812
-- Range: 2025-10-10 to 2026-05-27
+### FileCreatedDate — REMOVED 2026-07-14
+Dropped from the schema (24 → 23 columns). The column was populated from the
+filesystem `st_ctime`, which on a OneDrive-synced library reports the
+*rehydration* date, not the document date — so its values were the sync date,
+not a contract fact. Use `DateInFilename` (filename parse) or `EffectiveDate`
+(document text) instead. See "Never Trust Filesystem Dates" in
+`NIGHTLY_CATALOG_JOB.md`.
 
 ### DocType
 - Type: categorical

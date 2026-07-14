@@ -57,7 +57,6 @@ Columns derived the same way as the manual 2026-06-29 session:
 | `Filename` | File's base name |
 | `FilePath` | Relative to SCAN ROOT, forward slashes |
 | `Extension` | Lowercase, with leading dot |
-| `FileCreatedDate` | **Use `DateInFilename` if parsed; else leave blank and append `"created-date-unverified"` to Notes. Never use `CreationTime` or any filesystem timestamp** — OneDrive rehydration sets these to the sync date, not the document date. See §Never Trust Filesystem Dates. |
 | `DocType` | Pattern-match against filename (MNDA/NDA/MSA/SOW/EULA/MPA/PO/AMEND/EULA…) |
 | `HasSignedKeyword` | `True` if "signed"/"executed"/"fully executed" in filename |
 | `SigningStatus` | `"Signed"` if HasSignedKeyword, else blank |
@@ -80,8 +79,8 @@ Columns derived the same way as the manual 2026-06-29 session:
 OneDrive rehydration sets `CreationTime` and `LastWriteTime` to the sync date,
 not the document's actual date. This means:
 
-- **`FileCreatedDate`** must be sourced from `DateInFilename` (filename parse)
-  or left blank — never from the filesystem.
+- **`FileCreatedDate`** no longer exists — the column was dropped 2026-07-14
+  precisely because it encoded a filesystem timestamp. Use `DateInFilename`.
 - **`EffectiveDate` / `ExpirationDate`** must be sourced from PDF text content
   only — never from filesystem timestamps, file metadata, or OS stat() values.
 - **Deduplication and change detection** use `FilePath` (stable) and content
@@ -145,7 +144,7 @@ Append one block per run:
 [CIRCUIT BREAKER PASS] N new files detected (threshold 17)
 [SKIP] desktop.ini — excluded
 [NEW] VendorFolder/Filename.pdf
-  FileCreatedDate  : 2026-06-22 (from DateInFilename)
+  DateInFilename   : 2026-06-22
   EffectiveDate    : 2026-06-11  [HIGH]  source: 'entered into effect June 11, 2026 (the "Effective Date")'
   ExpirationDate   : (blank)  reason: term-per-project
 [NEW] VendorFolder/Filename2.pdf

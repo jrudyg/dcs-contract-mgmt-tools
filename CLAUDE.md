@@ -52,10 +52,40 @@ powershell -File install-autostart.ps1
 
 ## Architecture
 
+### Where the contract files actually live (read this before touching paths)
+
+**`ContractLocation` is a logical label, not always a folder name.** Three of the
+four locations are folders under the SharePoint root. `01 Active Contracts` is
+not — there is **no folder by that name anywhere**. Active contracts physically
+live in a *separately-synced OneDrive library* that is a **sibling** of the
+SharePoint root:
+
+| `ContractLocation` (logical) | Physical root on disk |
+|---|---|
+| `01 Active Contracts` | `OneDrive - Diakonia Group, LLC/`**`Salesforce Integration - Active Contracts`** |
+| `02 Unsigned Contracts` | `Contract Management - SharePoint/02 Unsigned Contracts` |
+| `03 Archived Contracts` | `Contract Management - SharePoint/03 Archived Contracts` |
+| `04 Expired Contracts` | `Contract Management - SharePoint/04 Expired Contracts` |
+
+Every script resolves paths through a `LOCATION_ROOTS` dict keyed by
+`ContractLocation` (`scan-contract.py`, `audit-catalog.py`, `sort-contracts.py`,
+and `nightly-catalog-scan.py`). **Never join `SHAREPOINT / ContractLocation`
+directly.** That bug is not cosmetic:
+
+- `scan-contract.py --prune` deletes any row whose file it cannot resolve. Joined
+  naively, all ~409 active rows resolve to a path that cannot exist, and a single
+  `--prune` run silently wipes them from the catalog.
+- `sort-contracts.py` would *create* a bogus `01 Active Contracts/` folder under
+  the SharePoint root and move files into it, away from the synced library.
+
+Also on disk and easy to trip over: `03 Archived Contracts/01 Active Contracts -
+do not use/` — a stale copy of the old active tree. It is not a contract
+location; do not let a recursive walk treat it as one.
+
 ### Data flow
 
 ```
-Contract files on disk (01 Active / 02 Unsigned / 03 Archived)
+Contract files on disk (01 Active [Salesforce library] / 02 Unsigned / 03 Archived / 04 Expired)
         ↓
   scan-contract.py  ← extracts metadata via PyMuPDF + python-docx
         ↓
@@ -73,7 +103,7 @@ The CSV is the system's only database. Written with `QUOTE_ALL` quoting. Every w
 
 `DaysUntilExpiration` is a derived column (whole days from today to `ExpirationDate`; negative = expired, blank when `ExpirationDate` is not an ISO date). `scan-contract.py` recomputes it on every CSV write via `refresh_days_until_expiration()`, so it is current as of the last scan. The dashboard recomputes it live in the browser.
 
-`FilePath` is relative to the `ContractLocation` folder (e.g., `Terracon/Terracon_DCS MNDA 06.02.25 - signed.pdf`).
+`FilePath` is relative to the `ContractLocation`'s **physical root** (see the table above — for `01 Active Contracts` that root is the Salesforce library, not the SharePoint root), e.g. `Terracon/Terracon_DCS MNDA 06.02.25 - signed.pdf`.
 
 ### scan-contract.py
 

@@ -32,11 +32,26 @@ TODAY = date.today().isoformat()
 
 SCRIPT_DIR   = Path(__file__).resolve().parent
 SHAREPOINT   = SCRIPT_DIR.parent
+ONEDRIVE     = SHAREPOINT.parent
 DEFAULT_CSV  = SCRIPT_DIR / "contract-catalog.csv"
 
 ACTIVE_LOC   = "01 Active Contracts"
 UNSIGNED_LOC = "02 Unsigned Contracts"
 ARCHIVE_LOC  = "03 Archived Contracts"
+
+# ContractLocation is a LOGICAL label, not always a folder name. ACTIVE_LOC has
+# no folder by that name: active files physically live in the separately-synced
+# "Salesforce Integration - Active Contracts" library, a sibling of the
+# SharePoint root. Always resolve through LOCATION_ROOTS — never join
+# SHAREPOINT / ContractLocation directly, or a move to ACTIVE_LOC will silently
+# create a bogus "01 Active Contracts" folder under the SharePoint root.
+LOCATION_ROOTS = {
+    ACTIVE_LOC:   ONEDRIVE   / "Salesforce Integration - Active Contracts",
+    UNSIGNED_LOC: SHAREPOINT / UNSIGNED_LOC,
+    ARCHIVE_LOC:  SHAREPOINT / ARCHIVE_LOC,
+    # Resolvable as a source location only; never an auto-move target.
+    "04 Expired Contracts": SHAREPOINT / "04 Expired Contracts",
+}
 
 # VendorFolder names or prefixes that are template libraries — never auto-move
 TEMPLATE_VENDOR_FRAGMENTS = ("template", "00 ")
@@ -177,8 +192,8 @@ def main():
             continue
 
         # File needs to move
-        src = SHAREPOINT / current_loc / Path(PurePosixPath(fp_raw))
-        dst = SHAREPOINT / tgt         / Path(PurePosixPath(fp_raw))
+        src = LOCATION_ROOTS[current_loc] / Path(PurePosixPath(fp_raw))
+        dst = LOCATION_ROOTS[tgt]         / Path(PurePosixPath(fp_raw))
 
         if not src.exists():
             print(f"  [NOT FOUND]  Row {idx}: {current_loc}/{fp_raw}")

@@ -26,13 +26,22 @@ from dateutil.relativedelta import relativedelta
 
 SCRIPT_DIR   = Path(__file__).resolve().parent          # …/Tools
 SHAREPOINT   = SCRIPT_DIR.parent                        # …/Contract Management - SharePoint
+ONEDRIVE     = SHAREPOINT.parent                        # …/OneDrive - Diakonia Group, LLC
 DEFAULT_CSV  = SCRIPT_DIR / "contract-catalog.csv"
 
-CONTRACT_ROOTS = [
-    "01 Active Contracts",
-    "02 Unsigned Contracts",
-    "03 Archived Contracts",
-]
+# ContractLocation is a LOGICAL label, not always a folder name. "01 Active
+# Contracts" has no folder by that name: active files physically live in the
+# separately-synced "Salesforce Integration - Active Contracts" library, a
+# sibling of the SharePoint root. Always resolve through LOCATION_ROOTS —
+# never join SHAREPOINT / ContractLocation directly.
+LOCATION_ROOTS = {
+    "01 Active Contracts":   ONEDRIVE   / "Salesforce Integration - Active Contracts",
+    "02 Unsigned Contracts": SHAREPOINT / "02 Unsigned Contracts",
+    "03 Archived Contracts": SHAREPOINT / "03 Archived Contracts",
+    "04 Expired Contracts":  SHAREPOINT / "04 Expired Contracts",
+}
+
+CONTRACT_ROOTS = list(LOCATION_ROOTS)
 
 # ── DCS identity ──────────────────────────────────────────────────────────────
 
@@ -709,10 +718,13 @@ def rows_for_filepath(df: pd.DataFrame, file_path_key: str) -> list[int]:
     return df.index[mask].tolist()
 
 
-def resolve_abs_path(df: pd.DataFrame, row_idx: int, root: Path) -> Path | None:
+def resolve_abs_path(df: pd.DataFrame, row_idx: int, root: Path | None = None) -> Path | None:
     loc  = df.at[row_idx, "ContractLocation"]
     fp   = _norm_path(df.at[row_idx, "FilePath"])
-    full = root / loc / Path(PurePosixPath(fp))
+    base = LOCATION_ROOTS.get(loc)
+    if base is None:
+        return None
+    full = base / Path(PurePosixPath(fp))
     return full if full.exists() else None
 
 # ── Target-row builders ───────────────────────────────────────────────────────
@@ -899,7 +911,8 @@ def main():
     print("scan-contract.py  --  Contract Catalog Scanner")
     print("=" * 54)
     print(f"CSV:  {csv_path}")
-    print(f"Root: {root}")
+    for _loc, _base in LOCATION_ROOTS.items():
+        print(f"Root: [{_loc}] {_base}")
     if args.dry_run:
         print("Mode: DRY RUN (no changes written)")
     print()

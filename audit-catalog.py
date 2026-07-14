@@ -27,13 +27,21 @@ import pandas as pd
 
 SCRIPT_DIR  = Path(__file__).resolve().parent
 SHAREPOINT  = SCRIPT_DIR.parent
+ONEDRIVE    = SHAREPOINT.parent
 DEFAULT_CSV = SCRIPT_DIR / "contract-catalog.csv"
 
-CONTRACT_ROOTS = [
-    "01 Active Contracts",
-    "02 Unsigned Contracts",
-    "03 Archived Contracts",
-]
+# ContractLocation is a LOGICAL label, not always a folder name. "01 Active
+# Contracts" has no folder by that name: active files physically live in the
+# separately-synced "Salesforce Integration - Active Contracts" library, a
+# sibling of the SharePoint root. Always resolve through LOCATION_ROOTS —
+# never join SHAREPOINT / ContractLocation directly.
+LOCATION_ROOTS = {
+    "01 Active Contracts":   ONEDRIVE   / "Salesforce Integration - Active Contracts",
+    "02 Unsigned Contracts": SHAREPOINT / "02 Unsigned Contracts",
+    "03 Archived Contracts": SHAREPOINT / "03 Archived Contracts",
+}
+
+CONTRACT_ROOTS = list(LOCATION_ROOTS)
 
 SUPPORTED_EXTENSIONS = {".pdf", ".docx", ".doc", ".msg"}
 
@@ -41,6 +49,12 @@ SKIP_NAMES = {"__pycache__", ".git", ".DS_Store", "Thumbs.db"}
 
 # Vendor folder prefixes that are template libraries, not actual contracts
 TEMPLATE_FOLDER_PREFIXES = ("00 ",)
+
+# Top-level folders inside a ContractLocation that are NOT vendor folders and
+# must never be catalogued. "01 Active Contracts - do not use" is a stale copy
+# of the old active tree left inside 03 Archived; walking it would add ~396
+# bogus rows for files that are duplicates of the live Salesforce library.
+EXCLUDED_VENDOR_FOLDERS = {"01 active contracts - do not use"}
 
 # ── CSV helpers ────────────────────────────────────────────────────────────────
 
@@ -62,10 +76,9 @@ def _norm_fp(p: str) -> str:
 
 # ── Disk walker ────────────────────────────────────────────────────────────────
 
-def walk_contracts(root: Path):
+def walk_contracts(root: Path | None = None):
     """Yield (contract_location, fp_key, vendor_folder, abs_path) for every supported file."""
-    for loc in CONTRACT_ROOTS:
-        loc_dir = root / loc
+    for loc, loc_dir in LOCATION_ROOTS.items():
         if not loc_dir.exists():
             print(f"  [WARN] ContractLocation folder not found on disk: {loc}")
             continue
@@ -82,6 +95,9 @@ def walk_contracts(root: Path):
             # Skip template library folders (e.g. "00 Vendor Templates")
             rel_parts = abs_path.relative_to(loc_dir).parts
             if rel_parts and any(rel_parts[0].startswith(p) for p in TEMPLATE_FOLDER_PREFIXES):
+                continue
+            # Skip non-vendor folders (e.g. the stale "do not use" active tree)
+            if rel_parts and rel_parts[0].lower() in EXCLUDED_VENDOR_FOLDERS:
                 continue
             if abs_path.suffix.lower() not in SUPPORTED_EXTENSIONS:
                 continue
@@ -221,8 +237,9 @@ def main():
         fp  = _norm_fp(df.at[idx, "FilePath"])
         if not fp:
             continue
-        full = SHAREPOINT / loc / Path(PurePosixPath(fp))
-        if not full.exists():
+        base = LOCATION_ROOTS.get(loc)
+        full = (base / Path(PurePosixPath(fp))) if base else None
+        if full is None or not full.exists():
             print(f"  [MISSING]  Row {idx}: {loc}/{fp}")
             n_missing += 1
             missing_rows.append((idx, loc, fp))

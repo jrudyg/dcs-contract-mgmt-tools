@@ -64,13 +64,54 @@ Per the brief's own instruction ("if the dry-run set differs, stop and report th
 
 **NPI — the two NDAs are NOT identical.** `NPI-DCS NDA_Final - signed.pdf` (`f0d3ed8c…`) and `NPI-Designed Conveyor Systems DCS NDA_Final - signed.pdf` (`e28318b8…`) are **exactly the same byte size (292,697) but different content** — a near-duplicate, not a duplicate. Per Step 2.3, **both were kept**, both flagged `ManualReview=True` with the note *"near-duplicate NDAs, same expiration — human compare"*. Worth an eyeball: identical size with different bytes usually means a re-save or a re-signed copy, not two different agreements.
 
-**S-5 — still pending.** `Mutual NDA- Associated Packaging.docx` has **not** appeared in `02 Unsigned Contracts/CTM Labeling/`. It has not been restored from the SharePoint recycle bin yet. Nothing was done for it; the check is idempotent — restore the file and re-run, and it will be SHA-verified (`629dafda…`), renamed to `Mutual NDA - Associated Packaging - draft variant.docx`, filed under `Associated Packaging`, and given its `ManualReview=True` row.
+**S-5 — see the dedicated section below.** Outcome **(b)**: not recovered. But the attempt turned up something that matters more than the file did.
 
 **13 folders emptied by these operations were removed**, including `DJH` and `03 Archived/Amazon`.
 
 ---
 
-## Step 3 — conventions recorded
+## Step 2.4 (revised) — S-5 recovery: outcome (b), and a finding that outranks it
+
+**Outcome (b): S-5 was not recovered.** The `Associated Packaging` folder contains exactly one `.docx`, and it is the **survivor** (`32fa4f31…`, 33,431 bytes) — confirmed by hashing the source in place *and* an out-of-library copy. Nothing hashes to S-5's `629dafda…`. The surviving row now carries `ManualReview=True` with the note recording that a byte-different draft was deleted 2026-07-14 and could not be recovered, with its SHA-256 on file.
+
+Files were secured before anything else, as instructed — and additionally copied **outside** OneDrive to local temp, since staging *inside* the synced library is not protection if sync is the hazard.
+
+### Rule 3(c) fired — and the reason is the real finding
+
+The staged copy matched **neither** recorded hash: `f66ffd6c…`, **34,169 bytes — 738 bytes larger than the 33,431-byte file I had just copied.** Per rule 3(c) that means stop and report. Here is why it happened, established rather than assumed:
+
+**SharePoint rewrites Office documents when you copy them into a synced library.** Unzipping both files and comparing part-by-part:
+
+- `word/document.xml` — **CRC-identical**. The contract text is byte-for-byte the same.
+- `customXml/item1.xml`, `customXml/item3.xml`, `customXml/itemProps1.xml` — **all three changed**. That is exactly where SharePoint stores content-type / column metadata and sensitivity labels.
+
+The document was never modified. SharePoint injected metadata into my copy, which changed the file's bytes and therefore its SHA-256.
+
+### What this invalidates
+
+**Whole-file SHA-256 is not a reliable identity test for `.docx` files in this library.** Two byte-different Office copies may be the *same document* with different SharePoint metadata. That reaches back through this whole cleanup:
+
+- **S-5 itself was almost certainly a metadata-only twin, not a distinct draft.** I flagged it in Phase 2 as "the one deletion that destroyed a unique byte-stream" and worried it might be a separate draft. It was 33,436 bytes against the survivor's 33,431 — a 5-byte delta — and in Phase 1 the extracted body text of both copies was identical, both naming *Associated Packaging, Inc.* On this evidence the deletion very likely cost no contract content at all. I am stating that as high confidence, not certainty: the bytes are gone and cannot be diffed.
+- **`Brock Solutions`** is a `.pdf` pair (`881d0653` in 01 vs `f7ca9f4d` in 02), so it is **not** explained by this — those two really are different files, and the flag stands. But any `.docx` pair flagged this way in future must be diffed on `word/document.xml`, not on the file hash.
+- **The 47 quarantined files are intact** — I verified every one still matches its recorded hash. They got there by `shutil.move` (a rename, which does not create a new file and so triggers no rewrite). This is a second, concrete reason the quarantine-by-move convention is right and `copy` is not.
+- **PDFs are unaffected.** The NPI pair (same 292,697-byte size, different bytes) are PDFs, so that remains a genuine near-duplicate needing human comparison.
+
+Recorded in `CONTRACT-RULES.md` under "Whole-file SHA-256 is NOT a reliable identity test for Office files here", with the reproduction.
+
+The staged artifact was **kept** as evidence in `_quarantine-2026-07-14-dedup/s5-recovery-staging/` and given its own manifest entry explaining what it is, so nobody later mistakes it for a recovered document.
+
+### Sync roots (item 4) — clean, with one thing to know
+
+Two OneDrive accounts are configured on this machine:
+
+| Account | Root |
+|---|---|
+| **Business1** — `rudy@designedconveyor.com` | `C:\Users\jrudy\OneDrive - Diakonia Group, LLC` |
+| Personal — `jrudyg@hotmail.com` | `C:\Users\jrudy\OneDrive` |
+
+**Both governed libraries live under the same Business root**, so there is no second sync root and **no duplicate copy of the governed libraries**. `Contract Management - SharePoint` and `Salesforce Integration - Active Contracts` are two separately-synced SharePoint libraries under one account — which is exactly what `LOCATION_ROOTS` already encodes. The personal OneDrive contains none of this. Path resolution is sound.
+
+**Worth flagging anyway:** the same Business root also holds `Contract Management/` (a separate, older contract tree) and `Supply Chain - Compliance/`, and the latter contains its *own* `Associated Packaging/` and `CTM Labeling/` folders with similar NDAs under the same filenames — different hashes again. Neither is governed by the scanner or the catalog. They are outside every brief so far, but contract documents are living in at least two ungoverned trees on this machine.
 
 Added a **Conventions** section to `CONTRACT-RULES.md` in plain English: folder naming (legal name from the signed document, ASCII folders / Unicode data fields), subcontract filing under the signing counterparty, deletion-by-quarantine with a SHA-256 manifest and an explicit warning never to use `os.remove` on this library, `CounterpartyName` fill-only, and the `(ContractLocation, FilePath)` uniqueness invariant.
 
@@ -91,7 +132,7 @@ I also corrected the record there: the note claiming 92 NDAs were "restored" fro
 
 ## Open items
 
-1. **S-5 restore** — still waiting on the SharePoint web recycle bin.
+1. **S-5** — outcome (b): **not recovered**, and almost certainly a metadata-only twin rather than a distinct draft (see Step 2.4). The surviving row is flagged. Nothing further to do unless you want the SharePoint recycle bin checked again.
 2. **The 5 `SigningStatus` moves** `sort-contracts.py` wants (4× `01→02`, 1× `02→01`) — never reviewed, not in scope, still outstanding.
 3. **The NPI near-duplicate pair** — same size, different bytes, both flagged.
 4. **Brock Solutions** — two different versions, one per location, both live and flagged.

@@ -158,6 +158,20 @@ Do **not** use `os.remove` on this library — on Windows it bypasses the Recycl
 
 The scanner **never overwrites a non-blank `CounterpartyName`**. Extraction is heuristic, and this is the field humans most often correct by hand to the legal name on the document. Curated values are permanent. `scan-contract.py --recheck-counterparty` forces re-extraction and will clobber them — migration use only.
 
+### Whole-file SHA-256 is NOT a reliable identity test for Office files here
+
+**SharePoint rewrites Office documents on copy-in.** Copy a `.docx` into a synced library and SharePoint injects/refreshes its `customXml` parts (content-type and column metadata, sensitivity labels). The file's bytes and SHA-256 change **while the document itself is untouched** — `word/document.xml` stays CRC-identical.
+
+Demonstrated 2026-07-14: copying `Mutual NDA- Associated Packaging.docx` (33,431 bytes, `32fa4f31…`) into a folder inside the synced library produced a 34,169-byte file hashing `f66ffd6c…`. Same contract, +738 bytes of metadata, completely different hash.
+
+Consequences:
+
+- **Two byte-different `.docx` copies may be the same document.** Before concluding that two Office files differ, compare `word/document.xml` (and the other `word/` parts), not the whole-file hash. A whole-file hash difference confined to `customXml/` is metadata, not content.
+- **`move` is safe; `copy` is not.** `shutil.move` within a drive is a rename — the bytes are untouched (all 47 quarantined files still match their recorded hashes). A copy creates a new file, which SharePoint then processes and rewrites.
+- PDFs are not affected — this is an Office-format (OOXML) behaviour.
+
+This is why deletions must quarantine by **moving**, and why a hash recorded before a copy will not match after one.
+
 ### Catalog uniqueness invariant
 
 **The key is `(ContractLocation, FilePath)`. `FilePath` alone is NOT a key.**
